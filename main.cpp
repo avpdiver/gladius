@@ -3,7 +3,9 @@
 
 using namespace std;
 
-int main ()
+#undef main
+
+int main (int argc, char *argv[])
 {
     gladius::core::c_window window;
 

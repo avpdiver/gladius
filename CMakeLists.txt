@@ -41,7 +41,6 @@ endif ()
 ################################################################################
 
 
-
 ################################################################################
 # Thirdparty                                                                   #
 ################################################################################
@@ -61,6 +60,10 @@ set(SDL2_INSTALL_DIR ${install_dir})
 add_library(SDL2_LIB STATIC IMPORTED)
 set_property(TARGET SDL2_LIB PROPERTY IMPORTED_LOCATION ${SDL2_INSTALL_DIR}/lib/libSDL2.a)
 add_dependencies(SDL2_LIB SDL2_PROJECT)
+
+add_library(SDL2MAIN_LIB STATIC IMPORTED)
+set_property(TARGET SDL2MAIN_LIB PROPERTY IMPORTED_LOCATION ${SDL2_INSTALL_DIR}/lib/libSDL2main.a)
+add_dependencies(SDL2MAIN_LIB SDL2_PROJECT)
 
 ################################################################################
 # GLadius                                                                   #
@@ -125,8 +128,25 @@ set(
         main.cpp
 )
 
+if (LINUX)
+    set(_SYS pthread dl)
+elseif (MACOS)
+    find_package(OpenGL REQUIRED)
+    set(_SYS ${OPENGL_LIBRARIES} pthread)
+elseif (ANDROID)
+    set(_SYS GLESv3 EGL log android)
+    include_directories("${ANDROID_NDK}/sources/android/native_app_glue")
+    set(_SYS_SRC "${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c")
+elseif (WINDOWS)
+    set(_SYS opengl32 mingw32 version Imm32 Winmm)
+    add_definitions(-DGLEW_STATIC -D_NEWTON_STATIC_LIB)
+else ()
+    message(FATAL_ERROR "Unhandled case")
+endif ()
+
 include_directories("${SDL2_INSTALL_DIR}/include/")
-link_directories(${SDL2_INSTALL_DIR}/lib)
+link_directories(${SDL2_INSTALL_DIR}/lib/)
 
 add_executable(gladius ${SOURCE_FILES})
-target_link_libraries(gladius SDL2_LIB -ldl -lpthread)
+add_dependencies(gladius SDL2_LIB SDL2MAIN_LIB)
+target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS})
