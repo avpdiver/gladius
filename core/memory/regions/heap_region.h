@@ -2,8 +2,8 @@
 // Created by pav on 11.08.15.
 //
 
-#ifndef DAR_HEAP_REGION_H
-#define DAR_HEAP_REGION_H
+#ifndef GLADIUS_HEAP_REGION_H
+#define GLADIUS_HEAP_REGION_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -54,4 +54,4 @@ namespace gladius
 }
 
 
-#endif //DAR_HEAP_REGION_H
+#endif //GLADIUS_HEAP_REGION_H

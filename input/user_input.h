@@ -2,8 +2,8 @@
 // Created by pav on 28.09.15.
 //
 
-#ifndef DAR_C_USER_INPUT_H
-#define DAR_C_USER_INPUT_H
+#ifndef GLADIUS_USER_INPUT_H
+#define GLADIUS_USER_INPUT_H
 
 #include "../core/window/window.h"
 
@@ -160,4 +160,4 @@ namespace gladius
 }
 
 
-#endif //DAR_C_USER_INPUT_H
+#endif //GLADIUS_USER_INPUT_H

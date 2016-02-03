@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-#include "../../platform.h"
 #include "malloc_allocator.h"
 
 namespace gladius
@@ -26,9 +25,9 @@ namespace gladius
 
             size_t c_malloc_allocator::size (void *ptr)
             {
-#if defined(WIN32)
+#if defined(WINDOWS)
                     return _msize(ptr);
-#elif defined(NIX)
+#elif defined(LINUX)
                     return malloc_usable_size(ptr);
 #endif
             }

@@ -2,8 +2,8 @@
 // Created by pav on 12.08.15.
 //
 
-#ifndef DAR_RESOURCE_POOL_H
-#define DAR_RESOURCE_POOL_H
+#ifndef GLADIUS_RESOURCE_POOL_H
+#define GLADIUS_RESOURCE_POOL_H
 
 #include <stddef.h>
 #include <assert.h>
@@ -98,4 +98,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_RESOURCE_POOL_H
+#endif //GLADIUS_RESOURCE_POOL_H

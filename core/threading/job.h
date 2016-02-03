@@ -2,8 +2,8 @@
 // Created by pav on 11.09.15.
 //
 
-#ifndef DAR_JOB_H
-#define DAR_JOB_H
+#ifndef GLADIUS_JOB_H
+#define GLADIUS_JOB_H
 
 #include <atomic>
 #include <stddef.h>
@@ -32,4 +32,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_JOB_H
+#endif //GLADIUS_JOB_H

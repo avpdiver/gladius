@@ -2,8 +2,8 @@
 // Created by pav on 12.08.15.
 //
 
-#ifndef DAR_FILE_H
-#define DAR_FILE_H
+#ifndef GLADIUS_FILE_H
+#define GLADIUS_FILE_H
 
 #include "../types.h"
 
@@ -50,4 +50,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_FILE_H
+#endif //GLADIUS_FILE_H

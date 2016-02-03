@@ -2,8 +2,8 @@
 // Created by pav on 11.08.15.
 //
 
-#ifndef DAR_MALLOC_ALLOCATOR_H
-#define DAR_MALLOC_ALLOCATOR_H
+#ifndef GLADIUS_MALLOC_ALLOCATOR_H
+#define GLADIUS_MALLOC_ALLOCATOR_H
 
 #include <stddef.h>
 
@@ -24,4 +24,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_MALLOC_ALLOCATOR_H
+#endif //GLADIUS_MALLOC_ALLOCATOR_H

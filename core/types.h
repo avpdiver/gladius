@@ -2,8 +2,8 @@
 // Created by pav on 12.08.15.
 //
 
-#ifndef DAR_TYPES_H
-#define DAR_TYPES_H
+#ifndef GLADIUS_TYPES_H
+#define GLADIUS_TYPES_H
 
 #include <stddef.h>
 
@@ -13,4 +13,4 @@ namespace gladius
     static const handle_t INVALID_HANDLE = -1;
 }
 
-#endif //DAR_TYPES_H
+#endif //GLADIUS_TYPES_H

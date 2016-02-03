@@ -2,18 +2,69 @@ cmake_minimum_required(VERSION 3.2)
 project(gladius)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
-find_package(Threads REQUIRED)
-if (NOT Threads_FOUND)
-    message(FATAL_ERROR "Failed to find Threads")
-endif (NOT Threads_FOUND)
+################################################################################
+# Platforms                                                                    #
+################################################################################
 
-if (UNIX)
-    find_package(X11 REQUIRED)
-    if (NOT X11_FOUND)
-        message(FATAL_ERROR "Failed to find X11")
-    endif (NOT X11_FOUND)
-endif (UNIX)
+if (WIN32)
+    if (NOT WINDOWS)
+        set(WINDOWS TRUE)
+        message(STATUS "++ Building for windows")
+    endif ()
+elseif (UNIX AND NOT APPLE)
+    if (CMAKE_SYSTEM_NAME MATCHES ".*Linux")
+        if (NOT ANDROID)
+            set(LINUX TRUE)
+            message(STATUS "++ Building for Linux")
+        else ()
+            message(STATUS "++ Building for Android")
+        endif ()
+    else ()
+        message(FATAL_ERROR "Unknown unix")
+    endif ()
+elseif (APPLE)
+    if (CMAKE_SYSTEM_NAME MATCHES ".*MacOS.*")
+        set(MACOS TRUE)
+        message(STATUS "++ Building for MacOS")
+    else ()
+        message(FATAL_ERROR "Unknown apple")
+    endif ()
+else ()
+    message(FATAL_ERROR "Unknown system")
+endif ()
+
+################################################################################
+# Libraries                                                                    #
+################################################################################
+
+
+
+################################################################################
+# Thirdparty                                                                   #
+################################################################################
+include(ExternalProject)
+
+# SDL
+ExternalProject_Add(
+        SDL2_PROJECT
+        DOWNLOAD_COMMAND ""
+        PREFIX "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/sdl2"
+        SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3dparty/SDL2"
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/sdl2 -DSDL_SHARED=OFF -DSDL_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DDIRECTX=OFF -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
+
+ExternalProject_Get_Property(SDL2_PROJECT install_dir)
+set(SDL2_INSTALL_DIR ${install_dir})
+
+add_library(SDL2_LIB STATIC IMPORTED)
+set_property(TARGET SDL2_LIB PROPERTY IMPORTED_LOCATION ${SDL2_INSTALL_DIR}/lib/libSDL2.a)
+add_dependencies(SDL2_LIB SDL2_PROJECT)
+
+################################################################################
+# GLadius                                                                   #
+################################################################################
 
 set(
         SOURCE_FILES
@@ -44,14 +95,11 @@ set(
         core/filesystem/disk_file.cpp
         core/filesystem/disk_file.h
 
-        core/window/nix/nix_window.cpp
         core/window/window.h
-        core/window/windows/win_window.cpp
         core/window/window.cpp
 
         input/user_input.h
-        input/nix/nix_user_input.cpp
-        input/win/win_user_input.cpp
+        input/user_input.cpp
 
         core/math/box2.h
         core/math/box3.h
@@ -67,13 +115,6 @@ set(
         core/math/vec4.h
 
         geometry/visibility.h
-
-        geometry/space/tree_node.h
-        geometry/space/tree_node.cpp
-        geometry/space/quad_tree.cpp
-        geometry/space/quad_tree.h
-        geometry/space/deformation.cpp
-        geometry/space/deformation.h
         geometry/visibility.cpp
         geometry/transform_node.cpp
         geometry/transform_node.h
@@ -81,8 +122,11 @@ set(
         graphics/render_context.cpp
         graphics/render_context.h
 
-        main.cpp geometry/space/deforms/spherical_deformation.cpp geometry/space/deforms/spherical_deformation.h)
+        main.cpp
+)
+
+include_directories("${SDL2_INSTALL_DIR}/include/")
+link_directories(${SDL2_INSTALL_DIR}/lib)
 
 add_executable(gladius ${SOURCE_FILES})
-
-target_link_libraries(gladius ${CMAKE_THREAD_LIBS_INIT} ${X11_LIBRARIES} ${X11_Xi_LIB} dinput8 dxguid)
+target_link_libraries(gladius SDL2_LIB -ldl -lpthread)

@@ -2,8 +2,8 @@
 // Created by pav on 11.08.15.
 //
 
-#ifndef DAR_FREE_LIST_ALLOCATOR_H
-#define DAR_FREE_LIST_ALLOCATOR_H
+#ifndef GLADIUS_FREE_LIST_ALLOCATOR_H
+#define GLADIUS_FREE_LIST_ALLOCATOR_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -77,4 +77,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_FREE_LIST_ALLOCATOR_H
+#endif //GLADIUS_FREE_LIST_ALLOCATOR_H

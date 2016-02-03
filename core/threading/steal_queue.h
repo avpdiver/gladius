@@ -2,8 +2,8 @@
 // Created by pav on 11.09.15.
 //
 
-#ifndef DAR_STEAL_QUEUE_H
-#define DAR_STEAL_QUEUE_H
+#ifndef GLADIUS_STEAL_QUEUE_H
+#define GLADIUS_STEAL_QUEUE_H
 
 #include <stddef.h>
 #include <atomic>
@@ -110,4 +110,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_STEAL_QUEUE_H
+#endif //GLADIUS_STEAL_QUEUE_H

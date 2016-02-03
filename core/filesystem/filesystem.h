@@ -2,8 +2,8 @@
 // Created by pav on 12.08.15.
 //
 
-#ifndef DAR_FILESYSTEM_H
-#define DAR_FILESYSTEM_H
+#ifndef GLADIUS_FILESYSTEM_H
+#define GLADIUS_FILESYSTEM_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -29,4 +29,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_FILESYSTEM_H
+#endif //GLADIUS_FILESYSTEM_H

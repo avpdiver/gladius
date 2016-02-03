@@ -2,8 +2,8 @@
 // Created by pav on 11.08.15.
 //
 
-#ifndef DAR_SIZED_ALLOCATOR_H
-#define DAR_SIZED_ALLOCATOR_H
+#ifndef GLADIUS_SIZED_ALLOCATOR_H
+#define GLADIUS_SIZED_ALLOCATOR_H
 
 namespace gladius
 {
@@ -36,4 +36,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_SIZED_ALLOCATOR_H
+#endif //GLADIUS_SIZED_ALLOCATOR_H

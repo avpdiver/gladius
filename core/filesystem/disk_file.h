@@ -2,8 +2,8 @@
 // Created by pav on 12.08.15.
 //
 
-#ifndef DAR_DISK_FILE_H
-#define DAR_DISK_FILE_H
+#ifndef GLADIUS_DISK_FILE_H
+#define GLADIUS_DISK_FILE_H
 
 #include <stddef.h>
 #include <fstream>
@@ -46,4 +46,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_DISK_FILE_H
+#endif //GLADIUS_DISK_FILE_H

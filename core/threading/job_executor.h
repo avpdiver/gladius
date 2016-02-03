@@ -2,8 +2,8 @@
 // Created by pav on 11.09.15.
 //
 
-#ifndef DAR_JOBEXECUTOR_H
-#define DAR_JOBEXECUTOR_H
+#ifndef GLADIUS_JOBEXECUTOR_H
+#define GLADIUS_JOBEXECUTOR_H
 
 #include "job.h"
 
@@ -27,4 +27,4 @@ namespace gladius
     }
 }
 
-#endif //DAR_JOBEXECUTOR_H
+#endif //GLADIUS_JOBEXECUTOR_H
