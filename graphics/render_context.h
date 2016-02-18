@@ -9,7 +9,7 @@
 
 namespace gladius
 {
-    namespace geometry
+    namespace graphics
     {
         class c_render_context
         {

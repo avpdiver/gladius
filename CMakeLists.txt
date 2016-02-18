@@ -107,6 +107,8 @@ set(
 
         geometry/visibility.h
 
+        graphics/renderer3d.h
+        graphics/renderer3d.cpp
         graphics/render_context.cpp
         graphics/render_context.h
 
