@@ -5,7 +5,7 @@
 #ifndef GLADIUS_RENDER_CONTEXT_H
 #define GLADIUS_RENDER_CONTEXT_H
 
-#include "../core/math/vec4.h"
+#include "glm/vec4.hpp"
 
 namespace gladius
 {
@@ -14,13 +14,13 @@ namespace gladius
         class c_render_context
         {
         public:
-            const math::vec4i& getViewport() const
+            const glm::ivec4& getViewport() const
             {
                 return m_viewport;
             }
 
         private:
-            math::vec4i m_viewport;
+            glm::ivec4 m_viewport;
         };
     }
 }

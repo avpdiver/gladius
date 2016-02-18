@@ -3,7 +3,6 @@ project(gladius)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
 ################################################################################
 # Platforms                                                                    #
@@ -50,9 +49,9 @@ include(ExternalProject)
 ExternalProject_Add(
         SDL2_PROJECT
         DOWNLOAD_COMMAND ""
-        PREFIX "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/sdl2"
-        SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3dparty/SDL2"
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/sdl2 -DSDL_SHARED=OFF -DSDL_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DDIRECTX=OFF -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
+        PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL2/install"
+        SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL2"
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL2/install -DSDL_SHARED=OFF -DSDL_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DDIRECTX=OFF -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
 
 ExternalProject_Get_Property(SDL2_PROJECT install_dir)
 set(SDL2_INSTALL_DIR ${install_dir})
@@ -101,26 +100,12 @@ set(
         core/window/window.h
         core/window/window.cpp
 
+        core/math/aabb.h
+
         input/user_input.h
         input/user_input.cpp
 
-        core/math/box2.h
-        core/math/box3.h
-        core/math/common_math.h
-        core/math/half.cpp
-        core/math/half.h
-        core/math/mat2.h
-        core/math/mat3.h
-        core/math/mat4.h
-        core/math/quat.h
-        core/math/vec2.h
-        core/math/vec3.h
-        core/math/vec4.h
-
         geometry/visibility.h
-        geometry/visibility.cpp
-        geometry/transform_node.cpp
-        geometry/transform_node.h
 
         graphics/render_context.cpp
         graphics/render_context.h
@@ -144,7 +129,11 @@ else ()
     message(FATAL_ERROR "Unhandled case")
 endif ()
 
-include_directories("${SDL2_INSTALL_DIR}/include/")
+include_directories(
+        "${SDL2_INSTALL_DIR}/include/"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
+)
+
 link_directories(${SDL2_INSTALL_DIR}/lib/)
 
 add_executable(gladius ${SOURCE_FILES})
