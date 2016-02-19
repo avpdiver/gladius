@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 project(gladius)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_CURRENT_SOURCE_DIR}/,,$(abspath $<))\"'")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 ################################################################################
@@ -73,6 +74,9 @@ set(
 
         core/platform.h
         core/types.h
+
+        core/logging/logging.h
+        core/logging/logging.cpp
 
         core/memory/allocators/free_list_allocator.h
         core/memory/allocators/malloc_allocator.cpp

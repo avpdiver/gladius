@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include "window.h"
+#include "SDL2/SDL_syswm.h"
+#include "../logging/logging.h"
 
 namespace gladius
 {
@@ -126,6 +128,15 @@ namespace gladius
                     SDL_WINDOW_SHOWN);
             if (m_window == nullptr)
             {
+                return false;
+            }
+
+            SDL_VERSION(&m_sys_wm_info.version);
+            SDL_bool res = SDL_GetWindowWMInfo(m_window, &m_sys_wm_info);
+            if (res == SDL_FALSE)
+            {
+                SET_ERROR("Get window info: %s", SDL_GetError());
+                close();
                 return false;
             }
 

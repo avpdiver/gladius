@@ -11,6 +11,7 @@
 #include <functional>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 
 namespace gladius
 {
@@ -54,6 +55,7 @@ namespace gladius
 
         private:
             SDL_Window* m_window;
+            SDL_SysWMinfo m_sys_wm_info;
         };
     }
 }
