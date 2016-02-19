@@ -40,14 +40,6 @@ namespace gladius
                 va_start (args, format);
                 vsnprintf(buffer, BUFFER_SIZE, format, args);
                 va_end (args);
-
-                /*
-                strcat(buffer, " [");
-                strcat(buffer, file);
-                strcat(buffer, " (");
-                strcat(buffer, line);
-                strcat(buffer, ")]");
-                 */
             }
 
             const char* get_error()

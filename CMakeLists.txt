@@ -12,14 +12,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 if (WIN32)
     if (NOT WINDOWS)
         set(WINDOWS TRUE)
+        add_definitions(-DPLATFORM_WINDOWS)
         message(STATUS "++ Building for windows")
     endif ()
 elseif (UNIX AND NOT APPLE)
     if (CMAKE_SYSTEM_NAME MATCHES ".*Linux")
         if (NOT ANDROID)
             set(LINUX TRUE)
+            add_definitions(-DPLATFORM_LINUX)
             message(STATUS "++ Building for Linux")
         else ()
+            set(ANDROID TRUE)
+            add_definitions(-DPLATFORM_ANDROID)
             message(STATUS "++ Building for Android")
         endif ()
     else ()
@@ -28,6 +32,7 @@ elseif (UNIX AND NOT APPLE)
 elseif (APPLE)
     if (CMAKE_SYSTEM_NAME MATCHES ".*MacOS.*")
         set(MACOS TRUE)
+        add_definitions(-DPLATFORM_MACOS)
         message(STATUS "++ Building for MacOS")
     else ()
         message(FATAL_ERROR "Unknown apple")
@@ -113,6 +118,7 @@ set(
 
         graphics/renderer3d.h
         graphics/renderer3d.cpp
+        graphics/rendered3d_debugger.cpp
         graphics/render_context.cpp
         graphics/render_context.h
 
@@ -144,4 +150,4 @@ link_directories(${SDL2_INSTALL_DIR}/lib/)
 
 add_executable(gladius ${SOURCE_FILES})
 add_dependencies(gladius SDL2_LIB SDL2MAIN_LIB)
-target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS})
+target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS} libvulkan.so)

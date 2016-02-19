@@ -5,6 +5,7 @@
 #ifndef GLADIUS_RENDERER3D_H
 #define GLADIUS_RENDERER3D_H
 
+#include <vulkan/vulkan.h>
 #include "../core/window/window.h"
 
 namespace gladius
@@ -13,7 +14,16 @@ namespace gladius
     {
         namespace renderer3d
         {
-            bool init(core::c_window* window);
+            namespace debug
+            {
+                extern int validation_layer_count;
+                extern const char *validation_layer_names[];
+
+                bool init(VkInstance instance);
+                void shutdown(VkInstance instance);
+            }
+
+            bool init(core::c_window* window, bool enable_validation);
             void shutdown();
         };
     }

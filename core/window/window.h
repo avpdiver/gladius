@@ -40,6 +40,12 @@ namespace gladius
             void close();
 
         public:
+            const SDL_SysWMinfo* const get_system_info() const
+            {
+                return &m_sys_wm_info;
+            }
+
+        public:
             void process_event(e_window_event event_type, void* event) const;
 
         public:
