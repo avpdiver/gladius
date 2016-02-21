@@ -27,7 +27,7 @@
 
 #include "../core/logging/logging.h"
 
-#define VK_CHECK(r) if (r != VK_SUCCESS) { SET_ERROR("%s", debug::error_text(r)); return false; }
+#define VK_VERIFY(r) if (r != VK_SUCCESS) { SET_ERROR("%s", debug::error_text(r)); return false; }
 
 namespace gladius
 {

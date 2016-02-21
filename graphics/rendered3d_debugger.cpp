@@ -68,7 +68,7 @@ namespace gladius
                     info.pUserData = nullptr;
                     info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 
-                    VK_CHECK(create_debug_report_callback(instance, &info, nullptr, &debug_report_callback));
+                    VK_VERIFY(create_debug_report_callback(instance, &info, nullptr, &debug_report_callback));
 
                     return true;
                 }

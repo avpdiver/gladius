@@ -73,7 +73,7 @@ namespace gladius
                     instance_create_info.ppEnabledLayerNames = debug::validation_layer_names.data();
                 }
 
-                VK_CHECK(vkCreateInstance(&instance_create_info, nullptr, &vk_instance));
+                VK_VERIFY(vkCreateInstance(&instance_create_info, nullptr, &vk_instance));
 
                 return true;
             }
@@ -106,7 +106,7 @@ namespace gladius
                     device_create_info.ppEnabledLayerNames = debug::validation_layer_names.data();
                 }
 
-                VK_CHECK(vkCreateDevice(vk_gpu, &device_create_info, nullptr, &vk_device));
+                VK_VERIFY(vkCreateDevice(vk_gpu, &device_create_info, nullptr, &vk_device));
 
                 return true;
             }
@@ -114,18 +114,18 @@ namespace gladius
             bool enum_devices()
             {
                 uint32_t gpu_count = 0;
-                VK_CHECK(vkEnumeratePhysicalDevices(vk_instance, &gpu_count, nullptr));
-                ERROR_CHECK(gpu_count > 0, "There are no gpu devices");
+                VK_VERIFY(vkEnumeratePhysicalDevices(vk_instance, &gpu_count, nullptr));
+                VERIFY(gpu_count > 0, "There are no gpu devices");
 
                 std::vector<VkPhysicalDevice> gpus(gpu_count);
-                VK_CHECK(vkEnumeratePhysicalDevices(vk_instance, &gpu_count, gpus.data()));
+                VK_VERIFY(vkEnumeratePhysicalDevices(vk_instance, &gpu_count, gpus.data()));
 
                 vk_gpu = gpus[0];
 
                 uint32_t graphics_queue_index = 0;
                 uint32_t queue_count;
                 vkGetPhysicalDeviceQueueFamilyProperties(vk_gpu, &queue_count, nullptr);
-                ERROR_CHECK(queue_count > 0, "There are no compatible gpu devices");
+                VERIFY(queue_count > 0, "There are no compatible gpu devices");
 
                 std::vector<VkQueueFamilyProperties> queue_properties;
                 queue_properties.resize(queue_count);
@@ -136,7 +136,7 @@ namespace gladius
                         break;
                     }
                 }
-                ERROR_CHECK(graphics_queue_index < queue_count, "There are no compatible gpu device");
+                VERIFY(graphics_queue_index < queue_count, "There are no compatible gpu devices");
 
                 if (!create_device(graphics_queue_index, enable_validation))
                 {
