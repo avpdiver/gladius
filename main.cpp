@@ -5,7 +5,7 @@
 
 using namespace std;
 
-//#undef main
+#undef main
 
 int main (int argc, char *argv[])
 {
@@ -15,11 +15,9 @@ int main (int argc, char *argv[])
 
     if (!gladius::graphics::renderer3d::init(&window, false))
     {
-        window.close();
-        return 1;
+        std::cerr  << gladius::core::logging::get_error();
+        exit(-1);
     }
-
-    const char* error = gladius::core::logging::get_error();
 
     while (!window.is_closed())
     {

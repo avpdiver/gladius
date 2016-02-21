@@ -2,25 +2,9 @@
 // Created by pav on 18.02.16.
 //
 
-#include "../core/logging/logging.h"
-
-#ifdef PLATFORM_WINDOWS
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-
-#ifdef PLATFORM_LINUX
-#define VK_USE_PLATFORM_XLIB_KHR
-#endif
-
-#ifdef PLATFORM_MACOS
-#define VK_USE_PLATFORM_XLIB_KHR
-#endif
-
-#ifdef PLATFORM_ANDROID
-#define VK_USE_PLATFORM_ANDROID_KHR
-#endif
 
 #include "renderer3d.h"
+#include "renderer3d_common.h"
 
 namespace gladius
 {
@@ -28,9 +12,14 @@ namespace gladius
     {
         namespace renderer3d
         {
+            bool enable_validation = false;
             VkInstance vk_instance = nullptr;
+            VkPhysicalDevice vk_gpu = nullptr;
+            VkDevice vk_device = nullptr;
+            VkQueue vk_queue = nullptr;
+            VkPhysicalDeviceMemoryProperties vk_device_memory_properties;
 
-            bool create_instance(const char* app_name, bool enable_validation)
+            bool create_instance(const char* app_name)
             {
                 std::vector<const char*> extensions = {VK_KHR_SURFACE_EXTENSION_NAME};
 
@@ -80,23 +69,96 @@ namespace gladius
 
                 if (enable_validation)
                 {
-                    instance_create_info.enabledLayerCount = debug::validation_layer_count;
-                    instance_create_info.ppEnabledLayerNames = debug::validation_layer_names;
+                    instance_create_info.enabledLayerCount = debug::validation_layer_names.size();
+                    instance_create_info.ppEnabledLayerNames = debug::validation_layer_names.data();
                 }
 
-                VkResult result = vkCreateInstance(&instance_create_info, nullptr, &vk_instance);
-                if (result != VK_SUCCESS)
-                {
-                    SET_ERROR("Create instance error %u", result);
-                    return false;
-                }
+                VK_CHECK(vkCreateInstance(&instance_create_info, nullptr, &vk_instance));
 
                 return true;
             }
 
-            bool init(core::c_window* window, bool enable_validation)
+            bool create_device(uint32_t queue_index, bool enable_validation) {
+
+                std::vector<const char*> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+                float queue_priorities[] = { 0.0f };
+                VkDeviceQueueCreateInfo queue_create_info = {};
+                queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+                queue_create_info.queueFamilyIndex = queue_index;
+                queue_create_info.queueCount = 1;
+                queue_create_info.pQueuePriorities = queue_priorities;
+
+                VkDeviceCreateInfo device_create_info = {};
+                device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+                device_create_info.pNext = nullptr;
+                device_create_info.queueCreateInfoCount = 1;
+                device_create_info.pQueueCreateInfos = &queue_create_info;
+                device_create_info.pEnabledFeatures = nullptr;
+
+                if (extensions.size() > 0) {
+                    device_create_info.enabledExtensionCount = (uint32_t) extensions.size();
+                    device_create_info.ppEnabledExtensionNames = extensions.data();
+                }
+
+                if (enable_validation) {
+                    device_create_info.enabledLayerCount = debug::validation_layer_names.size();
+                    device_create_info.ppEnabledLayerNames = debug::validation_layer_names.data();
+                }
+
+                VK_CHECK(vkCreateDevice(vk_gpu, &device_create_info, nullptr, &vk_device));
+
+                return true;
+            }
+
+            bool enum_devices()
             {
-                if (!create_instance("appname", enable_validation))
+                uint32_t gpu_count = 0;
+                VK_CHECK(vkEnumeratePhysicalDevices(vk_instance, &gpu_count, nullptr));
+                ERROR_CHECK(gpu_count > 0, "There are no gpu devices");
+
+                std::vector<VkPhysicalDevice> gpus(gpu_count);
+                VK_CHECK(vkEnumeratePhysicalDevices(vk_instance, &gpu_count, gpus.data()));
+
+                vk_gpu = gpus[0];
+
+                uint32_t graphics_queue_index = 0;
+                uint32_t queue_count;
+                vkGetPhysicalDeviceQueueFamilyProperties(vk_gpu, &queue_count, nullptr);
+                ERROR_CHECK(queue_count > 0, "There are no compatible gpu devices");
+
+                std::vector<VkQueueFamilyProperties> queue_properties;
+                queue_properties.resize(queue_count);
+                vkGetPhysicalDeviceQueueFamilyProperties(vk_gpu, &queue_count, queue_properties.data());
+                for (const auto& p : queue_properties)
+                {
+                    if (p.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                        break;
+                    }
+                }
+                ERROR_CHECK(graphics_queue_index < queue_count, "There are no compatible gpu device");
+
+                if (!create_device(graphics_queue_index, enable_validation))
+                {
+                    return false;
+                }
+
+                vkGetPhysicalDeviceMemoryProperties(vk_gpu, &vk_device_memory_properties);
+                vkGetDeviceQueue(vk_device, graphics_queue_index, 0, &vk_queue);
+
+                return true;
+            }
+
+            bool init(core::c_window* window, bool validation)
+            {
+                enable_validation = validation;
+
+                if (!create_instance("appname"))
+                {
+                    return false;
+                }
+
+                if (!enum_devices())
                 {
                     return false;
                 }
@@ -111,7 +173,21 @@ namespace gladius
                     return;
                 }
 
-                debug::shutdown(vk_instance);
+                if (vk_device != nullptr) {
+                    vkDestroyDevice(vk_device, nullptr);
+                }
+
+                if (enable_validation)
+                {
+                    debug::shutdown();
+                }
+
+                vkDestroyInstance(vk_instance, nullptr);
+
+                vk_gpu = nullptr;
+                vk_device = nullptr;
+                vk_queue = nullptr;
+                vk_instance = nullptr;
             }
         };
     }

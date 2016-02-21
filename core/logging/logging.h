@@ -6,6 +6,7 @@
 #define GLADIUS_LOGGING_H
 
 #define SET_ERROR(format, ...) gladius::core::logging::add_error("%s(%d): " format, __FILENAME__, __LINE__, ##__VA_ARGS__)
+#define ERROR_CHECK(c, format, ...)  if (!(c)) {gladius::core::logging::add_error("%s(%d): " format, __FILENAME__, __LINE__, ##__VA_ARGS__); return false;}
 
 namespace gladius
 {

@@ -123,7 +123,7 @@ set(
         graphics/render_context.h
 
         main.cpp
-)
+        graphics/renderer3d_common.h)
 
 if (LINUX)
     set(_SYS pthread dl)
@@ -137,6 +137,8 @@ elseif (ANDROID)
 elseif (WINDOWS)
     set(_SYS opengl32 mingw32 version Imm32 Winmm)
     add_definitions(-DGLEW_STATIC -D_NEWTON_STATIC_LIB)
+    include_directories($ENV{VULKAN_HOME}/Include/)
+    link_directories($ENV{VULKAN_HOME}/Bin/)
 else ()
     message(FATAL_ERROR "Unhandled case")
 endif ()
@@ -144,10 +146,11 @@ endif ()
 include_directories(
         "${SDL2_INSTALL_DIR}/include/"
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/gli"
 )
 
 link_directories(${SDL2_INSTALL_DIR}/lib/)
 
 add_executable(gladius ${SOURCE_FILES})
 add_dependencies(gladius SDL2_LIB SDL2MAIN_LIB)
-target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS} libvulkan.so)
+target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS} -lvulkan)

@@ -18,7 +18,7 @@ namespace gladius
 
             std::mutex mutex;
             std::vector<char*> errors;
-            size_t current_position = 0;
+            int64_t current_position = -1;
 
             void add_error(const char *format, ...)
             {
@@ -45,8 +45,12 @@ namespace gladius
             const char* get_error()
             {
                 mutex.lock();
+                if (current_position < 0)
+                {
+                    return nullptr;
+                }
                 char* buffer = errors[current_position];
-                if (current_position > 0)
+                if (current_position >= 0)
                 {
                     current_position--;
                 }
