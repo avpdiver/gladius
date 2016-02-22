@@ -16,6 +16,12 @@ namespace gladius
         {
             bool init(core::c_window* window, bool enable_validation);
             void shutdown();
+
+            namespace resources
+            {
+                size_t create_command_buffer(bool primary = true);
+                void  destroy_command_buffer(size_t handle);
+            }
         };
     }
 }

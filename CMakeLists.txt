@@ -117,13 +117,17 @@ set(
         geometry/visibility.h
 
         graphics/renderer3d.h
+        graphics/renderer3d_common.h
         graphics/renderer3d.cpp
         graphics/rendered3d_debugger.cpp
+        graphics/renderer3d_swapchain.cpp
+        graphics/renderer3d_utils.cpp
+        graphics/renderer3d_resources.cpp
         graphics/render_context.cpp
         graphics/render_context.h
 
         main.cpp
-        graphics/renderer3d_common.h)
+        )
 
 if (LINUX)
     set(_SYS pthread dl)

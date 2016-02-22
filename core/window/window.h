@@ -13,6 +13,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 
+#include "glm/vec2.hpp"
+
 namespace gladius
 {
     namespace core
@@ -43,6 +45,13 @@ namespace gladius
             const SDL_SysWMinfo* const get_system_info() const
             {
                 return &m_sys_wm_info;
+            }
+
+            const glm::ivec2 get_size() const
+            {
+                glm::ivec2 size;
+                SDL_GetWindowSize(m_window, &size.x, &size.y);
+                return size;
             }
 
         public:

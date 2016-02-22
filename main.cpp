@@ -7,7 +7,13 @@ using namespace std;
 
 #undef main
 
+#ifdef PLATFORM_WINDOWS
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+#endif
+
+#ifdef PLATFORM_LINUX
 int main (int argc, char *argv[])
+#endif
 {
     gladius::core::c_window window;
 
@@ -15,7 +21,7 @@ int main (int argc, char *argv[])
 
     if (!gladius::graphics::renderer3d::init(&window, false))
     {
-        std::cerr  << gladius::core::logging::get_error();
+        const char* err = gladius::core::logging::get_error();
         exit(-1);
     }
 

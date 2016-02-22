@@ -27,9 +27,9 @@ namespace gladius
 
                 VkDebugReportCallbackEXT debug_report_callback = nullptr;
 
-                PFN_vkCreateDebugReportCallbackEXT create_debug_report_callback = nullptr;
-                PFN_vkDestroyDebugReportCallbackEXT destroy_debug_report_callback = nullptr;
-                PFN_vkDebugReportMessageEXT debug_report_message = nullptr;
+                DEFINE_VK_PROC(CreateDebugReportCallbackEXT);
+                DEFINE_VK_PROC(DestroyDebugReportCallbackEXT);
+                DEFINE_VK_PROC(DebugReportMessageEXT);
 
                 VkBool32 callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT obj_type, uint64_t src_object,
                                   size_t location, int32_t msg_code, const char *prefix, const char *msg,
@@ -54,12 +54,9 @@ namespace gladius
 
                 bool init(VkInstance instance)
                 {
-                    create_debug_report_callback = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(instance,
-                                                                                                              "vkCreateDebugReportCallbackEXT");
-                    destroy_debug_report_callback = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(
-                            instance, "vkDestroyDebugReportCallbackEXT");
-                    debug_report_message = (PFN_vkDebugReportMessageEXT) vkGetInstanceProcAddr(instance,
-                                                                                               "vkDebugReportMessageEXT");
+                    GET_INSTANCE_PROC_ADDR(instance, CreateDebugReportCallbackEXT);
+                    GET_INSTANCE_PROC_ADDR(instance, DestroyDebugReportCallbackEXT);
+                    GET_INSTANCE_PROC_ADDR(instance, DebugReportMessageEXT);
 
                     VkDebugReportCallbackCreateInfoEXT info;
                     info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
@@ -68,7 +65,7 @@ namespace gladius
                     info.pUserData = nullptr;
                     info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 
-                    VK_VERIFY(create_debug_report_callback(instance, &info, nullptr, &debug_report_callback));
+                    VK_VERIFY(CreateDebugReportCallbackEXT(instance, &info, nullptr, &debug_report_callback));
 
                     return true;
                 }
@@ -77,7 +74,7 @@ namespace gladius
                 {
                     if (debug_report_callback != nullptr)
                     {
-                        destroy_debug_report_callback(vk_instance, debug_report_callback, nullptr);
+                        DestroyDebugReportCallbackEXT(vk_instance, debug_report_callback, nullptr);
                     }
                 }
 
