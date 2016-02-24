@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <iterator>
 #include "filesystem.h"
-#include "../resources/resource_pool.h"
 
 namespace gladius
 {

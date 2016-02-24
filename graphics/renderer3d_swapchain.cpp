@@ -29,9 +29,13 @@ namespace gladius
 
 
                 VkSwapchainKHR  vk_swapchain = nullptr;
+                VkFormat vk_depth_format = VK_FORMAT_D24_UNORM_S8_UINT;
                 uint32_t vk_image_count = 0;
+                glm::ivec2 vk_swapchain_image_size;
+                
                 std::vector<VkImage> vk_swapchain_images;
                 std::vector<s_swapchain_image_info> vk_swapchain_image_buffer;
+                VkImage vk_depth_image = nullptr;
 
                 bool init_procs()
                 {
@@ -44,6 +48,103 @@ namespace gladius
                     GET_DEVICE_PROC_ADDR(vk_device, QueuePresentKHR);
                     return true;
                 }
+
+                /*
+                bool init_depth_buffer() 
+                {
+                    bool pass;
+                    VkImageCreateInfo image_info = {};
+
+                    VkFormatProperties props;
+                    vkGetPhysicalDeviceFormatProperties(vk_gpu, vk_depth_format, &props);
+                    if (props.linearTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) 
+                    {
+                        image_info.tiling = VK_IMAGE_TILING_LINEAR;
+                    } 
+                    else if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) 
+                    {
+                        image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+                    }
+                    else
+                    {
+                        SET_ERROR("Depth format %u unsupported", vk_depth_format);
+                        return false;
+                    }
+
+                    image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                    image_info.pNext = nullptr;
+                    image_info.imageType = VK_IMAGE_TYPE_2D;
+                    image_info.format = vk_depth_format;
+                    image_info.extent.width = vk_swapchain_image_size.x;
+                    image_info.extent.height = vk_swapchain_image_size.y;
+                    image_info.extent.depth = 1;
+                    image_info.mipLevels = 1;
+                    image_info.arrayLayers = 1;
+                    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+                    image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+                    image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                    image_info.queueFamilyIndexCount = 0;
+                    image_info.pQueueFamilyIndices = nullptr;
+                    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                    image_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+                    image_info.flags = 0;
+
+
+                    VkImageViewCreateInfo view_info = {};
+                    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                    view_info.pNext = nullptr;
+                    view_info.image = VK_NULL_HANDLE;
+                    view_info.format = vk_depth_format;
+                    view_info.components.r = VK_COMPONENT_SWIZZLE_R;
+                    view_info.components.g = VK_COMPONENT_SWIZZLE_G;
+                    view_info.components.b = VK_COMPONENT_SWIZZLE_B;
+                    view_info.components.a = VK_COMPONENT_SWIZZLE_A;
+                    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                    view_info.subresourceRange.baseMipLevel = 0;
+                    view_info.subresourceRange.levelCount = 1;
+                    view_info.subresourceRange.baseArrayLayer = 0;
+                    view_info.subresourceRange.layerCount = 1;
+                    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                    view_info.flags = 0;
+
+                    if (vk_depth_format == VK_FORMAT_D16_UNORM_S8_UINT ||
+                        vk_depth_format == VK_FORMAT_D24_UNORM_S8_UINT ||
+                        vk_depth_format == VK_FORMAT_D32_SFLOAT_S8_UINT)
+                    {
+                        view_info.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                    }
+
+                    VK_VERIFY(vkCreateImage(vk_device, &image_info, nullptr, &vk_depth_image));
+
+                    VkMemoryRequirements mem_reqs;
+                    vkGetImageMemoryRequirements(vk_device, vk_depth_image, &mem_reqs);
+
+                    VkMemoryAllocateInfo mem_alloc = {};
+                    mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                    mem_alloc.pNext = nullptr;
+                    mem_alloc.allocationSize = 0;
+                    mem_alloc.memoryTypeIndex = 0;
+                    mem_alloc.allocationSize = mem_reqs.size;
+
+                    pass = memory_type_from_properties(info, mem_reqs.memoryTypeBits,
+                                                       0,
+                                                       &mem_alloc.memoryTypeIndex);
+                    assert(pass);
+
+                    VK_VERIFY(vkAllocateMemory(vk_device, &mem_alloc, nullptr, &info.depth.mem));
+
+                    VK_VERIFY(vkBindImageMemory(info.device, info.depth.image, info.depth.mem, 0));
+
+                    set_image_layout(info, info.depth.image,
+                                     view_info.subresourceRange.aspectMask,
+                                     VK_IMAGE_LAYOUT_UNDEFINED,
+                                     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+                    view_info.image = info.depth.image;
+                    res = vkCreateImageView(info.device, &view_info, nullptr, &info.depth.view);
+                    assert(res == VK_SUCCESS);
+                }
+                */
 
                 bool init(core::c_window* window)
                 {
@@ -71,14 +172,17 @@ namespace gladius
                     // width and height are either both -1, or both not -1.
                     if (surface_caps.currentExtent.width == -1)
                     {
-                        glm::ivec2 size = window->get_size();
-                        swapchain_extent.width = size.x;
-                        swapchain_extent.height = size.y;
+                        vk_swapchain_image_size = window->get_size();
+                        swapchain_extent.width = vk_swapchain_image_size.x;
+                        swapchain_extent.height = vk_swapchain_image_size.y;
                     }
                     else
                     {
                         swapchain_extent = surface_caps.currentExtent;
                     }
+
+                    vk_swapchain_image_size.x = swapchain_extent.width;
+                    vk_swapchain_image_size.y = swapchain_extent.height;
 
                     VkPresentModeKHR swapchain_present_mode = VK_PRESENT_MODE_FIFO_KHR;
                     for (size_t i = 0; i < present_mode_count; i++)

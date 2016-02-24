@@ -73,18 +73,20 @@ namespace gladius
             namespace swapchain
             {
                 bool init(core::c_window *window);
+
                 void shutdown();
             }
 
             namespace utils
             {
-                void set_image_layout(VkCommandBuffer command_buffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout old_image_layout,
-                                      VkImageLayout new_image_layout);
+                void set_image_layout(VkCommandBuffer command_buffer, VkImage image, VkImageAspectFlags aspectMask,
+                                      VkImageLayout old_image_layout, VkImageLayout new_image_layout);
             }
 
             namespace resources
             {
                 bool init();
+
                 void shutdown();
 
                 VkCommandBuffer get_command_buffer(size_t handle);
@@ -97,11 +99,9 @@ namespace gladius
             extern VkPhysicalDevice vk_gpu;
             extern VkDevice vk_device;
             extern VkQueue vk_queue;
-            extern VkPhysicalDeviceMemoryProperties vk_device_memory_properties;
             extern uint32_t vk_graphics_queue_index;
             extern uint32_t vk_present_queue_index;
             extern VkSurfaceFormatKHR vk_surface_format;
-
         }
     }
 }

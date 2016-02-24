@@ -19,7 +19,6 @@ namespace gladius
             VkPhysicalDevice vk_gpu = nullptr;
             VkDevice vk_device = nullptr;
             VkQueue vk_queue = nullptr;
-            VkPhysicalDeviceMemoryProperties vk_device_memory_properties;
             uint32_t vk_graphics_queue_index = -1;
             uint32_t vk_present_queue_index = -1;
             VkSurfaceFormatKHR vk_surface_format = {};
@@ -218,7 +217,6 @@ namespace gladius
                     return false;
                 }
 
-                vkGetPhysicalDeviceMemoryProperties(vk_gpu, &vk_device_memory_properties);
                 vkGetDeviceQueue(vk_device, vk_graphics_queue_index, 0, &vk_queue);
 
                 return true;

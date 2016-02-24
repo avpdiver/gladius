@@ -19,6 +19,7 @@ namespace gladius
             {
                 VkCommandPool  vk_command_pool = nullptr;
                 VkCommandBuffer vk_setup_command_buffer = nullptr;
+                VkPhysicalDeviceMemoryProperties vk_device_memory_properties;
 
                 struct s_thread_context
                 {
@@ -76,8 +77,63 @@ namespace gladius
                     return thread_context.vk_command_buffers[handle];
                 }
 
+                uint32_t memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask)
+                {
+                    for (uint32_t i = 0; i < 32; i++)
+                    {
+                        if ((typeBits & 1) == 1)
+                        {
+                            if ((vk_device_memory_properties.memoryTypes[i].propertyFlags & requirements_mask) ==
+                                requirements_mask)
+                            {
+                                return i;
+                            }
+                        }
+                        typeBits >>= 1;
+                    }
+                    return -1;
+                }
+
+                bool init_memory_allocators()
+                {
+                    vkGetPhysicalDeviceMemoryProperties(vk_gpu, &vk_device_memory_properties);
+
+                    int types = 0;
+                    for (uint32_t i = 0; i < vk_device_memory_properties.memoryTypeCount; i++)
+                    {
+                        VkMemoryType type = vk_device_memory_properties.memoryTypes[i];
+                        if (type.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+                        {
+                            types++;
+                        }
+                        if (type.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+                        {
+                            types++;
+                        }
+                        if (type.propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+                        {
+                            types++;
+                        }
+                        if (type.propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT)
+                        {
+                            types++;
+                        }
+                        if (type.propertyFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
+                        {
+                            types++;
+                        }
+                    }
+
+                    return true;
+                }
+
                 bool init()
                 {
+                    if (!init_memory_allocators())
+                    {
+                        return false;
+                    }
+
                     if (!create_command_pool())
                     {
                         return false;

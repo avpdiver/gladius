@@ -83,17 +83,9 @@ set(
         core/logging/logging.h
         core/logging/logging.cpp
 
-        core/memory/allocators/free_list_allocator.h
-        core/memory/allocators/malloc_allocator.cpp
-        core/memory/allocators/malloc_allocator.h
-        core/memory/regions/stack_region.h
-        core/memory/regions/heap_region.h
-        core/memory/allocators/sized_allocator.h
+        core/memory/memory_allocator.h
 
         core/collections/aligned_allocator.h
-
-        core/resources/resource_pool.cpp
-        core/resources/resource_pool.h
 
         core/threading/job_executor.h
         core/threading/job_executor.cpp
@@ -123,11 +115,13 @@ set(
         graphics/renderer3d_swapchain.cpp
         graphics/renderer3d_utils.cpp
         graphics/renderer3d_resources.cpp
+        graphics/renderer3d_texture.cpp
+        graphics/renderer3d_texture.h
         graphics/render_context.cpp
         graphics/render_context.h
 
         main.cpp
-        )
+        core/memory/lockfree_allocator_policy.h)
 
 if (LINUX)
     set(_SYS pthread dl)
