@@ -90,20 +90,22 @@ namespace gladius
 
             bool create_surface(core::c_window* window)
             {
+                auto window_sys_info = window->get_system_info();
+
 #ifdef PLATFORM_WINDOWS
                 VkWin32SurfaceCreateInfoKHR surface_create_info = {};
                 surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
                 surface_create_info.hinstance = GetModuleHandle(nullptr);
-                surface_create_info.hwnd = window->get_system_info()->info.win.window;
+                surface_create_info.hwnd = window_sys_info->info.win.window;
                 VK_VERIFY(vkCreateWin32SurfaceKHR(vk_instance, &surface_create_info, nullptr, &vk_surface));
 #endif
 
 #if defined (PLATFORM_LINUX) || defined(PLATFORM_MACOS)
-                VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-		        surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-		        surfaceCreateInfo.connection = connection;
-		        surfaceCreateInfo.window = window;
-		        VK_VERIFY(vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface));
+                VkXlibSurfaceCreateInfoKHR surfaceCreateInfo = {};
+		        surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+		        surfaceCreateInfo.window = window_sys_info->info.x11.window;
+		        surfaceCreateInfo.dpy = window_sys_info->info.x11.display;
+		        VK_VERIFY(vkCreateXlibSurfaceKHR(vk_instance, &surfaceCreateInfo, nullptr, &vk_surface));
 #endif
 
 #ifdef PLATFORM_ANDROID
