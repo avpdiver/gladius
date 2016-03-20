@@ -40,6 +40,7 @@ namespace gladius
                     COMPILER_BARRIER;
 
                     m_bottom = b + 1;
+                    return true;
                 }
 
                 c_job* pop()

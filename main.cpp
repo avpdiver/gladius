@@ -1,7 +1,7 @@
 #include <iostream>
-#include "core/logging/logging.h"
-#include "core/window/window.h"
-#include "graphics/renderer3d.h"
+#include "gladius/core/logging/logging.h"
+#include "gladius/core/window/window.h"
+#include "gladius/graphics/render3d/render3d.h"
 
 using namespace std;
 
@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
 
     window.create();
 
-    if (!gladius::graphics::renderer3d::init(&window, false))
+    if (!gladius::graphics::render3d::init(&window, false))
     {
         const char* err = gladius::core::logging::get_error();
         exit(-1);
@@ -28,9 +28,16 @@ int main (int argc, char *argv[])
     while (!window.is_closed())
     {
         SDL_PumpEvents();
+        if (!gladius::graphics::render3d::render())
+        {
+            const char* err = gladius::core::logging::get_error();
+            break;
+        }
     }
 
-    gladius::graphics::renderer3d::shutdown();
+    gladius::graphics::render3d::shutdown();
+
+    SDL_Quit();
 
     return 0;
 }

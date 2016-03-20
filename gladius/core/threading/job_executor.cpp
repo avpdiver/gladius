@@ -148,7 +148,9 @@ namespace gladius
 
                 job_handle_t create_and_execunte_job (job_function_t function, void *data, job_handle_t parent)
                 {
-                    execute_job(create_job (function, data, parent));
+                    job_handle_t job = create_job (function, data, parent);
+                    execute_job(job);
+                    return job;
                 }
 
                 void execute_job(job_handle_t handle)

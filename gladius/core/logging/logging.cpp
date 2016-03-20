@@ -45,15 +45,12 @@ namespace gladius
             const char* get_error()
             {
                 mutex.lock();
-                if (current_position < 0)
+                if (errors.size() == 0)
                 {
                     return nullptr;
                 }
-                char* buffer = errors[current_position];
-                if (current_position >= 0)
-                {
-                    current_position--;
-                }
+                char* buffer = errors.back();
+                errors.pop_back();
                 mutex.unlock();
                 return buffer;
             }

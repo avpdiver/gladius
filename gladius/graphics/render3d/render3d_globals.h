@@ -5,7 +5,6 @@
 #ifndef GLADIUS_RENDERER3D_COMMON_H
 #define GLADIUS_RENDERER3D_COMMON_H
 
-
 #ifdef PLATFORM_WINDOWS
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif
@@ -21,14 +20,6 @@
 #ifdef PLATFORM_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR
 #endif
-
-#include <vector>
-#include <vulkan/vulkan.h>
-
-#include "../core/logging/logging.h"
-#include "../core/window/window.h"
-
-#define VK_VERIFY(r) { VkResult result = (r); if (result != VK_SUCCESS) { SET_ERROR("%s", debug::error_text(result)); return false; } }
 
 #define DEFINE_VK_PROC(entrypoint)  PFN_vk##entrypoint entrypoint
 
@@ -53,57 +44,71 @@
     }                                                                               \
 }
 
+#include <vulkan/vulkan.h>
+#include <vector>
+#include <glm/vec2.hpp>
+
+#include "render3d_types.h"
+
+
 namespace gladius
 {
     namespace graphics
     {
-        namespace renderer3d
+        namespace render3d
         {
-            namespace debug
+            namespace vk_globals
             {
-                extern std::vector<const char *> validation_layer_names;
+                extern bool is_init;
+                extern VkInstance instance;
+                extern VkSurfaceKHR surface;
+                extern VkPhysicalDevice gpu;
+                extern VkDevice device;
+                extern VkQueue queue;
+                extern uint32_t graphics_queue_index;
+                extern VkSurfaceFormatKHR surface_format;
+                extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
+                extern VkCommandBuffer setup_command_buffer;
 
-                bool init();
+                namespace swapchain_info
+                {
+                    struct s_swapchain_image_info
+                    {
+                        VkImage image;
+                        VkImageView view;
+                    };
 
-                void shutdown();
+                    extern VkFormat format;
+                    extern VkSwapchainKHR swapchain;
+                    extern glm::ivec2 image_size;
+                    extern std::vector<s_swapchain_image_info> image_buffer;
+                }
 
-                const char *error_text(int result);
+                namespace depth_buffer_info
+                {
+                    extern VkImage image;
+                    extern VkImageView image_view;
+                    extern VkFormat format;
+                }
+
+                struct s_thread_context
+                {
+                    VkQueue queue = nullptr;
+                    VkCommandPool command_pool = nullptr;
+                };
+                extern thread_local s_thread_context thread_context;
+
+                struct s_sync
+                {
+                    VkSemaphore present_semaphore = nullptr;
+                    VkSemaphore render_semaphores = nullptr;
+                };
+                extern s_sync semaphores;
             }
-
-            namespace swapchain
-            {
-                bool init(core::c_window *window);
-
-                void shutdown();
-            }
-
-            namespace utils
-            {
-                void set_image_layout(VkCommandBuffer command_buffer, VkImage image, VkImageAspectFlags aspectMask,
-                                      VkImageLayout old_image_layout, VkImageLayout new_image_layout);
-            }
-
-            namespace resources
-            {
-                bool init();
-
-                void shutdown();
-
-                VkCommandBuffer get_command_buffer(size_t handle);
-
-                extern VkCommandBuffer vk_setup_command_buffer;
-            }
-
-            extern VkInstance vk_instance;
-            extern VkSurfaceKHR vk_surface;
-            extern VkPhysicalDevice vk_gpu;
-            extern VkDevice vk_device;
-            extern VkQueue vk_queue;
-            extern uint32_t vk_graphics_queue_index;
-            extern uint32_t vk_present_queue_index;
-            extern VkSurfaceFormatKHR vk_surface_format;
         }
     }
 }
+
+#include "render3d_debug.h"
 
 #endif //GLADIUS_RENDERER3D_COMMON_H

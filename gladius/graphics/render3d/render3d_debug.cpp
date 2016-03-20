@@ -1,15 +1,15 @@
 //
-// Created by pav on 19.02.16.
+// Created by alexa on 020 20 03 2016.
 //
 
 #include <iostream>
-#include "renderer3d_common.h"
+#include "render3d_globals.h"
 
 namespace gladius
 {
     namespace graphics
     {
-        namespace renderer3d
+        namespace render3d
         {
             namespace debug
             {
@@ -74,7 +74,7 @@ namespace gladius
                 {
                     if (debug_report_callback != nullptr)
                     {
-                        DestroyDebugReportCallbackEXT(vk_instance, debug_report_callback, nullptr);
+                        DestroyDebugReportCallbackEXT(vk_globals::instance, debug_report_callback, nullptr);
                     }
                 }
 

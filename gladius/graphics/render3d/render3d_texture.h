@@ -5,18 +5,17 @@
 #ifndef GLADIUS_RENDERER3D_TEXTURE_H
 #define GLADIUS_RENDERER3D_TEXTURE_H
 
+#include <stdint.h>
+
 namespace gladius
 {
     namespace graphics
     {
-        namespace renderer3d
+        namespace render3d
         {
             namespace resources
             {
-                struct s_texture
-                {
-
-                };
+                bool load_texture(const char *filename, uint32_t format);
             }
         }
     }
