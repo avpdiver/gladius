@@ -110,11 +110,12 @@ namespace gladius
 #endif
 
 #if defined (PLATFORM_LINUX) || defined(PLATFORM_MACOS)
+                const SDL_SysWMinfo* window_sys_info = window->get_system_info();
                 VkXlibSurfaceCreateInfoKHR surfaceCreateInfo = {};
 		        surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
 		        surfaceCreateInfo.window = window_sys_info->info.x11.window;
 		        surfaceCreateInfo.dpy = window_sys_info->info.x11.display;
-		        VK_VERIFY(vkCreateXlibSurfaceKHR(vk_instance, &surfaceCreateInfo, nullptr, &vk_surface));
+		        // VK_VERIFY(vkCreateXlibSurfaceKHR(vk_globals::instance, &surfaceCreateInfo, nullptr, &(vk_globals::surface)));
 #endif
 
 #ifdef PLATFORM_ANDROID

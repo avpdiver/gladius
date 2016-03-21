@@ -1,5 +1,6 @@
 #include <iostream>
 #include "gladius/core/logging/logging.h"
+#include "gladius/core/memory/alloc_policies/lockfree_pool_policy.h"
 #include "gladius/core/window/window.h"
 #include "gladius/graphics/render3d/render3d.h"
 
@@ -15,6 +16,19 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 int main (int argc, char *argv[])
 #endif
 {
+
+    auto ptr = malloc(160);
+
+    gladius::core::memory::c_lockfree_pool<16, 4, 0> pool(160, ptr);
+
+    auto ptr1 = pool.alloc();
+    auto ptr2 = pool.alloc();
+    pool.free(ptr1);
+    auto ptr3 = pool.alloc();
+
+    free(ptr);
+
+    /*
     gladius::core::c_window window;
 
     window.create();
@@ -38,6 +52,7 @@ int main (int argc, char *argv[])
     gladius::graphics::render3d::shutdown();
 
     SDL_Quit();
+     */
 
     return 0;
 }

@@ -5,8 +5,9 @@
 #ifndef GLADIUS_ALIGNED_ALLOCATOR_H
 #define GLADIUS_ALIGNED_ALLOCATOR_H
 
-#include <crtdefs.h>
-#include <c++/stdexcept>
+#include <cstddef>
+#include <mm_malloc.h>
+#include <stdexcept>
 
 namespace gladius
 {

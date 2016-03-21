@@ -83,7 +83,8 @@ set(
         gladius/core/logging/logging.h
         gladius/core/logging/logging.cpp
 
-        gladius/core/memory/memory_allocator.h
+        gladius/core/memory/allocator.h
+        gladius/core/memory/default_policies.h
 
         gladius/core/collections/aligned_allocator.h
 
@@ -125,11 +126,11 @@ set(
         gladius/graphics/render3d/render3d_texture.cpp
         gladius/graphics/render3d/render3d_texture.h
 
-        main.cpp
-        gladius/core/memory/lockfree_allocator_policy.h)
+        main.cpp)
 
 if (LINUX)
-    set(_SYS pthread dl)
+    set(_SYS pthread dl atomic)
+    set(_VULKAN_LIB vulkan)
 elseif (MACOS)
     set(_SYS pthread)
 elseif (ANDROID)
@@ -140,6 +141,7 @@ elseif (WINDOWS)
     set(_SYS mingw32 version Imm32 Winmm)
     include_directories($ENV{VULKAN_HOME}/Include/)
     link_directories($ENV{VULKAN_HOME}/Bin/)
+    set(_VULKAN_LIB vulkan-1)
 else ()
     message(FATAL_ERROR "Unhandled case")
 endif ()
@@ -154,4 +156,4 @@ link_directories(${SDL2_INSTALL_DIR}/lib/)
 
 add_executable(gladius ${SOURCE_FILES})
 add_dependencies(gladius SDL2_LIB SDL2MAIN_LIB)
-target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS} -lvulkan-1)
+target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS} ${_VULKAN_LIB})
