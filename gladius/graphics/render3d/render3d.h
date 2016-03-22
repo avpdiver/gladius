@@ -18,7 +18,7 @@ namespace gladius
             void shutdown();
 
             bool render();
-        };
+        }
     }
 }
 

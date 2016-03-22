@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
 
     auto ptr = malloc(160);
 
-    gladius::core::memory::c_lockfree_pool<16, 4, 0> pool(160, ptr);
+    gladius::core::memory::c_lockfree_pool<16, 4> pool(160, ptr);
 
     auto ptr1 = pool.alloc();
     auto ptr2 = pool.alloc();

@@ -15,7 +15,7 @@ namespace gladius
     {
         namespace memory
         {
-            template<size_t MAX_BLOCK_SIZE, size_t MAX_ALIGNMENT, size_t OFFSET>
+            template<size_t MAX_BLOCK_SIZE, size_t MAX_ALIGNMENT>
             class c_lockfree_pool
             {
             public:
@@ -31,31 +31,28 @@ namespace gladius
                     };
 
                     as_void = start;
-                    char* origin = as_char;
-
-                    as_char = std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_char + OFFSET, size);
+                    std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_void, size);
                     assert(as_void != nullptr && "Memory region is too small");
-
-                    as_char -= OFFSET;
 
                     tagget_ptr_t tagget_ptr = {as_node, 0};
                     m_head.store(tagget_ptr);
 
                     node_t* runner = as_node;
-                    as_char = std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_char + MAX_BLOCK_SIZE + OFFSET, size - (origin - as_char));
+                    as_char += MAX_BLOCK_SIZE;
+                    std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_void, size);
 
                     while (as_char != nullptr)
                     {
-                        as_char -= OFFSET;
                         runner->next = as_node;
                         runner = as_node;
-                        as_char = std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_char + MAX_BLOCK_SIZE + OFFSET, size - (origin - as_char));
+                        as_char += MAX_BLOCK_SIZE;
+                        std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_void, size);
                     }
 
                     runner->next = nullptr;
                 }
 
-                inline void* alloc(size_t size, size_t align, size_t offset)
+                inline void* alloc(size_t size = MAX_BLOCK_SIZE, size_t align = MAX_ALIGNMENT, size_t offset = 0)
                 {
                     assert (size <= MAX_BLOCK_SIZE && "Alloc size is greater then MAX_BLOCK_SIZE");
                     assert(align <= MAX_ALIGNMENT && "Alignment is greater then MAX_ALIGNMENT");
