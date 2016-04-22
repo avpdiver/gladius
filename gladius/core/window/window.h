@@ -10,67 +10,90 @@
 #include <vector>
 #include <functional>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
-
 #include "glm/vec2.hpp"
+
+#ifdef PLATFORM_LINUX
+#include <xcb/xcb.h>
+#endif
 
 namespace gladius
 {
     namespace core
     {
-        enum e_window_event
-        {
+        enum e_window_event {
             ON_SHOW,
             ON_HIDE,
             ON_CLOSE,
             ON_RESIZE
         };
 
-        typedef std::function<void(void*)> window_event_listener_t;
+        struct s_window_info {
+#ifdef PLATFORM_WINDOWS
+            HINSTANCE           instance;
+            HWND                handle;
 
-        class c_window
-        {
-        public:
-            c_window();
+          s_window_info() :
+            instance(),
+            handle() {
+          }
+#endif
 
-            ~c_window();
+#ifdef PLATFORM_LINUX
+            xcb_connection_t *connection;
+            xcb_window_t handle;
 
-        public:
-            bool create();
-
-            void close();
-
-        public:
-            const SDL_SysWMinfo* const get_system_info() const
+            s_window_info ()
+                : connection (), handle ()
             {
-                return &m_sys_wm_info;
+            }
+#endif
+        };
+
+        typedef std::function<void (void *)> window_event_listener_t;
+
+        class c_window {
+        public:
+            c_window ();
+
+            ~c_window ();
+
+        public:
+            bool create ();
+
+            void close ();
+
+        public:
+            const s_window_info *const get_system_info () const
+            {
+                return &m_system_info;
             }
 
-            const glm::ivec2 get_size() const
+            const glm::ivec2 get_size () const
             {
                 glm::ivec2 size;
-                SDL_GetWindowSize(m_window, &size.x, &size.y);
                 return size;
             }
 
         public:
-            void process_event(e_window_event event_type, void* event) const;
-
-        public:
-            bool is_closed();
-
-        public:
-            void add_event_listener(e_window_event event, window_event_listener_t* listener);
-
-            void remove_event_listener(window_event_listener_t* listener);
+            void process_events ();
 
         private:
-            std::unordered_map<e_window_event, std::vector<window_event_listener_t*>, std::hash<int>> m_listeners;
+            void process_event (e_window_event event_type, void *event) const;
+
+        public:
+            bool is_closed ();
+
+        public:
+            size_t add_event_listener (e_window_event event, window_event_listener_t listener);
+
+            void remove_event_listener (size_t listener);
 
         private:
-            SDL_Window* m_window;
-            SDL_SysWMinfo m_sys_wm_info;
+            std::unordered_map<e_window_event, std::vector<std::pair<window_event_listener_t, size_t>>, std::hash<int>> m_listeners;
+
+        private:
+            s_window_info m_system_info;
+            xcb_intern_atom_reply_t *m_delete_reply;
         };
     }
 }

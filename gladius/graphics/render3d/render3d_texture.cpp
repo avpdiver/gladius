@@ -155,7 +155,7 @@ namespace gladius
                             0,
                             texture.mip_levels);
 
-                    resources::flush_command_buffer(vk_globals::queue, vk_globals::setup_command_buffer);
+                    resources::flush_command_buffer(vk_globals::graphics_queue.queue, vk_globals::setup_command_buffer);
 
                     // Clean up linear images
                     // No longer required after mip levels
@@ -229,7 +229,7 @@ namespace gladius
                     VkFormatProperties formatProperties;
 
                     gli::texture2d tex2d(gli::load(filename));
-                    VERIFY_LOG(!tex2d.empty(), "Failed to load texture %s", filename);
+                    VERIFY_LOGF(!tex2d.empty(), "Failed to load texture %s", filename);
 
                     VkFormat format = static_cast<VkFormat>(image_format);
 

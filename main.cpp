@@ -16,43 +16,29 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 int main (int argc, char *argv[])
 #endif
 {
-
-    auto ptr = malloc(160);
-
-    gladius::core::memory::c_lockfree_pool<16, 4> pool(160, ptr);
-
-    auto ptr1 = pool.alloc();
-    auto ptr2 = pool.alloc();
-    pool.free(ptr1);
-    auto ptr3 = pool.alloc();
-
-    free(ptr);
-
-    /*
     gladius::core::c_window window;
 
-    window.create();
+    window.create ();
 
-    if (!gladius::graphics::render3d::init(&window, false))
+    if (!gladius::graphics::render3d::init (&window, false))
     {
-        const char* err = gladius::core::logging::get_error();
-        exit(-1);
+        const char *err = gladius::core::logging::get_error ();
+        exit (-1);
     }
 
-    while (!window.is_closed())
+    while (true)
     {
-        SDL_PumpEvents();
-        if (!gladius::graphics::render3d::render())
+        window.process_events ();
+        if (window.is_closed ())
+        {
+            break;
+        }
+        /*if (!gladius::graphics::render3d::render())
         {
             const char* err = gladius::core::logging::get_error();
             break;
-        }
+        }*/
     }
-
-    gladius::graphics::render3d::shutdown();
-
-    SDL_Quit();
-     */
 
     return 0;
 }

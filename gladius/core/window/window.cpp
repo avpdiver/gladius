@@ -4,189 +4,189 @@
 
 
 #include <algorithm>
+#include <cstring>
 #include "window.h"
-#include "SDL2/SDL_syswm.h"
 #include "../logging/logging.h"
 
 namespace gladius
 {
     namespace core
     {
-        std::unordered_map<size_t, c_window*> g_windows;
+        size_t g_listener_id = 0;
 
-        int watch_events(void *userdata, SDL_Event* event)
-        {
-            if (event->type == SDL_WINDOWEVENT)
-            {
-                c_window *window = g_windows[event->window.windowID];
-                if (window == nullptr)
-                {
-                    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Window %d is unknown", event->window.windowID);
-                    return 1;
-                }
-
-                switch (event->window.event)
-                {
-                    case SDL_WINDOWEVENT_SHOWN:
-                        SDL_Log("Window %d shown", event->window.windowID);
-                        window->process_event(e_window_event::ON_SHOW, nullptr);
-                        break;
-
-                    case SDL_WINDOWEVENT_HIDDEN:
-                        SDL_Log("Window %d hidden", event->window.windowID);
-                        window->process_event(e_window_event::ON_HIDE, nullptr);
-                        break;
-
-                    case SDL_WINDOWEVENT_EXPOSED:
-                        SDL_Log("Window %d exposed", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_MOVED:
-                        SDL_Log("Window %d moved to %d,%d", event->window.windowID, event->window.data1,
-                                event->window.data2);
-                        break;
-                    case SDL_WINDOWEVENT_RESIZED:
-                        SDL_Log("Window %d resized to %dx%d", event->window.windowID, event->window.data1,
-                                event->window.data2);
-                        window->process_event(e_window_event::ON_RESIZE, &event->window);
-                        break;
-
-                    case SDL_WINDOWEVENT_SIZE_CHANGED:
-                        SDL_Log("Window %d size changed to %dx%d", event->window.windowID, event->window.data1,
-                                event->window.data2);
-                        window->process_event(e_window_event::ON_RESIZE, &event->window);
-                        break;
-
-                    case SDL_WINDOWEVENT_MINIMIZED:
-                        SDL_Log("Window %d minimized", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_MAXIMIZED:
-                        SDL_Log("Window %d maximized", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_RESTORED:
-                        SDL_Log("Window %d restored", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_ENTER:
-                        SDL_Log("Mouse entered window %d", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_LEAVE:
-                        SDL_Log("Mouse left window %d", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_FOCUS_GAINED:
-                        SDL_Log("Window %d gained keyboard focus", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_FOCUS_LOST:
-                        SDL_Log("Window %d lost keyboard focus", event->window.windowID);
-                        break;
-
-                    case SDL_WINDOWEVENT_CLOSE:
-                        SDL_Log("Window %d closed", event->window.windowID);
-                        window->process_event(e_window_event::ON_CLOSE, nullptr);
-                        window->close();
-                        break;
-
-                    default:
-                        SDL_Log("Window %d got unknown event %d", event->window.windowID, event->window.event);
-                        break;
-                }
-
-                return 1;
-            }
-
-            return 0;
-        }
-
-        c_window::c_window()
-                :m_window(nullptr)
+        c_window::c_window ()
+            : m_delete_reply (nullptr)
         {
         }
 
-        c_window::~c_window()
+        c_window::~c_window ()
         {
-            close();
+            close ();
         }
 
-        bool c_window::create()
+        bool c_window::create ()
         {
-            if (SDL_WasInit(SDL_INIT_VIDEO) == 0)
-            {
-                if (SDL_Init(SDL_INIT_VIDEO) != 0)
-                {
-                    return false;
-                }
+            int screen_index;
+            m_system_info.connection = xcb_connect (nullptr, &screen_index);
 
-                SDL_AddEventWatch(watch_events, nullptr);
-            }
-
-            m_window = SDL_CreateWindow("GLadius", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600,
-                    SDL_WINDOW_SHOWN);
-            if (m_window == nullptr)
+            if (!m_system_info.connection)
             {
                 return false;
             }
 
-            SDL_VERSION(&m_sys_wm_info.version);
-            SDL_bool res = SDL_GetWindowWMInfo(m_window, &m_sys_wm_info);
-            if (res == SDL_FALSE)
+            const xcb_setup_t *setup = xcb_get_setup (m_system_info.connection);
+            xcb_screen_iterator_t screen_iterator = xcb_setup_roots_iterator (setup);
+
+            while (screen_index-- > 0)
             {
-                SET_ERROR("Get window info: %s", SDL_GetError());
-                close();
-                return false;
+                xcb_screen_next (&screen_iterator);
             }
 
-            g_windows[SDL_GetWindowID(m_window)] = this;
+            xcb_screen_t *screen = screen_iterator.data;
+
+            m_system_info.handle = xcb_generate_id (m_system_info.connection);
+
+            uint32_t value_list[] = {
+                screen->white_pixel,
+                XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_STRUCTURE_NOTIFY
+            };
+
+            xcb_create_window (
+                m_system_info.connection,
+                XCB_COPY_FROM_PARENT,
+                m_system_info.handle,
+                screen->root,
+                20,
+                20,
+                500,
+                500,
+                0,
+                XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                screen->root_visual,
+                XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK,
+                value_list);
+
+            xcb_change_property (
+                m_system_info.connection,
+                XCB_PROP_MODE_REPLACE,
+                m_system_info.handle,
+                XCB_ATOM_WM_NAME,
+                XCB_ATOM_STRING,
+                8,
+                strlen ("gladius"),
+                "gladius");
+
+            // Prepare notification for window destruction
+            xcb_intern_atom_cookie_t protocols_cookie = xcb_intern_atom (m_system_info
+                                                                             .connection, 1, 12, "WM_PROTOCOLS");
+            xcb_intern_atom_reply_t *protocols_reply = xcb_intern_atom_reply (m_system_info
+                                                                                  .connection, protocols_cookie, 0);
+            xcb_intern_atom_cookie_t delete_cookie = xcb_intern_atom (m_system_info
+                                                                          .connection, 0, 16, "WM_DELETE_WINDOW");
+            m_delete_reply = xcb_intern_atom_reply (m_system_info.connection, delete_cookie, 0);
+            xcb_change_property (m_system_info.connection, XCB_PROP_MODE_REPLACE, m_system_info
+                .handle, (*protocols_reply).atom, 4, 32, 1, &(*m_delete_reply).atom);
+            free (protocols_reply);
+
+            // Display window
+            xcb_map_window (m_system_info.connection, m_system_info.handle);
+            xcb_flush (m_system_info.connection);
 
             return true;
         }
 
-        void c_window::close()
+        void c_window::close ()
         {
-            if (m_window != nullptr)
+            free (m_delete_reply);
+            m_delete_reply = nullptr;
+
+            if (m_system_info.connection != nullptr)
             {
-                SDL_DestroyWindow(m_window);
-                g_windows.erase(SDL_GetWindowID(m_window));
-                m_window = nullptr;
-                //SDL_DelEventWatch(watch_events, nullptr);
+                xcb_destroy_window (m_system_info.connection, m_system_info.handle);
+                xcb_disconnect (m_system_info.connection);
+                m_system_info.connection = nullptr;
             }
         }
 
-        bool c_window::is_closed()
+        bool c_window::is_closed ()
         {
-            return m_window == nullptr;
+            return m_system_info.connection == nullptr;
         }
 
-        void c_window::add_event_listener(e_window_event event, window_event_listener_t* listener)
+        void c_window::process_events ()
         {
-            m_listeners[event].push_back(listener);
+            xcb_generic_event_t *event;
+            while (true)
+            {
+                event = xcb_poll_for_event (m_system_info.connection);
+                if (event)
+                {
+                    switch (event->response_type & 0x7f)
+                    {
+                        // Resize
+                    case XCB_CONFIGURE_NOTIFY:
+                    {
+                        xcb_configure_notify_event_t *configure_event = (xcb_configure_notify_event_t *) event;
+                        static uint16_t width = configure_event->width;
+                        static uint16_t height = configure_event->height;
+
+                        if (((configure_event->width > 0) && (width != configure_event->width)) ||
+                            ((configure_event->height > 0) && (height != configure_event->height)))
+                        {
+                            width = configure_event->width;
+                            height = configure_event->height;
+                        }
+                    }
+                        break;
+                        // Close
+                    case XCB_CLIENT_MESSAGE:
+                        if ((*(xcb_client_message_event_t *) event).data.data32[0] == (*m_delete_reply).atom)
+                        {
+                            process_event (e_window_event::ON_CLOSE, nullptr);
+                            close ();
+                            return;
+                        }
+                        break;
+                    case XCB_KEY_PRESS:
+                        break;
+                    }
+                    free (event);
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
 
-        void c_window::remove_event_listener(window_event_listener_t* listener)
+        size_t c_window::add_event_listener (e_window_event event, window_event_listener_t listener)
+        {
+            m_listeners[event].emplace_back (listener, ++g_listener_id);
+            return g_listener_id;
+        }
+
+        void c_window::remove_event_listener (size_t listener)
         {
             for (auto& p : m_listeners)
             {
-                auto e = std::remove_if(p.second.begin(), p.second.end(),
-                        [listener](window_event_listener_t* l) -> bool { return l == listener; });
-                p.second.erase(e, p.second.end());
+                auto e = std::remove_if (p.second.begin (), p.second.end (),
+                                         [listener] (std::pair<window_event_listener_t, size_t>& l) -> bool
+                                         { return l.second == listener; });
+                p.second.erase (e, p.second.end ());
             }
         }
 
-        void c_window::process_event(e_window_event event_type, void* event) const
+        void c_window::process_event (e_window_event event_type, void *event) const
         {
-            const auto listeners = m_listeners.find(event_type);
-            if (listeners == m_listeners.end())
+            const auto listeners = m_listeners.find (event_type);
+            if (listeners == m_listeners.end ())
             {
                 return;
             }
 
-            for (auto l : listeners->second)
+            for (auto& l : listeners->second)
             {
-                (*l)(event);
+                l.first (event);
             }
         }
     }

@@ -17,7 +17,7 @@ namespace gladius
                     VkCommandPoolCreateInfo command_pool_create_info = {};
                     command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
                     command_pool_create_info.pNext = NULL;
-                    command_pool_create_info.queueFamilyIndex = vk_globals::graphics_queue_index;
+                    command_pool_create_info.queueFamilyIndex = vk_globals::graphics_queue.index;
                     command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
                     VK_VERIFY(vkCreateCommandPool(vk_globals::device, &command_pool_create_info, nullptr,

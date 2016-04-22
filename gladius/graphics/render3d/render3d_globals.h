@@ -10,7 +10,8 @@
 #endif
 
 #ifdef PLATFORM_LINUX
-#define VK_USE_PLATFORM_XLIB_KHR
+//#define VK_NO_PROTOTYPES
+#define VK_USE_PLATFORM_XCB_KHR
 #endif
 
 #ifdef PLATFORM_MACOS
@@ -60,29 +61,32 @@ namespace gladius
             namespace vk_globals
             {
                 extern bool is_init;
+
                 extern VkInstance instance;
                 extern VkSurfaceKHR surface;
                 extern VkPhysicalDevice gpu;
                 extern VkDevice device;
-                extern VkQueue queue;
-                extern uint32_t graphics_queue_index;
+
+                struct s_device_queue {
+                    uint32_t index = UINT32_MAX;
+                    VkQueue queue = nullptr;
+                };
+
+                extern s_device_queue graphics_queue;
+                extern s_device_queue present_queue;
+
                 extern VkSurfaceFormatKHR surface_format;
                 extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
                 extern VkCommandBuffer setup_command_buffer;
 
-                namespace swapchain_info
+                struct s_swapchain_info
                 {
-                    struct s_swapchain_image_info
-                    {
-                        VkImage image;
-                        VkImageView view;
-                    };
+                    VkFormat format;
+                    VkSwapchainKHR swapchain = nullptr;
+                    std::vector<VkImage> images;
+                };
 
-                    extern VkFormat format;
-                    extern VkSwapchainKHR swapchain;
-                    extern glm::ivec2 image_size;
-                    extern std::vector<s_swapchain_image_info> image_buffer;
-                }
+                extern s_swapchain_info swapchain_info;
 
                 namespace depth_buffer_info
                 {
@@ -98,12 +102,12 @@ namespace gladius
                 };
                 extern thread_local s_thread_context thread_context;
 
-                struct s_sync
+                struct s_sync_semaphores
                 {
-                    VkSemaphore present_semaphore = nullptr;
-                    VkSemaphore render_semaphores = nullptr;
+                    VkSemaphore image_available_semaphore = nullptr;
+                    VkSemaphore rendering_finished_semaphore = nullptr;
                 };
-                extern s_sync semaphores;
+                extern s_sync_semaphores semaphores;
             }
         }
     }

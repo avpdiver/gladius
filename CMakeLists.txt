@@ -47,30 +47,6 @@ endif ()
 
 
 ################################################################################
-# Thirdparty                                                                   #
-################################################################################
-include(ExternalProject)
-
-# SDL
-ExternalProject_Add(
-        SDL2_PROJECT
-        DOWNLOAD_COMMAND ""
-        PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL2/install"
-        SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL2"
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL2/install -DSDL_SHARED=OFF -DSDL_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DDIRECTX=OFF -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER})
-
-ExternalProject_Get_Property(SDL2_PROJECT install_dir)
-set(SDL2_INSTALL_DIR ${install_dir})
-
-add_library(SDL2_LIB STATIC IMPORTED)
-set_property(TARGET SDL2_LIB PROPERTY IMPORTED_LOCATION ${SDL2_INSTALL_DIR}/lib/libSDL2.a)
-add_dependencies(SDL2_LIB SDL2_PROJECT)
-
-add_library(SDL2MAIN_LIB STATIC IMPORTED)
-set_property(TARGET SDL2MAIN_LIB PROPERTY IMPORTED_LOCATION ${SDL2_INSTALL_DIR}/lib/libSDL2main.a)
-add_dependencies(SDL2MAIN_LIB SDL2_PROJECT)
-
-################################################################################
 # GLadius                                                                   #
 ################################################################################
 
@@ -117,8 +93,6 @@ set(
         gladius/graphics/render3d/render3d.cpp
         gladius/graphics/render3d/render3d_debug.h
         gladius/graphics/render3d/render3d_debug.cpp
-        gladius/graphics/render3d/render3d_swapchain.h
-        gladius/graphics/render3d/render3d_swapchain.cpp
         gladius/graphics/render3d/render3d_command_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.cpp
         gladius/graphics/render3d/render3d_render_pass.h
@@ -129,14 +103,8 @@ set(
         main.cpp)
 
 if (LINUX)
-    set(_SYS pthread dl atomic)
+    set(_SYS pthread dl atomic xcb)
     set(_VULKAN_LIB vulkan)
-elseif (MACOS)
-    set(_SYS pthread)
-elseif (ANDROID)
-    set(_SYS log android)
-    include_directories("${ANDROID_NDK}/sources/android/native_app_glue")
-    set(_SYS_SRC "${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c")
 elseif (WINDOWS)
     set(_SYS mingw32 version Imm32 Winmm)
     include_directories($ENV{VULKAN_HOME}/Include/)
@@ -147,13 +115,9 @@ else ()
 endif ()
 
 include_directories(
-        "${SDL2_INSTALL_DIR}/include/"
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/gli"
 )
 
-link_directories(${SDL2_INSTALL_DIR}/lib/)
-
 add_executable(gladius ${SOURCE_FILES})
-add_dependencies(gladius SDL2_LIB SDL2MAIN_LIB)
-target_link_libraries(gladius SDL2MAIN_LIB SDL2_LIB ${_SYS} ${_VULKAN_LIB})
+target_link_libraries(gladius ${_SYS} ${_VULKAN_LIB})
