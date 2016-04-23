@@ -22,7 +22,7 @@ int main (int argc, char *argv[])
 
     if (!gladius::graphics::render3d::init (&window, false))
     {
-        const char *err = gladius::core::logging::get_error ();
+        std::cout << gladius::core::logging::get_error () << std::endl;
         exit (-1);
     }
 
@@ -33,11 +33,11 @@ int main (int argc, char *argv[])
         {
             break;
         }
-        /*if (!gladius::graphics::render3d::render())
+        if (!gladius::graphics::render3d::render())
         {
-            const char* err = gladius::core::logging::get_error();
+            std::cout <<  gladius::core::logging::get_error() << std::endl;
             break;
-        }*/
+        }
     }
 
     return 0;

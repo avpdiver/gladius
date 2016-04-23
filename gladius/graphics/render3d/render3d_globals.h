@@ -69,7 +69,7 @@ namespace gladius
 
                 struct s_device_queue {
                     uint32_t index = UINT32_MAX;
-                    VkQueue queue = nullptr;
+                    VkQueue handle = nullptr;
                 };
 
                 extern s_device_queue graphics_queue;
@@ -77,16 +77,15 @@ namespace gladius
 
                 extern VkSurfaceFormatKHR surface_format;
                 extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
-                extern VkCommandBuffer setup_command_buffer;
 
-                struct s_swapchain_info
+                namespace swapchain
                 {
-                    VkFormat format;
-                    VkSwapchainKHR swapchain = nullptr;
-                    std::vector<VkImage> images;
-                };
+                    extern VkFormat format;
+                    extern VkSwapchainKHR handle;
+                    extern std::vector<VkImage> images;
+                }
 
-                extern s_swapchain_info swapchain_info;
+                extern std::vector<VkCommandBuffer> present_command_buffers;
 
                 namespace depth_buffer_info
                 {

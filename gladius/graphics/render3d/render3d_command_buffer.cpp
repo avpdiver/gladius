@@ -12,12 +12,12 @@ namespace gladius
         {
             namespace resources
             {
-                bool create_command_pool()
+                bool create_command_pool(uint32_t queue_index)
                 {
                     VkCommandPoolCreateInfo command_pool_create_info = {};
                     command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-                    command_pool_create_info.pNext = NULL;
-                    command_pool_create_info.queueFamilyIndex = vk_globals::graphics_queue.index;
+                    command_pool_create_info.pNext = nullptr;
+                    command_pool_create_info.queueFamilyIndex = queue_index;
                     command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
                     VK_VERIFY(vkCreateCommandPool(vk_globals::device, &command_pool_create_info, nullptr,
@@ -59,12 +59,32 @@ namespace gladius
 
                     VkCommandBuffer command_buffer;
                     VK_VERIFY_RETURN(vkAllocateCommandBuffers(vk_globals::device, &alloc_info, &command_buffer), nullptr);
+
                     return command_buffer;
+                }
+
+                bool create_command_buffers(uint32_t count, VkCommandBuffer* buffers, bool primary)
+                {
+                    VkCommandBufferAllocateInfo alloc_info = {};
+                    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                    alloc_info.pNext = nullptr;
+                    alloc_info.commandPool = vk_globals::thread_context.command_pool;
+                    alloc_info.level = primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+                    alloc_info.commandBufferCount = count;
+
+                    VK_VERIFY(vkAllocateCommandBuffers(vk_globals::device, &alloc_info, buffers));
+
+                    return true;
                 }
 
                 void destroy(VkCommandBuffer handle)
                 {
                     vkFreeCommandBuffers(vk_globals::device, vk_globals::thread_context.command_pool, 1, &handle);
+                }
+
+                void destroy(uint32_t count, VkCommandBuffer* buffers)
+                {
+                    vkFreeCommandBuffers(vk_globals::device, vk_globals::thread_context.command_pool, count, buffers);
                 }
             }
         }

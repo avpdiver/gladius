@@ -76,7 +76,7 @@ namespace gladius
                     vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &queue_families_count, nullptr);
                     if (queue_families_count == 0)
                     {
-                        SET_ERRORF ("Physical device %d doesn't have any queue families!", physical_device);
+                        SET_ERRORF ("Physical device %d doesn't have any handle families!", physical_device);
                         return false;
                     }
 
@@ -95,13 +95,13 @@ namespace gladius
                         if ((queue_family_properties[i].queueCount > 0)
                             && (queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
                         {
-                            // Select first queue that supports graphics
+                            // Select first handle that supports graphics
                             if (graphics_queue_family_index == UINT32_MAX)
                             {
                                 graphics_queue_family_index = i;
                             }
 
-                            // If there is queue that supports both graphics and present - prefer it
+                            // If there is handle that supports both graphics and present - prefer it
                             if (queue_present_support[i])
                             {
                                 selected_graphics_queue_family_index = i;
@@ -111,7 +111,7 @@ namespace gladius
                         }
                     }
 
-                    // We don't have queue that supports both graphics and present so we have to use separate queues
+                    // We don't have handle that supports both graphics and present so we have to use separate queues
                     for (uint32_t i = 0; i < queue_families_count; ++i)
                     {
                         if (queue_present_support[i])
@@ -124,7 +124,7 @@ namespace gladius
                     // If this device doesn't support queues with graphics and present capabilities don't use it
                     if ((graphics_queue_family_index == UINT32_MAX) || (present_queue_family_index == UINT32_MAX))
                     {
-                        SET_ERRORF ("Could not find queue families with required properties on physical device %d!", physical_device);
+                        SET_ERRORF ("Could not find handle families with required properties on physical device %d!", physical_device);
                         return false;
                     }
 
@@ -136,7 +136,7 @@ namespace gladius
                 uint32_t get_swapchain_num_images (VkSurfaceCapabilitiesKHR& surface_capabilities)
                 {
                     // Set of images defined in a swap chain may not always be available for application to render to:
-                    // One may be displayed and one may wait in a queue to be presented
+                    // One may be displayed and one may wait in a handle to be presented
                     // If application wants to use more images at the same time it must ask for more images
                     uint32_t image_count = surface_capabilities.minImageCount + 1;
                     if ((surface_capabilities.maxImageCount > 0) && (image_count > surface_capabilities.maxImageCount))
@@ -174,7 +174,7 @@ namespace gladius
                 {
                     // Special value of surface extent is width == height == -1
                     // If this is so we define the size by ourselves but it must fit within defined confines
-                    if (surface_capabilities.currentExtent.width == -1)
+                    if (surface_capabilities.currentExtent.width == static_cast<uint32_t>(-1))
                     {
                         VkExtent2D swap_chain_extent = {640, 480};
                         if (swap_chain_extent.width < surface_capabilities.minImageExtent.width)

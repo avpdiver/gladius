@@ -52,15 +52,15 @@ namespace gladius
 
                     if (t <= b)
                     {
-                        // non-empty queue
+                        // non-empty handle
                         c_job *job = m_jobs[b & MASK];
                         if (t != b)
                         {
-                            // there's still more than one item left in the queue
+                            // there's still more than one item left in the handle
                             return job;
                         }
 
-                        // this is the last item in the queue
+                        // this is the last item in the handle
                         if (!m_top.compare_exchange_strong(t, t + 1)) // TO DO ensure memory ordering
                         {
                             // failed race against steal operation
@@ -84,7 +84,7 @@ namespace gladius
                     size_t b = m_bottom;
                     if (t < b)
                     {
-                        // non-empty queue
+                        // non-empty handle
                         c_job *job = m_jobs[t & MASK];
 
                         // the interlocked function serves as a compiler barrier, and guarantees that the read happens before the CAS.
@@ -97,7 +97,7 @@ namespace gladius
                     }
                     else
                     {
-                        // empty queue
+                        // empty handle
                         return nullptr;
                     }
                 }

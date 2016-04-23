@@ -74,7 +74,7 @@ namespace gladius
 
                         // Image barrier for linear image (base)
                         // Linear image will be used as a source for the copy
-                        utils::set_image_layout(vk_globals::setup_command_buffer,
+                        utils::set_image_layout(vk_globals::present_command_buffers[0],
                                                 mip_levels[level].image,
                                                 VK_IMAGE_ASPECT_COLOR_BIT,
                                                 VK_IMAGE_LAYOUT_PREINITIALIZED,
@@ -104,7 +104,7 @@ namespace gladius
 
                     // Set initial layout for all mip levels of the optimal (target) tiled texture
                     utils::set_image_layout(
-                            vk_globals::setup_command_buffer,
+                            vk_globals::present_command_buffers[0],
                             texture.image,
                             VK_IMAGE_ASPECT_COLOR_BIT,
                             VK_IMAGE_LAYOUT_PREINITIALIZED,
@@ -136,7 +136,7 @@ namespace gladius
 
                         // Put image copy into command buffer
                         vkCmdCopyImage(
-                                vk_globals::setup_command_buffer,
+                                vk_globals::present_command_buffers[0],
                                 mip_levels[level].image,
                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                 texture.image,
@@ -147,7 +147,7 @@ namespace gladius
                     // Change texture image layout to shader read after all mip levels have been copied
                     texture.image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     utils::set_image_layout(
-                            vk_globals::setup_command_buffer,
+                            vk_globals::present_command_buffers[0],
                             texture.image,
                             VK_IMAGE_ASPECT_COLOR_BIT,
                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -155,7 +155,7 @@ namespace gladius
                             0,
                             texture.mip_levels);
 
-                    resources::flush_command_buffer(vk_globals::graphics_queue.queue, vk_globals::setup_command_buffer);
+                    resources::flush_command_buffer(vk_globals::graphics_queue.handle, vk_globals::present_command_buffers[0]);
 
                     // Clean up linear images
                     // No longer required after mip levels
@@ -213,7 +213,7 @@ namespace gladius
 
                     // Setup image memory barrier
                     utils::set_image_layout(
-                            vk_globals::setup_command_buffer,
+                            vk_globals::present_command_buffers[0],
                             texture.image,
                             VK_IMAGE_ASPECT_COLOR_BIT,
                             VK_IMAGE_LAYOUT_UNDEFINED,

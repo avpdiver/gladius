@@ -26,12 +26,17 @@ namespace gladius
                 VkPhysicalDevice gpu = nullptr;
                 VkDevice device = nullptr;
 
-                VkCommandBuffer setup_command_buffer = nullptr;
-
                 s_device_queue graphics_queue = {};
                 s_device_queue present_queue = {};
 
-                s_swapchain_info swapchain_info = {};
+                namespace swapchain
+                {
+                    VkFormat format;
+                    VkSwapchainKHR handle = nullptr;
+                    std::vector<VkImage> images;
+                };
+
+                std::vector<VkCommandBuffer> present_command_buffers;
 
                 VkSurfaceFormatKHR surface_format = {};
                 VkPhysicalDeviceMemoryProperties gpu_memory_properties = {};
@@ -196,8 +201,8 @@ namespace gladius
             }
 
             bool create_device_queue() {
-                vkGetDeviceQueue(vk_globals::device, vk_globals::graphics_queue.index, 0, &(vk_globals::graphics_queue.queue));
-                vkGetDeviceQueue(vk_globals::device, vk_globals::present_queue.index, 0, &(vk_globals::present_queue.queue));
+                vkGetDeviceQueue(vk_globals::device, vk_globals::graphics_queue.index, 0, &(vk_globals::graphics_queue.handle));
+                vkGetDeviceQueue(vk_globals::device, vk_globals::present_queue.index, 0, &(vk_globals::present_queue.handle));
                 return true;
             }
 
@@ -231,7 +236,7 @@ namespace gladius
                 VkImageUsageFlags desired_usage = utils::get_swapchain_usage_flags (surface_capabilities);
                 VkSurfaceTransformFlagBitsKHR desired_transform = utils::get_swapchain_transform (surface_capabilities);
                 VkPresentModeKHR desired_present_mode = utils::get_swapchain_present_mode (present_modes);
-                VkSwapchainKHR old_swap_chain = vk_globals::swapchain_info.swapchain;
+                VkSwapchainKHR old_swap_chain = vk_globals::swapchain::handle;
 
                 VERIFY (static_cast<int>(desired_usage) != -1);
                 VERIFY (static_cast<int>(desired_present_mode) != -1);
@@ -257,20 +262,20 @@ namespace gladius
                     old_swap_chain                                // VkSwapchainKHR                 oldSwapchain
                 };
 
-                VK_VERIFY (vkCreateSwapchainKHR (vk_globals::device, &swap_chain_create_info, nullptr, &(vk_globals::swapchain_info.swapchain)));
+                VK_VERIFY (vkCreateSwapchainKHR (vk_globals::device, &swap_chain_create_info, nullptr, &(vk_globals::swapchain::handle)));
                 if (old_swap_chain != nullptr)
                 {
                     vkDestroySwapchainKHR (vk_globals::device, old_swap_chain, nullptr);
                 }
 
-                vk_globals::swapchain_info.format = desired_format.format;
+                vk_globals::swapchain::format = desired_format.format;
 
                 uint32_t image_count = 0;
-                VK_VERIFY(vkGetSwapchainImagesKHR (vk_globals::device, vk_globals::swapchain_info.swapchain, &image_count, nullptr));
+                VK_VERIFY(vkGetSwapchainImagesKHR (vk_globals::device, vk_globals::swapchain::handle, &image_count, nullptr));
                 VERIFY_LOG(image_count > 0, "Could not get swap chain images!");
 
-                vk_globals::swapchain_info.images.resize (image_count);
-                VK_VERIFY (vkGetSwapchainImagesKHR (vk_globals::device, vk_globals::swapchain_info.swapchain, &image_count, &(vk_globals::swapchain_info.images[0])));
+                vk_globals::swapchain::images.resize (image_count);
+                VK_VERIFY (vkGetSwapchainImagesKHR (vk_globals::device, vk_globals::swapchain::handle, &image_count, &(vk_globals::swapchain::images[0])));
 
                 return true;
             }
@@ -289,18 +294,76 @@ namespace gladius
                                             &(vk_globals::semaphores.image_available_semaphore)));
 
                 // This semaphore ensures that all commands submitted
-                // have been finished before submitting the image to the queue
+                // have been finished before submitting the image to the handle
                 VK_VERIFY(vkCreateSemaphore(vk_globals::device, &semaphore_create_info, nullptr,
                                             &(vk_globals::semaphores.rendering_finished_semaphore)));
 
                 return true;
             }
 
-            bool create_setup_command_buffer()
+            bool create_present_command_buffer()
             {
-                vk_globals::setup_command_buffer = resources::create_command_buffer();
-                VERIFY_LOG(vk_globals::setup_command_buffer != nullptr, "Failed create main thread command buffer");
-                VERIFY(resources::begin_command_buffer(vk_globals::setup_command_buffer));
+                vk_globals::present_command_buffers.resize (vk_globals::swapchain::images.size ());
+                VERIFY_LOG(resources::create_command_buffers(
+                    vk_globals::present_command_buffers.size (),
+                    &(vk_globals::present_command_buffers[0])), "Failed create present command buffers");
+
+                VkCommandBufferBeginInfo cmd_buffer_begin_info = {
+                    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,  // VkStructureType                        sType
+                    nullptr,                                      // const void                            *pNext
+                    VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT, // VkCommandBufferUsageFlags              flags
+                    nullptr                                       // const VkCommandBufferInheritanceInfo  *pInheritanceInfo
+                };
+
+                VkClearColorValue clear_color = {
+                    { 1.0f, 0.8f, 0.4f, 0.0f }
+                };
+
+                VkImageSubresourceRange image_subresource_range = {
+                    VK_IMAGE_ASPECT_COLOR_BIT,                    // VkImageAspectFlags                     aspectMask
+                    0,                                            // uint32_t                               baseMipLevel
+                    1,                                            // uint32_t                               levelCount
+                    0,                                            // uint32_t                               baseArrayLayer
+                    1                                             // uint32_t                               layerCount
+                };
+
+                for( uint32_t i = 0; i < vk_globals::present_command_buffers.size (); ++i )
+                {
+                    VkImageMemoryBarrier barrier_from_present_to_clear = {
+                        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,     // VkStructureType                        sType
+                        nullptr,                                    // const void                            *pNext
+                        VK_ACCESS_MEMORY_READ_BIT,                  // VkAccessFlags                          srcAccessMask
+                        VK_ACCESS_TRANSFER_WRITE_BIT,               // VkAccessFlags                          dstAccessMask
+                        VK_IMAGE_LAYOUT_UNDEFINED,                  // VkImageLayout                          oldLayout
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,       // VkImageLayout                          newLayout
+                        vk_globals::present_queue.index,            // uint32_t                               srcQueueFamilyIndex
+                        vk_globals::present_queue.index,            // uint32_t                               dstQueueFamilyIndex
+                        vk_globals::swapchain::images[i],      // VkImage                                image
+                        image_subresource_range                     // VkImageSubresourceRange                subresourceRange
+                    };
+
+                    VkImageMemoryBarrier barrier_from_clear_to_present = {
+                        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,     // VkStructureType                        sType
+                        nullptr,                                    // const void                            *pNext
+                        VK_ACCESS_TRANSFER_WRITE_BIT,               // VkAccessFlags                          srcAccessMask
+                        VK_ACCESS_MEMORY_READ_BIT,                  // VkAccessFlags                          dstAccessMask
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,       // VkImageLayout                          oldLayout
+                        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,            // VkImageLayout                          newLayout
+                        vk_globals::present_queue.index,            // uint32_t                               srcQueueFamilyIndex
+                        vk_globals::present_queue.index,            // uint32_t                               dstQueueFamilyIndex
+                        vk_globals::swapchain::images[i],      // VkImage                                image
+                        image_subresource_range                     // VkImageSubresourceRange                subresourceRange
+                    };
+
+                    vkBeginCommandBuffer (vk_globals::present_command_buffers[i], &cmd_buffer_begin_info);
+                    vkCmdPipelineBarrier (vk_globals::present_command_buffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier_from_present_to_clear);
+
+                    vkCmdClearColorImage (vk_globals::present_command_buffers[i], vk_globals::swapchain::images[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clear_color, 1, &image_subresource_range);
+
+                    vkCmdPipelineBarrier (vk_globals::present_command_buffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier_from_clear_to_present);
+                    VK_VERIFY (vkEndCommandBuffer (vk_globals::present_command_buffers[i]));
+                }
+
                 return true;
             }
 
@@ -314,12 +377,11 @@ namespace gladius
                 VERIFY(create_semaphores ());
 
                 // RESOURCES
-                /*VERIFY(resources::create_command_pool ());
-                VERIFY(create_setup_command_buffer ());
-                VERIFY(resources::flush_command_buffer (vk_globals::queue, vk_globals::setup_command_buffer));
+                VERIFY(resources::create_command_pool (vk_globals::present_queue.index));
+                VERIFY(create_present_command_buffer ());
 
-                resources::destroy (vk_globals::setup_command_buffer);
-                */
+                //VERIFY(resources::flush_command_buffer (vk_globals::handle, vk_globals::present_command_buffer));
+                //resources::destroy (vk_globals::present_command_buffer);
 
                 vk_globals::is_init = true;
 
@@ -346,9 +408,9 @@ namespace gladius
                     {
                         vkDestroySemaphore (vk_globals::device, vk_globals::semaphores.rendering_finished_semaphore, nullptr);
                     }
-                    if (vk_globals::swapchain_info.swapchain != nullptr)
+                    if (vk_globals::swapchain::handle != nullptr)
                     {
-                        vkDestroySwapchainKHR (vk_globals::device, vk_globals::swapchain_info.swapchain, nullptr);
+                        vkDestroySwapchainKHR (vk_globals::device, vk_globals::swapchain::handle, nullptr);
                     }
                     vkDestroyDevice (vk_globals::device, nullptr);
                 }
@@ -371,11 +433,62 @@ namespace gladius
                     return false;
                 }
 
-                vkDeviceWaitIdle(vk_globals::device);
+                vkDeviceWaitIdle (vk_globals::device);
 
+                uint32_t image_index;
+                VkResult result = vkAcquireNextImageKHR (vk_globals::device, vk_globals::swapchain::handle,
+                                                         UINT64_MAX, vk_globals::semaphores.image_available_semaphore,
+                                                         nullptr, &image_index);
+                switch (result)
+                {
+                case VK_SUCCESS:
+                case VK_SUBOPTIMAL_KHR:
+                    break;
+                case VK_ERROR_OUT_OF_DATE_KHR:
+                    return true;
+                default:
+                    SET_ERROR ("Problem occurred during swap chain image acquisition!");
+                    return false;
+                }
 
-                // draw();
-                vkDeviceWaitIdle(vk_globals::device);
+                VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                VkSubmitInfo submit_info = {
+                    VK_STRUCTURE_TYPE_SUBMIT_INFO,                                  // VkStructureType              sType
+                    nullptr,                                                        // const void                  *pNext
+                    1,                                                              // uint32_t                     waitSemaphoreCount
+                    &vk_globals::semaphores.image_available_semaphore,              // const VkSemaphore           *pWaitSemaphores
+                    &wait_dst_stage_mask,                                           // const VkPipelineStageFlags  *pWaitDstStageMask;
+                    1,                                                              // uint32_t                     commandBufferCount
+                    &vk_globals::present_command_buffers[image_index],              // const VkCommandBuffer       *pCommandBuffers
+                    1,                                                              // uint32_t                     signalSemaphoreCount
+                    &vk_globals::semaphores.rendering_finished_semaphore            // const VkSemaphore           *pSignalSemaphores
+                };
+
+                VK_VERIFY (vkQueueSubmit (vk_globals::present_queue.handle, 1, &submit_info, nullptr));
+
+                VkPresentInfoKHR present_info = {
+                    VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,                         // VkStructureType              sType
+                    nullptr,                                                    // const void                  *pNext
+                    1,                                                          // uint32_t                     waitSemaphoreCount
+                    &vk_globals::semaphores.rendering_finished_semaphore,       // const VkSemaphore           *pWaitSemaphores
+                    1,                                                          // uint32_t                     swapchainCount
+                    &(vk_globals::swapchain::handle),                   // const VkSwapchainKHR        *pSwapchains
+                    &image_index,                                               // const uint32_t              *pImageIndices
+                    nullptr                                                     // VkResult                    *pResults
+                };
+                result = vkQueuePresentKHR (vk_globals::present_queue.handle, &present_info);
+
+                switch (result)
+                {
+                case VK_SUCCESS:
+                    break;
+                case VK_ERROR_OUT_OF_DATE_KHR:
+                case VK_SUBOPTIMAL_KHR:
+                    return true;
+                default:
+                    SET_ERROR ("Problem occurred during image presentation!");
+                    return false;
+                }
 
                 return true;
             }

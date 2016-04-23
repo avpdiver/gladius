@@ -15,11 +15,15 @@ namespace gladius
         {
             namespace resources
             {
-                bool create_command_pool();
+                bool create_command_pool(uint32_t queue_index);
 
                 VkCommandBuffer create_command_buffer(bool primary = true);
 
+                bool create_command_buffers(uint32_t count, VkCommandBuffer* buffers, bool primary = true);
+
                 void destroy(VkCommandBuffer handle);
+
+                void destroy(uint32_t count, VkCommandBuffer* buffers);
 
                 bool begin_command_buffer(VkCommandBuffer command_buffer);
 
