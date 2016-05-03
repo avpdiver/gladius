@@ -472,7 +472,7 @@ namespace gladius
                     1,                                                          // uint32_t                     waitSemaphoreCount
                     &vk_globals::semaphores.rendering_finished_semaphore,       // const VkSemaphore           *pWaitSemaphores
                     1,                                                          // uint32_t                     swapchainCount
-                    &(vk_globals::swapchain::handle),                   // const VkSwapchainKHR        *pSwapchains
+                    &(vk_globals::swapchain::handle),                           // const VkSwapchainKHR        *pSwapchains
                     &image_index,                                               // const uint32_t              *pImageIndices
                     nullptr                                                     // VkResult                    *pResults
                 };

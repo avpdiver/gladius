@@ -49,9 +49,6 @@
 #include <vector>
 #include <glm/vec2.hpp>
 
-#include "render3d_types.h"
-
-
 namespace gladius
 {
     namespace graphics

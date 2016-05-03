@@ -5,8 +5,6 @@
 #ifndef GLADIUS_RENDER3D_RENDER_PASS_H
 #define GLADIUS_RENDER3D_RENDER_PASS_H
 
-#include "render3d_types.h"
-
 namespace gladius
 {
     namespace graphics

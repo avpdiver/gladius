@@ -85,7 +85,6 @@ set(
 
         gladius/geometry/visibility.h
 
-        gladius/graphics/render3d/render3d_types.h
         gladius/graphics/render3d/render3d.h
         gladius/graphics/render3d/render3d_utils.h
         gladius/graphics/render3d/render3d_utils.cpp
