@@ -16,6 +16,10 @@
 #include <xcb/xcb.h>
 #endif
 
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#endif
+
 namespace gladius
 {
     namespace core
@@ -41,13 +45,15 @@ namespace gladius
 #ifdef PLATFORM_LINUX
             xcb_connection_t *connection;
             xcb_window_t handle;
-
+            xcb_intern_atom_reply_t *delete_reply;
             s_window_info ()
-                : connection (), handle ()
+                : connection (), handle (), delete_reply()
             {
             }
 #endif
         };
+
+        class c_window;
 
         typedef std::function<void (void *)> window_event_listener_t;
 
@@ -75,13 +81,11 @@ namespace gladius
             }
 
         public:
-            void process_events ();
-
-        private:
-            void process_event (e_window_event event_type, void *event) const;
+            bool is_closed ();
 
         public:
-            bool is_closed ();
+            void process_events ();
+            void process_event (e_window_event event_type, void *event) const;
 
         public:
             size_t add_event_listener (e_window_event event, window_event_listener_t listener);
@@ -93,7 +97,6 @@ namespace gladius
 
         private:
             s_window_info m_system_info;
-            xcb_intern_atom_reply_t *m_delete_reply;
         };
     }
 }

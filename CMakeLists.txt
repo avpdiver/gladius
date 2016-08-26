@@ -77,6 +77,8 @@ set(
 
         gladius/core/window/window.h
         gladius/core/window/window.cpp
+        gladius/core/window/window_win.cpp
+        gladius/core/window/window_xcb.cpp
 
         gladius/core/math/aabb.h
 

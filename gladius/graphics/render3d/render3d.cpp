@@ -385,17 +385,15 @@ namespace gladius
 
                 vk_globals::is_init = true;
 
-                on_window_close = window->add_event_listener (core::e_window_event::ON_CLOSE, [window, &on_window_close](void* ptr) {
-                    window->remove_event_listener (on_window_close);
-                    on_window_close = static_cast<size_t >(-1);
-                    shutdown ();
-                });
+                on_window_close = window->add_event_listener (core::e_window_event::ON_CLOSE, shutdown);
 
                 return true;
             }
 
-            void shutdown()
+            void shutdown(void*)
             {
+                on_window_close = static_cast<size_t >(-1);
+
                 if (vk_globals::device != nullptr)
                 {
                     vkDeviceWaitIdle (vk_globals::device);
