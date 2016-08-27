@@ -21,8 +21,6 @@ namespace gladius
             public:
                 c_lockfree_pool(size_t size, void* start)
                 {
-                    assert(m_head.is_lock_free() && "Your platform must support DCAS");
-
                     union
                     {
                         void* as_void;

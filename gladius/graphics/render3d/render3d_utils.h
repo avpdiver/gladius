@@ -15,9 +15,13 @@ namespace gladius
         {
             namespace utils
             {
-                bool check_extension (const char *extension_name, const std::vector<VkExtensionProperties>& available_extensions);
+                bool check_extension (const char *extension_name,
+                                      const std::vector<VkExtensionProperties>& available_extensions);
 
-                bool check_physical_device_properties (VkPhysicalDevice physical_device, uint32_t& selected_graphics_queue_family_index, uint32_t& selected_present_queue_family_index);
+                bool check_physical_device_properties (VkPhysicalDevice physical_device,
+                                                       uint32_t& selected_graphics_queue_family_index,
+                                                       uint32_t& selected_present_queue_family_index,
+                                                       const std::vector<const char *>& device_extensions);
 
                 uint32_t get_swapchain_num_images (VkSurfaceCapabilitiesKHR& surface_capabilities);
 

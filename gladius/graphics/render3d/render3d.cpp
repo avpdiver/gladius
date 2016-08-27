@@ -73,10 +73,10 @@ namespace gladius
                     VK_STRUCTURE_TYPE_APPLICATION_INFO,             // VkStructureType            sType
                     nullptr,                                        // const void                *pNext
                     app_name,                                       // const char                *pApplicationName
-                    VK_MAKE_VERSION(1, 0, 8),                       // uint32_t                   applicationVersion
+                    VK_MAKE_VERSION(0, 0, 1),                       // uint32_t                   applicationVersion
                     "gladius",                                      // const char                *pEngineName
-                    VK_MAKE_VERSION(1, 0, 8),                       // uint32_t                   engineVersion
-                    VK_MAKE_VERSION(1, 0, 8)                        // uint32_t                   apiVersion
+                    VK_MAKE_VERSION(0, 0, 1),                       // uint32_t                   engineVersion
+                    VK_MAKE_VERSION(1, 0, 21)                       // uint32_t                   apiVersion
                 };
 
                 VkInstanceCreateInfo instance_create_info = {
@@ -136,10 +136,16 @@ namespace gladius
 
                 uint32_t selected_graphics_queue_family_index = UINT32_MAX;
                 uint32_t selected_present_queue_family_index = UINT32_MAX;
+                std::vector<const char *> extensions = {
+                        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+                };
 
                 for (uint32_t i = 0; i < num_devices; ++i)
                 {
-                    if (utils::check_physical_device_properties (physical_devices[i], selected_graphics_queue_family_index, selected_present_queue_family_index))
+                    if (utils::check_physical_device_properties (physical_devices[i],
+                                                                 selected_graphics_queue_family_index,
+                                                                 selected_present_queue_family_index,
+                                                                 extensions))
                     {
                         vk_globals::gpu = physical_devices[i];
                     }
@@ -175,10 +181,6 @@ namespace gladius
                     );
                 }
 
-                std::vector<const char *> extensions = {
-                    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-                };
-
                 VkDeviceCreateInfo device_create_info = {
                     VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,             // VkStructureType                    sType
                     nullptr,                                          // const void                        *pNext
@@ -200,9 +202,31 @@ namespace gladius
                 return true;
             }
 
-            bool create_device_queue() {
+            bool create_device_queue()
+            {
                 vkGetDeviceQueue(vk_globals::device, vk_globals::graphics_queue.index, 0, &(vk_globals::graphics_queue.handle));
                 vkGetDeviceQueue(vk_globals::device, vk_globals::present_queue.index, 0, &(vk_globals::present_queue.handle));
+                return true;
+            }
+
+            bool create_semaphores()
+            {
+                VkSemaphoreCreateInfo semaphore_create_info = {
+                        VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,      // VkStructureType          sType
+                        nullptr,                                      // const void*              pNext
+                        0                                             // VkSemaphoreCreateFlags   flags
+                };
+
+                // This semaphore ensures that the image is complete
+                // before starting to submit again
+                VK_VERIFY(vkCreateSemaphore(vk_globals::device, &semaphore_create_info, nullptr,
+                                            &(vk_globals::semaphores.image_available_semaphore)));
+
+                // This semaphore ensures that all commands submitted
+                // have been finished before submitting the image to the handle
+                VK_VERIFY(vkCreateSemaphore(vk_globals::device, &semaphore_create_info, nullptr,
+                                            &(vk_globals::semaphores.rendering_finished_semaphore)));
+
                 return true;
             }
 
@@ -213,22 +237,31 @@ namespace gladius
                     vkDeviceWaitIdle (vk_globals::device);
                 }
 
+                // Acquiring Surface Capabilities
                 VkSurfaceCapabilitiesKHR surface_capabilities;
-                VK_VERIFY (vkGetPhysicalDeviceSurfaceCapabilitiesKHR (vk_globals::gpu, vk_globals::surface, &surface_capabilities));
+                VK_VERIFY (vkGetPhysicalDeviceSurfaceCapabilitiesKHR (vk_globals::gpu, vk_globals::surface,
+                                                                      &surface_capabilities));
 
+                // Acquiring Supported Surface Formats
                 uint32_t formats_count;
-                VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR (vk_globals::gpu, vk_globals::surface, &formats_count, nullptr));
+                VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR (vk_globals::gpu, vk_globals::surface, &formats_count,
+                                                                nullptr));
                 VERIFY_LOG(formats_count > 0, "Error occurred during presentation surface formats enumeration!");
 
                 std::vector<VkSurfaceFormatKHR> surface_formats (formats_count);
-                VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR (vk_globals::gpu, vk_globals::surface, &formats_count, &surface_formats[0]));
+                VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR (vk_globals::gpu, vk_globals::surface, &formats_count,
+                                                                &surface_formats[0]));
 
+                // Acquiring Supported Present Modes
                 uint32_t present_modes_count;
-                VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR (vk_globals::gpu, vk_globals::surface, &present_modes_count, nullptr));
+                VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR (vk_globals::gpu, vk_globals::surface,
+                                                                     &present_modes_count, nullptr));
                 VERIFY_LOG(present_modes_count > 0, "Error occurred during presentation surface present modes enumeration!");
 
                 std::vector<VkPresentModeKHR> present_modes (present_modes_count);
-                VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR (vk_globals::gpu, vk_globals::surface, &present_modes_count, &present_modes[0]));
+                VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR (vk_globals::gpu, vk_globals::surface,
+                                                                     &present_modes_count, &present_modes[0]));
+
 
                 uint32_t desired_number_of_images = utils::get_swapchain_num_images (surface_capabilities);
                 VkSurfaceFormatKHR desired_format = utils::get_swapchain_format (surface_formats);
@@ -276,27 +309,6 @@ namespace gladius
 
                 vk_globals::swapchain::images.resize (image_count);
                 VK_VERIFY (vkGetSwapchainImagesKHR (vk_globals::device, vk_globals::swapchain::handle, &image_count, &(vk_globals::swapchain::images[0])));
-
-                return true;
-            }
-
-            bool create_semaphores()
-            {
-                VkSemaphoreCreateInfo semaphore_create_info = {
-                    VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,      // VkStructureType          sType
-                    nullptr,                                      // const void*              pNext
-                    0                                             // VkSemaphoreCreateFlags   flags
-                };
-
-                // This semaphore ensures that the image is complete
-                // before starting to submit again
-                VK_VERIFY(vkCreateSemaphore(vk_globals::device, &semaphore_create_info, nullptr,
-                                            &(vk_globals::semaphores.image_available_semaphore)));
-
-                // This semaphore ensures that all commands submitted
-                // have been finished before submitting the image to the handle
-                VK_VERIFY(vkCreateSemaphore(vk_globals::device, &semaphore_create_info, nullptr,
-                                            &(vk_globals::semaphores.rendering_finished_semaphore)));
 
                 return true;
             }
@@ -373,8 +385,8 @@ namespace gladius
                 VERIFY(create_surface (window));
                 VERIFY(create_device ());
                 VERIFY(create_device_queue ());
-                VERIFY(create_swap_chain ());
                 VERIFY(create_semaphores ());
+                VERIFY(create_swap_chain ());
 
                 // RESOURCES
                 VERIFY(resources::create_command_pool (vk_globals::present_queue.index));

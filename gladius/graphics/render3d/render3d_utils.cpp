@@ -26,7 +26,10 @@ namespace gladius
                     return false;
                 }
 
-                bool check_physical_device_properties (VkPhysicalDevice physical_device, uint32_t& selected_graphics_queue_family_index, uint32_t& selected_present_queue_family_index)
+                bool check_physical_device_properties (VkPhysicalDevice physical_device,
+                                                       uint32_t& selected_graphics_queue_family_index,
+                                                       uint32_t& selected_present_queue_family_index,
+                                                       const std::vector<const char *>& device_extensions)
                 {
                     uint32_t extensions_count = 0;
                     if ((vkEnumerateDeviceExtensionProperties (physical_device, nullptr, &extensions_count, nullptr)
@@ -44,10 +47,6 @@ namespace gladius
                         SET_ERRORF ("Error occurred during physical device %d extensions enumeration!", physical_device);
                         return false;
                     }
-
-                    std::vector<const char *> device_extensions = {
-                        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-                    };
 
                     for (size_t i = 0; i < device_extensions.size (); ++i)
                     {
@@ -177,22 +176,13 @@ namespace gladius
                     if (surface_capabilities.currentExtent.width == static_cast<uint32_t>(-1))
                     {
                         VkExtent2D swap_chain_extent = {640, 480};
-                        if (swap_chain_extent.width < surface_capabilities.minImageExtent.width)
-                        {
-                            swap_chain_extent.width = surface_capabilities.minImageExtent.width;
-                        }
-                        if (swap_chain_extent.height < surface_capabilities.minImageExtent.height)
-                        {
-                            swap_chain_extent.height = surface_capabilities.minImageExtent.height;
-                        }
-                        if (swap_chain_extent.width > surface_capabilities.maxImageExtent.width)
-                        {
-                            swap_chain_extent.width = surface_capabilities.maxImageExtent.width;
-                        }
-                        if (swap_chain_extent.height > surface_capabilities.maxImageExtent.height)
-                        {
-                            swap_chain_extent.height = surface_capabilities.maxImageExtent.height;
-                        }
+
+                        swap_chain_extent.width = std::max(swap_chain_extent.width, surface_capabilities.minImageExtent.width);
+                        swap_chain_extent.height = std::max(swap_chain_extent.height, surface_capabilities.minImageExtent.height);
+
+                        swap_chain_extent.width = std::min(swap_chain_extent.width, surface_capabilities.maxImageExtent.width);
+                        swap_chain_extent.height = std::min(swap_chain_extent.height, surface_capabilities.maxImageExtent.height);
+
                         return swap_chain_extent;
                     }
 
