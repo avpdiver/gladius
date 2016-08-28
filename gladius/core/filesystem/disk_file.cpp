@@ -13,7 +13,6 @@ namespace gladius
         {
             c_file* c_disk_file::create(const char* filename, c_file* fallback, e_file_mode mode)
             {
-                c_disk_file* file = new c_disk_file();
                 std::basic_ios<char>* stream = nullptr;
                 switch (mode)
                 {
@@ -32,14 +31,7 @@ namespace gladius
                     delete stream;
                     return nullptr;
                 }
-                file->m_stream = stream;
-                file->m_fallback_file = fallback;
-                file->m_mode = mode;
-                return file;
-            }
-
-            c_disk_file::c_disk_file()
-            {
+                return new c_disk_file(stream, fallback, mode);
             }
 
             c_disk_file::~c_disk_file()

@@ -24,7 +24,9 @@ namespace gladius
                 static c_file* create(const char* filename, c_file* fallback, e_file_mode mode);
 
             private:
-                c_disk_file();
+                c_disk_file(std::basic_ios<char>* stream, c_file* fallback, e_file_mode mode) :
+                        m_stream(stream), m_fallback_file(fallback), m_mode(mode)
+                {}
 
             public:
                 ~c_disk_file ();
@@ -35,8 +37,8 @@ namespace gladius
 
             private:
                 std::basic_ios<char>* m_stream;
-                e_file_mode m_mode;
                 c_file* m_fallback_file;
+                e_file_mode m_mode;
             };
         }
     }
