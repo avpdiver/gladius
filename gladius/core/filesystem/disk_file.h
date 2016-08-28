@@ -21,7 +21,7 @@ namespace gladius
                 static constexpr char const* DEVICE = "disk";
 
             public:
-                static c_file* create(const char* filename, c_file* fallback);
+                static c_file* create(const char* filename, c_file* fallback, e_file_mode mode);
 
             private:
                 c_disk_file();
@@ -29,18 +29,14 @@ namespace gladius
             public:
                 ~c_disk_file ();
 
-            private:
-                bool open(const char* filename, c_file* fallback);
-
-            public:
-                virtual void close();
-
             public:
                 virtual size_t read(char* buf, size_t bytes);
                 virtual size_t write(const char* buf, size_t bytes);
 
             private:
-                std::fstream m_stream;
+                std::basic_ios<char>* m_stream;
+                e_file_mode m_mode;
+                c_file* m_fallback_file;
             };
         }
     }

@@ -13,38 +13,21 @@ namespace gladius
     {
         namespace filesystem
         {
+            enum class e_file_mode
+            {
+                read,
+                write,
+                read_write
+            };
+
             class c_file
             {
             public:
-                virtual void close() = 0;
+                virtual ~c_file() {}
 
             public:
                 virtual size_t read(char* buf, size_t bytes) = 0;
                 virtual size_t write(const char* buf, size_t bytes) = 0;
-
-            public:
-                template <typename T>
-                bool read(T& value)
-                {
-                    size_t actual = read(&value, sizeof(T));
-                    if (actual == sizeof(T)) {
-                        return true;
-                    }
-                    return false;
-                }
-
-                template <typename T>
-                bool write(const T& value)
-                {
-                    size_t actual = write (&value, sizeof(T));
-                    if (actual == sizeof(T)) {
-                        return true;
-                    }
-                    return false;
-                }
-
-            protected:
-                c_file* m_fallback_file;
             };
         }
     }

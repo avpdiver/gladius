@@ -5,7 +5,6 @@
 #ifdef  PLATFORM_WINDOWS
 
 #include "window.h"
-#include "../logging/logging.h"
 
 namespace gladius
 {

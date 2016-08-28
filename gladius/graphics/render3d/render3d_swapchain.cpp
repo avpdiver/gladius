@@ -127,7 +127,7 @@ namespace gladius
                 return static_cast<VkPresentModeKHR>(-1);
             }
 
-            bool create_swap_chain()
+            bool create_swap_chain(bool create_veiws)
             {
                 if (vk_globals::device != nullptr)
                 {
@@ -210,6 +210,39 @@ namespace gladius
                 vk_globals::swapchain.images.resize (image_count);
                 VK_VERIFY (vkGetSwapchainImagesKHR (vk_globals::device, vk_globals::swapchain.handle, &image_count,
                                                     &(vk_globals::swapchain.images[0])));
+
+                if (create_veiws)
+                {
+                    vk_globals::swapchain.views.resize(vk_globals::swapchain.images.size());
+                    for ( size_t i = 0; i < vk_globals::swapchain.images.size(); ++i)
+                    {
+                        VkImageViewCreateInfo image_view_create_info =
+                                {
+                                VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,   // VkStructureType                sType
+                                nullptr,                                    // const void                    *pNext
+                                0,                                          // VkImageViewCreateFlags         flags
+                                vk_globals::swapchain.images[i],            // VkImage                        image
+                                VK_IMAGE_VIEW_TYPE_2D,                      // VkImageViewType                viewType
+                                vk_globals::swapchain.format,               // VkFormat                       format
+                                {                                           // VkComponentMapping             components
+                                        VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             r
+                                        VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             g
+                                        VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             b
+                                        VK_COMPONENT_SWIZZLE_IDENTITY       // VkComponentSwizzle             a
+                                },
+                                {                                           // VkImageSubresourceRange        subresourceRange
+                                        VK_IMAGE_ASPECT_COLOR_BIT,          // VkImageAspectFlags             aspectMask
+                                        0,                                  // uint32_t                       baseMipLevel
+                                        1,                                  // uint32_t                       levelCount
+                                        0,                                  // uint32_t                       baseArrayLayer
+                                        1                                   // uint32_t                       layerCount
+                                }
+                        };
+
+                        VK_VERIFY (vkCreateImageView(vk_globals::device, &image_view_create_info, nullptr,
+                                                     &vk_globals::swapchain.views[i]));
+                    }
+                }
 
                 return true;
             }

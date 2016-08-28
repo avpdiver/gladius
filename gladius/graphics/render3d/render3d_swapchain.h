@@ -13,7 +13,7 @@ namespace gladius
     {
         namespace render3d
         {
-            bool create_swap_chain();
+            bool create_swap_chain(bool create_veiws = false);
             void shutdown_swap_chain();
         }
     }

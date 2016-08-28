@@ -80,6 +80,7 @@ namespace gladius
                     VkFormat format;
                     VkSwapchainKHR handle;
                     std::vector<VkImage> images;
+                    std::vector<VkImageView> views;
                 };
                 extern s_swapchain swapchain;
 

@@ -104,6 +104,8 @@ set(
         gladius/graphics/render3d/render3d_render_pass.cpp
         gladius/graphics/render3d/render3d_texture.cpp
         gladius/graphics/render3d/render3d_texture.h
+        gladius/graphics/render3d/render3d_pipeline.cpp
+        gladius/graphics/render3d/render3d_pipeline.h
 
         main.cpp)
 
