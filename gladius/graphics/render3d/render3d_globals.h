@@ -75,12 +75,13 @@ namespace gladius
                 extern VkSurfaceFormatKHR surface_format;
                 extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
 
-                namespace swapchain
+                struct s_swapchain
                 {
-                    extern VkFormat format;
-                    extern VkSwapchainKHR handle;
-                    extern std::vector<VkImage> images;
-                }
+                    VkFormat format;
+                    VkSwapchainKHR handle;
+                    std::vector<VkImage> images;
+                };
+                extern s_swapchain swapchain;
 
                 extern std::vector<VkCommandBuffer> present_command_buffers;
 

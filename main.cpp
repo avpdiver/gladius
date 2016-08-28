@@ -1,6 +1,5 @@
 #include <iostream>
 #include "gladius/core/logging/logging.h"
-#include "gladius/core/memory/alloc_policies/lockfree_pool_policy.h"
 #include "gladius/core/window/window.h"
 #include "gladius/graphics/render3d/render3d.h"
 
@@ -29,13 +28,8 @@ int main (int argc, char *argv[])
     while (true)
     {
         window.process_events ();
-        if (window.is_closed ())
-        {
-            break;
-        }
         if (!gladius::graphics::render3d::render())
         {
-            std::cout <<  gladius::core::logging::get_error() << std::endl;
             break;
         }
     }

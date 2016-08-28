@@ -94,6 +94,10 @@ set(
         gladius/graphics/render3d/render3d.cpp
         gladius/graphics/render3d/render3d_debug.h
         gladius/graphics/render3d/render3d_debug.cpp
+        gladius/graphics/render3d/render3d_device.cpp
+        gladius/graphics/render3d/render3d_device.h
+        gladius/graphics/render3d/render3d_swapchain.cpp
+        gladius/graphics/render3d/render3d_swapchain.h
         gladius/graphics/render3d/render3d_command_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.cpp
         gladius/graphics/render3d/render3d_render_pass.h

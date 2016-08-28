@@ -15,7 +15,7 @@ namespace gladius
         namespace render3d
         {
             bool init(core::c_window* window, bool enable_validation);
-            void shutdown(void*);
+            void shutdown();
 
             bool render();
         }

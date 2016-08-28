@@ -32,14 +32,15 @@ namespace gladius
         };
 
         struct s_window_info {
+            glm::uvec2 extent;
+
 #ifdef PLATFORM_WINDOWS
             HINSTANCE           instance;
             HWND                handle;
-
-          s_window_info() :
-            instance(),
-            handle() {
-          }
+            s_window_info() :
+                instance(),
+                handle() {
+            }
 #endif
 
 #ifdef PLATFORM_LINUX
@@ -69,15 +70,16 @@ namespace gladius
             void close ();
 
         public:
-            const s_window_info *const get_system_info () const
+            const s_window_info *const get_window_info() const
             {
-                return &m_system_info;
+                return &m_window_info;
             }
 
-            const glm::ivec2 get_size () const
+            void set_size(int width, int height);
+
+            const glm::uvec2 get_size () const
             {
-                glm::ivec2 size;
-                return size;
+                return m_window_info.extent;
             }
 
         public:
@@ -96,7 +98,7 @@ namespace gladius
             std::unordered_map<e_window_event, std::vector<std::pair<window_event_listener_t, size_t>>, std::hash<int>> m_listeners;
 
         private:
-            s_window_info m_system_info;
+            s_window_info m_window_info;
         };
     }
 }

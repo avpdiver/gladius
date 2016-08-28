@@ -14,14 +14,14 @@ namespace gladius
         bool c_window::create ()
         {
             int screen_index;
-            m_system_info.connection = xcb_connect (nullptr, &screen_index);
+            m_window_info.connection = xcb_connect (nullptr, &screen_index);
 
-            if (!m_system_info.connection)
+            if (!m_window_info.connection)
             {
                 return false;
             }
 
-            const xcb_setup_t *setup = xcb_get_setup (m_system_info.connection);
+            const xcb_setup_t *setup = xcb_get_setup (m_window_info.connection);
             xcb_screen_iterator_t screen_iterator = xcb_setup_roots_iterator (setup);
 
             while (screen_index-- > 0)
@@ -31,7 +31,7 @@ namespace gladius
 
             xcb_screen_t *screen = screen_iterator.data;
 
-            m_system_info.handle = xcb_generate_id (m_system_info.connection);
+            m_window_info.handle = xcb_generate_id (m_window_info.connection);
 
             uint32_t value_list[] = {
                 screen->white_pixel,
@@ -39,9 +39,9 @@ namespace gladius
             };
 
             xcb_create_window (
-                m_system_info.connection,
+                m_window_info.connection,
                 XCB_COPY_FROM_PARENT,
-                m_system_info.handle,
+                m_window_info.handle,
                 screen->root,
                 20,
                 20,
@@ -54,9 +54,9 @@ namespace gladius
                 value_list);
 
             xcb_change_property (
-                m_system_info.connection,
+                m_window_info.connection,
                 XCB_PROP_MODE_REPLACE,
-                m_system_info.handle,
+                m_window_info.handle,
                 XCB_ATOM_WM_NAME,
                 XCB_ATOM_STRING,
                 8,
@@ -64,20 +64,20 @@ namespace gladius
                 "gladius");
 
             // Prepare notification for window destruction
-            xcb_intern_atom_cookie_t protocols_cookie = xcb_intern_atom (m_system_info
+            xcb_intern_atom_cookie_t protocols_cookie = xcb_intern_atom (m_window_info
                                                                              .connection, 1, 12, "WM_PROTOCOLS");
-            xcb_intern_atom_reply_t *protocols_reply = xcb_intern_atom_reply (m_system_info
+            xcb_intern_atom_reply_t *protocols_reply = xcb_intern_atom_reply (m_window_info
                                                                                   .connection, protocols_cookie, 0);
-            xcb_intern_atom_cookie_t delete_cookie = xcb_intern_atom (m_system_info
+            xcb_intern_atom_cookie_t delete_cookie = xcb_intern_atom (m_window_info
                                                                           .connection, 0, 16, "WM_DELETE_WINDOW");
-            m_delete_reply = xcb_intern_atom_reply (m_system_info.connection, delete_cookie, 0);
-            xcb_change_property (m_system_info.connection, XCB_PROP_MODE_REPLACE, m_system_info
+            m_delete_reply = xcb_intern_atom_reply (m_window_info.connection, delete_cookie, 0);
+            xcb_change_property (m_window_info.connection, XCB_PROP_MODE_REPLACE, m_window_info
                 .handle, (*protocols_reply).atom, 4, 32, 1, &(*m_delete_reply).atom);
             free (protocols_reply);
 
             // Display window
-            xcb_map_window (m_system_info.connection, m_system_info.handle);
-            xcb_flush (m_system_info.connection);
+            xcb_map_window (m_window_info.connection, m_window_info.handle);
+            xcb_flush (m_window_info.connection);
 
             return true;
         }
@@ -87,17 +87,17 @@ namespace gladius
             free (m_delete_reply);
             m_delete_reply = nullptr;
 
-            if (m_system_info.connection != nullptr)
+            if (m_window_info.connection != nullptr)
             {
-                xcb_destroy_window (m_system_info.connection, m_system_info.handle);
-                xcb_disconnect (m_system_info.connection);
-                m_system_info.connection = nullptr;
+                xcb_destroy_window (m_window_info.connection, m_window_info.handle);
+                xcb_disconnect (m_window_info.connection);
+                m_window_info.connection = nullptr;
             }
         }
 
         bool c_window::is_closed ()
         {
-            return m_system_info.connection == nullptr;
+            return m_window_info.connection == nullptr;
         }
 
         void c_window::process_events ()
@@ -105,7 +105,7 @@ namespace gladius
             xcb_generic_event_t *event;
             while (true)
             {
-                event = xcb_poll_for_event (m_system_info.connection);
+                event = xcb_poll_for_event (m_window_info.connection);
                 if (event)
                 {
                     switch (event->response_type & 0x7f)
