@@ -17,8 +17,19 @@ namespace gladius
     {
         namespace logging
         {
-            void add_error(const char *format, ...);
-            const char* get_error();
+            enum class e_log_level
+            {
+                fatal,
+                error,
+                warn,
+                debug,
+                info
+            };
+
+            bool init();
+            void shutdown();
+
+            void add_log(e_log_level level, const char* type, const char *format, ...);
         }
     }
 }

@@ -14,45 +14,23 @@ namespace gladius
     {
         namespace logging
         {
-            const size_t BUFFER_SIZE = 1024;
-
-            std::mutex mutex;
-            std::vector<char*> errors;
-            int64_t current_position = -1;
-
-            void add_error(const char *format, ...)
+            bool init()
             {
-                mutex.lock();
-                char* buffer;
-
-                if (current_position >= errors.size())
-                {
-                    buffer = new char[BUFFER_SIZE];
-                    errors.push_back(buffer);
-                }
-                else
-                {
-                    buffer = errors[current_position++];
-                }
-                mutex.unlock();
-
-                va_list args;
-                va_start (args, format);
-                vsnprintf(buffer, BUFFER_SIZE, format, args);
-                va_end (args);
+                return true;
             }
 
-            const char* get_error()
+            void shutdown()
             {
-                mutex.lock();
-                if (errors.size() == 0)
-                {
-                    return nullptr;
-                }
-                char* buffer = errors.back();
-                errors.pop_back();
-                mutex.unlock();
-                return buffer;
+
+            }
+
+            void add_log(const char *format, ...)
+            {
+                /*char* buffer;
+                va_list args;
+                va_start (args, format);
+                vsnprintf(buffer, 1, format, args);
+                va_end (args);*/
             }
         }
     }

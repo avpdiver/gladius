@@ -70,7 +70,7 @@ namespace gladius
 
                 for (size_t i = 0; i < extensions.size (); ++i)
                 {
-                    VERIFY_LOGF(utils::check_extension (extensions[i], available_extensions),
+                    VERIFY_LOGF(utils::check_extension(extensions[i], available_extensions),
                                 "Could not find instance extension named \"%s\"!", extensions[i])
                 }
 
@@ -138,12 +138,12 @@ namespace gladius
                         0                                             // VkSemaphoreCreateFlags   flags
                 };
 
-                // This semaphore ensures that the image is complete
+                // This m_semaphore ensures that the image is complete
                 // before starting to submit again
                 VK_VERIFY(vkCreateSemaphore(vk_globals::device, &semaphore_create_info, nullptr,
                                             &(vk_globals::semaphores.image_available_semaphore)));
 
-                // This semaphore ensures that all commands submitted
+                // This m_semaphore ensures that all commands submitted
                 // have been finished before submitting the image to the handle
                 VK_VERIFY(vkCreateSemaphore(vk_globals::device, &semaphore_create_info, nullptr,
                                             &(vk_globals::semaphores.rendering_finished_semaphore)));
@@ -164,7 +164,7 @@ namespace gladius
 
                 vk_globals::present_command_buffers.resize (vk_globals::swapchain.images.size ());
                 VERIFY_LOG(resources::create_command_buffers(
-                        vk_globals::present_command_buffers.size (),
+                        vk_globals::present_command_buffers.size(),
                         &(vk_globals::present_command_buffers[0])), "Failed create present command buffers");
 
                 VkCommandBufferBeginInfo cmd_buffer_begin_info = {

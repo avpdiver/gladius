@@ -258,17 +258,19 @@ namespace gladius
 
                     if (use_staging)
                     {
-                        VERIFY_LOG(create_staging_texture(image_create_info, texture, tex2d), "Failed create staged texture");
+                        VERIFY_LOG(create_staging_texture(image_create_info, texture, tex2d),
+                                   "Failed create staged texture");
                     }
                     else
                     {
-                        VERIFY_LOG(create_mapped_texture(image_create_info, texture, tex2d), "Failed create mapped texture");
+                        VERIFY_LOG(create_mapped_texture(image_create_info, texture, tex2d),
+                                   "Failed create mapped texture");
                     }
 
                     // Create sampler
                     // In Vulkan textures are accessed by samplers
                     // This separates all the sampling information from the
-                    // texture data
+                    // texture m_data
                     // This means you could have multiple sampler objects
                     // for the same texture with different settings
                     // Similar to the samplers available with OpenGL 3.3

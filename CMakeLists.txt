@@ -59,15 +59,18 @@ set(
         gladius/core/logging/logging.h
         gladius/core/logging/logging.cpp
 
+        gladius/core/memory/memory_utils.h
         gladius/core/memory/allocator.h
         gladius/core/memory/default_policies.h
 
         gladius/core/collections/aligned_allocator.h
+        gladius/core/collections/lock_free_single_queue.h
 
         gladius/core/threading/job_executor.h
         gladius/core/threading/job_executor.cpp
         gladius/core/threading/job.h
         gladius/core/threading/steal_queue.h
+        gladius/core/threading/weak_semaphore.h
 
         gladius/core/filesystem/filesystem.cpp
         gladius/core/filesystem/filesystem.h
@@ -80,6 +83,7 @@ set(
         gladius/core/window/window_win.cpp
         gladius/core/window/window_xcb.cpp
 
+        gladius/core/math/math_func.h
         gladius/core/math/aabb.h
 
         gladius/input/user_input.h

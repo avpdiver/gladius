@@ -155,7 +155,8 @@ namespace gladius
                 uint32_t present_modes_count;
                 VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR (vk_globals::gpu, vk_globals::surface,
                                                                      &present_modes_count, nullptr));
-                VERIFY_LOG(present_modes_count > 0, "Error occurred during presentation surface present modes enumeration!");
+                VERIFY_LOG(present_modes_count > 0,
+                           "Error occurred during presentation surface present modes enumeration!");
 
                 std::vector<VkPresentModeKHR> present_modes (present_modes_count);
                 VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR (vk_globals::gpu, vk_globals::surface,

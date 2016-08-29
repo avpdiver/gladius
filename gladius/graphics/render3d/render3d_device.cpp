@@ -119,7 +119,8 @@ namespace gladius
                 // If this device doesn't support queues with graphics and present capabilities don't use it
                 if ((graphics_queue_family_index == UINT32_MAX) || (present_queue_family_index == UINT32_MAX))
                 {
-                    SET_ERRORF ("Could not find handle families with required properties on physical device %d!", physical_device);
+                    SET_ERRORF ("Could not find handle families with required properties on physical device %d!",
+                                physical_device);
                     return false;
                 }
 
@@ -154,7 +155,8 @@ namespace gladius
                     }
                 }
 
-                VERIFY_LOG (vk_globals::gpu != nullptr, "Could not select physical device based on the chosen properties!");
+                VERIFY_LOG (vk_globals::gpu != nullptr,
+                            "Could not select physical device based on the chosen properties!");
 
                 std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
                 std::vector<float> queue_priorities = {1.0f};

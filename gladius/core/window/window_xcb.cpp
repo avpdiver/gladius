@@ -4,6 +4,7 @@
 
 #ifdef  PLATFORM_LINUX
 
+#include <cstring>
 #include "window.h"
 #include "../logging/logging.h"
 
@@ -70,9 +71,9 @@ namespace gladius
                                                                                   .connection, protocols_cookie, 0);
             xcb_intern_atom_cookie_t delete_cookie = xcb_intern_atom (m_window_info
                                                                           .connection, 0, 16, "WM_DELETE_WINDOW");
-            m_delete_reply = xcb_intern_atom_reply (m_window_info.connection, delete_cookie, 0);
+            m_window_info.delete_reply = xcb_intern_atom_reply (m_window_info.connection, delete_cookie, 0);
             xcb_change_property (m_window_info.connection, XCB_PROP_MODE_REPLACE, m_window_info
-                .handle, (*protocols_reply).atom, 4, 32, 1, &(*m_delete_reply).atom);
+                .handle, (*protocols_reply).atom, 4, 32, 1, &(*m_window_info.delete_reply).atom);
             free (protocols_reply);
 
             // Display window
@@ -84,8 +85,8 @@ namespace gladius
 
         void c_window::close ()
         {
-            free (m_delete_reply);
-            m_delete_reply = nullptr;
+            free (m_window_info.delete_reply);
+            m_window_info.delete_reply = nullptr;
 
             if (m_window_info.connection != nullptr)
             {
@@ -127,7 +128,7 @@ namespace gladius
                         break;
                         // Close
                     case XCB_CLIENT_MESSAGE:
-                        if ((*(xcb_client_message_event_t *) event).data.data32[0] == (*m_delete_reply).atom)
+                        if ((*(xcb_client_message_event_t *) event).data.data32[0] == (*m_window_info.delete_reply).atom)
                         {
                             process_event (e_window_event::ON_CLOSE, nullptr);
                             close ();
