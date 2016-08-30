@@ -4,8 +4,9 @@
 
 #include <thread>
 #include <queue>
+#include <stdlib.h>
 #include "job_executor.h"
-#include "steal_queue.h"
+#include "../collections/steal_queue.h"
 
 
 namespace gladius {
@@ -18,7 +19,7 @@ static const size_t JOB_COUNT = 1024;
 struct s_thread_context {
 public:
     std::thread *m_thread;
-    c_steal_queue<JOB_COUNT> m_jobs;
+    c_steal_queue<c_job*, JOB_COUNT> m_jobs_queue;
     c_job m_job_pool[JOB_COUNT];
     size_t m_jobs_counter = 0;
 
@@ -59,10 +60,9 @@ void execute(size_t thread_index) {
 
     c_job *job;
     while (g_running.load(std::memory_order_relaxed) == 1) {
-        job = thread_context.m_jobs.pop();
-        if (job == nullptr) {
+        if (!thread_context.m_jobs_queue.pop(job)) {
             size_t index = std::rand() % g_processors_count;
-            if (index == thread_index || (job = g_thread_contexts[index].m_jobs.steal()) == nullptr) {
+            if (index == thread_index || !g_thread_contexts[index].m_jobs_queue.steal(job)) {
                 std::this_thread::yield();
                 continue;
             }
@@ -131,7 +131,7 @@ job_handle_t create_and_execunte_job(job_function_t function, void *data, job_ha
 
 void execute_job(job_handle_t handle) {
     c_job *job = g_jobs_pool[handle];
-    g_thread_contexts[g_thread_index].m_jobs.push(job);
+    g_thread_contexts[g_thread_index].m_jobs_queue.push(job);
 }
 
 void wait(job_handle_t handle) {

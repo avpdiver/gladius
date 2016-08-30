@@ -79,11 +79,11 @@ set(
         gladius/core/memory/default_policies.h
 
         gladius/core/collections/aligned_allocator.h
+        gladius/core/collections/steal_queue.h
 
         gladius/core/threading/job_executor.h
         gladius/core/threading/job_executor.cpp
         gladius/core/threading/job.h
-        gladius/core/threading/steal_queue.h
         gladius/core/threading/weak_semaphore.h
 
         gladius/core/filesystem/filesystem.cpp

@@ -3,10 +3,10 @@
 #include "gladius/core/logging/logging.h"
 #include "gladius/core/window/window.h"
 #include "gladius/graphics/render3d/render3d.h"
-
 #include "gladius/core/filesystem/filesystem.h"
 
 using namespace std;
+using namespace gladius;
 
 #undef main
 
@@ -18,27 +18,27 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 int main (int argc, char *argv[])
 #endif
 {
-    gladius::core::filesystem::init();
+    core::filesystem::init();
 
-    gladius::core::filesystem::open("disk:disk",
+    core::filesystem::open("disk",
                                     "D:/dev/gamedev/gladius/CMakeLists.txt",
-                                    gladius::core::filesystem::e_file_mode::read);
-    gladius::core::c_window window;
+                                    core::filesystem::e_file_mode::read);
+    core::c_window window;
 
     window.create();
 
-    if (!gladius::graphics::render3d::init(&window, false)) {
+    if (!graphics::render3d::init(&window, false)) {
         exit(-1);
     }
 
     while (true) {
         window.process_events();
-        if (!gladius::graphics::render3d::render()) {
+        if (!graphics::render3d::render()) {
             break;
         }
     }
 
-    gladius::core::filesystem::shutdown();
+    core::filesystem::shutdown();
 
     return 0;
 }

@@ -8,15 +8,11 @@
 #include <stddef.h>
 #include <atomic>
 
-#include "job.h"
-
-#define COMPILER_BARRIER    std::atomic_signal_fence(std::memory_order_consume)
-
 namespace gladius {
 namespace core {
 namespace threading {
 
-template<size_t CAPACITY>
+template<typename T, size_t CAPACITY>
 class c_steal_queue {
 private:
     static const size_t MASK = (CAPACITY - 1);
@@ -28,17 +24,17 @@ public:
     }
 
 public:
-    bool push(c_job *job) {
+    bool push(T value) {
         size_t b = m_bottom;
-        m_jobs[b & MASK] = job;
+        m_data[b & MASK] = value;
 
-        COMPILER_BARRIER;
+        std::atomic_signal_fence(std::memory_order_consume); // compiler barrier
 
         m_bottom = b + 1;
         return true;
     }
 
-    c_job *pop() {
+    bool pop(T& value) {
         size_t b = m_bottom - 1;
         m_bottom = b;
 
@@ -46,50 +42,50 @@ public:
 
         if (t <= b) {
             // non-empty handle
-            c_job *job = m_jobs[b & MASK];
+            value = m_data[b & MASK];
             if (t != b) {
                 // there's still more than one item left in the handle
-                return job;
+                return true;
             }
 
             // this is the last item in the handle
             if (!m_top.compare_exchange_strong(t, t + 1)) // TO DO ensure memory ordering
             {
                 // failed race against steal operation
-                job = nullptr;
+                return false;
             }
 
             m_bottom = t + 1;
-            return job;
+            return value;
         } else {
             // deque was already empty
             m_bottom = t;
-            return nullptr;
+            return false;
         }
     }
 
-    c_job *steal() {
+    bool steal(T& value) {
         size_t t = m_top.load(std::memory_order_consume);
         size_t b = m_bottom;
         if (t < b) {
             // non-empty handle
-            c_job *job = m_jobs[t & MASK];
+            value = m_data[t & MASK];
 
             // the interlocked function serves as a compiler barrier, and guarantees that the read happens before the CAS.
             if (!m_top.compare_exchange_strong(t, t + 1)) // TO DO ensure memory ordering
             {
                 // a concurrent steal or pop operation removed an element from the deque in the meantime.
-                return nullptr;
+                return false;
             }
-            return job;
+            return true;
         } else {
             // empty handle
-            return nullptr;
+            return false;
         }
     }
 
 private:
-    c_job *m_jobs[CAPACITY];
+    T m_data[CAPACITY];
     size_t m_bottom;
     std::atomic_size_t m_top;
 };
