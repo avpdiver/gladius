@@ -8,14 +8,11 @@
 
 #include <stdlib.h>
 
-namespace gladius
-{
-    namespace core
-    {
-        namespace memory
-        {
-        }
-    }
+namespace gladius {
+namespace core {
+namespace memory {
+}
+}
 }
 
 #endif //GLADIUS_LOCKFREE_ALLOC_POLICY_H

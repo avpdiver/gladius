@@ -9,126 +9,106 @@
 #include <mm_malloc.h>
 #include <stdexcept>
 
-namespace gladius
-{
-    namespace core
-    {
-        namespace collections
-        {
-            template<typename T, size_t ALIGNMENT>
-            class c_aligned_allocator
-            {
-            public:
-                typedef T           *pointer;
-                typedef const T     *const_pointer;
-                typedef T           &reference;
-                typedef const T     &const_reference;
-                typedef T           value_type;
-                typedef size_t      size_type;
-                typedef ptrdiff_t   difference_type;
+namespace gladius {
+namespace core {
+namespace collections {
 
-            public:
-                c_aligned_allocator()
-                {
-                }
+template<typename T, size_t ALIGNMENT>
+class c_aligned_allocator {
+public:
+	typedef T *pointer;
+	typedef const T *const_pointer;
+	typedef T &reference;
+	typedef const T &const_reference;
+	typedef T value_type;
+	typedef size_t size_type;
+	typedef ptrdiff_t difference_type;
 
-                c_aligned_allocator(const c_aligned_allocator &)
-                {
-                }
+public:
+	c_aligned_allocator() {
+	}
 
-                template<typename U>
-                c_aligned_allocator(const c_aligned_allocator<U, ALIGNMENT> &)
-                {
-                }
+	c_aligned_allocator(const c_aligned_allocator &) {
+	}
 
-                ~c_aligned_allocator()
-                {
-                }
+	template<typename U>
+	c_aligned_allocator(const c_aligned_allocator<U, ALIGNMENT> &) {
+	}
 
-            public:
-                T *address(T &r) const
-                {
-                    return &r;
-                }
+	~c_aligned_allocator() {
+	}
 
-                const T *address(const T &s) const
-                {
-                    return &s;
-                }
+public:
+	T *address(T &r) const {
+		return &r;
+	}
 
-                size_t max_size() const
-                {
-                    return (static_cast<size_t>(0) - static_cast<size_t>(1)) / sizeof(T);
-                }
+	const T *address(const T &s) const {
+		return &s;
+	}
 
-                template<typename U>
-                struct rebind
-                {
-                    typedef c_aligned_allocator<U, ALIGNMENT> other;
-                };
+	size_t max_size() const {
+		return (static_cast<size_t>(0) - static_cast<size_t>(1)) / sizeof(T);
+	}
 
-                bool operator!=(const c_aligned_allocator &other) const
-                {
-                    return !(*this == other);
-                }
+	template<typename U>
+	struct rebind {
+		typedef c_aligned_allocator<U, ALIGNMENT> other;
+	};
 
-                void construct(T *const p, const T &t) const
-                {
-                    void *const pv = static_cast<void *>(p);
+	bool operator!=(const c_aligned_allocator &other) const {
+		return !(*this == other);
+	}
 
-                    new(pv) T(t);
-                }
+	void construct(T *const p, const T &t) const {
+		void *const pv = static_cast<void *>(p);
 
-                void destroy(T *const p) const
-                {
-                    p->~T();
-                }
+		new(pv) T(t);
+	}
 
-                bool operator==(const c_aligned_allocator &other) const
-                {
-                    return true;
-                }
+	void destroy(T *const p) const {
+		p->~T();
+	}
 
-            public:
-                T *allocate(const size_t n) const
-                {
-                    if (n == 0)
-                    {
-                        return nullptr;
-                    }
+	bool operator==(const c_aligned_allocator &other) const {
+		return true;
+	}
 
-                    if (n > max_size())
-                    {
-                        throw std::length_error("c_aligned_allocator<T>::allocate() - Integer overflow.");
-                    }
+public:
+	T *allocate(const size_t n) const {
+		if (n == 0) {
+			return nullptr;
+		}
 
-                    // Mallocator wraps malloc().
-                    void *const pv = _mm_malloc(n * sizeof(T), ALIGNMENT);
+		if (n > max_size()) {
+			throw std::length_error("c_aligned_allocator<T>::allocate() - Integer overflow.");
+		}
 
-                    if (pv == nullptr)
-                    {
-                        throw std::bad_alloc();
-                    }
+		// Mallocator wraps malloc().
+		void *const pv = _mm_malloc(n * sizeof(T), ALIGNMENT);
 
-                    return static_cast<T *>(pv);
-                }
+		if (pv == nullptr) {
+			throw std::bad_alloc();
+		}
 
-                void deallocate(T *const p, const std::size_t n) const
-                {
-                    _mm_free(p);
-                }
+		return static_cast<T *>(pv);
+	}
 
-                template<typename U>
-                T *allocate(const std::size_t n, const U * /* const hint */) const
-                {
-                    return allocate(n);
-                }
+	void deallocate(T *const p, const std::size_t n) const {
+		_mm_free(p);
+	}
 
-            private:
-                c_aligned_allocator &operator=(const c_aligned_allocator &);
-            };
-        }
-    }
+	template<typename U>
+	T *allocate(const std::size_t n, const U * /* const hint */) const {
+		return allocate(n);
+	}
+
+private:
+	c_aligned_allocator &operator=(const c_aligned_allocator &);
+};
+
+}
+}
 }
 
 #endif //GLADIUS_ALIGNED_ALLOCATOR_H

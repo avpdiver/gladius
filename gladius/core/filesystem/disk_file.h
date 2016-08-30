@@ -9,39 +9,36 @@
 #include <fstream>
 #include "file.h"
 
-namespace gladius
-{
-    namespace core
-    {
-        namespace filesystem
-        {
-            class c_disk_file : public c_file
-            {
-            public:
-                static constexpr char const* DEVICE = "disk";
+namespace gladius {
+namespace core {
+namespace filesystem {
 
-            public:
-                static c_file* create(const char* filename, c_file* fallback, e_file_mode mode);
+class c_disk_file : public c_file {
+public:
+    static constexpr char const *DEVICE = "disk";
 
-            private:
-                c_disk_file(std::basic_ios<char>* stream, c_file* fallback, e_file_mode mode) :
-                        m_stream(stream), m_fallback_file(fallback), m_mode(mode)
-                {}
+public:
+    static c_file *create(const char *filename, c_file *fallback, e_file_mode mode);
 
-            public:
-                ~c_disk_file ();
+private:
+    c_disk_file(std::basic_ios<char> *stream, c_file *fallback, e_file_mode mode) :
+        m_stream(stream), m_fallback_file(fallback), m_mode(mode) {}
 
-            public:
-                virtual size_t read(char* buf, size_t bytes);
-                virtual size_t write(const char* buf, size_t bytes);
+public:
+    ~c_disk_file();
 
-            private:
-                std::basic_ios<char>* m_stream;
-                c_file* m_fallback_file;
-                e_file_mode m_mode;
-            };
-        }
-    }
+public:
+    virtual size_t read(char *buf, size_t bytes);
+    virtual size_t write(const char *buf, size_t bytes);
+
+private:
+    std::basic_ios<char> *m_stream;
+    c_file *m_fallback_file;
+    e_file_mode m_mode;
+};
+
+}
+}
 }
 
 #endif //GLADIUS_DISK_FILE_H

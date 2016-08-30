@@ -7,30 +7,27 @@
 
 #include "../types.h"
 
-namespace gladius
-{
-    namespace core
-    {
-        namespace filesystem
-        {
-            enum class e_file_mode
-            {
-                read,
-                write,
-                read_write
-            };
+namespace gladius {
+namespace core {
+namespace filesystem {
 
-            class c_file
-            {
-            public:
-                virtual ~c_file() {}
+enum class e_file_mode {
+    read,
+    write,
+    read_write
+};
 
-            public:
-                virtual size_t read(char* buf, size_t bytes) = 0;
-                virtual size_t write(const char* buf, size_t bytes) = 0;
-            };
-        }
-    }
+class c_file {
+public:
+    virtual ~c_file() {}
+
+public:
+    virtual size_t read(char *buf, size_t bytes) = 0;
+    virtual size_t write(const char *buf, size_t bytes) = 0;
+};
+
+}
+}
 }
 
 #endif //GLADIUS_FILE_H

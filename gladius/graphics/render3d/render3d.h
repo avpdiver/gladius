@@ -8,18 +8,16 @@
 #include "../../core/logging/logging.h"
 #include "../../core/window/window.h"
 
-namespace gladius
-{
-    namespace graphics
-    {
-        namespace render3d
-        {
-            bool init(core::c_window* window, bool enable_validation);
-            void shutdown();
+namespace gladius {
+namespace graphics {
+namespace render3d {
 
-            bool render();
-        }
-    }
+bool init(core::c_window *window, bool enable_validation);
+void shutdown();
+bool render();
+
+}
+}
 }
 
 #endif //GLADIUS_RENDERER3D_H

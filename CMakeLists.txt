@@ -45,6 +45,21 @@ endif ()
 # Libraries                                                                    #
 ################################################################################
 
+if ("$ENV{VULKAN_SDK}" STREQUAL "")
+    message(FATAL_ERROR "You need to have system-wide variable with path to Vulkan SDK")
+else()
+    message(STATUS "Vulkan SDK path: " $ENV{VULKAN_SDK})
+endif()
+
+if (LINUX)
+    set(_SYS pthread dl atomic xcb)
+    set(_VULKAN_LIB vulkan)
+elseif (WINDOWS)
+    set(_SYS mingw32 version Imm32 Winmm)
+    set(_VULKAN_LIB vulkan-1)
+else ()
+    message(FATAL_ERROR "Unhandled case")
+endif ()
 
 ################################################################################
 # GLadius                                                                   #
@@ -64,7 +79,6 @@ set(
         gladius/core/memory/default_policies.h
 
         gladius/core/collections/aligned_allocator.h
-        gladius/core/collections/lock_free_single_queue.h
 
         gladius/core/threading/job_executor.h
         gladius/core/threading/job_executor.cpp
@@ -111,24 +125,15 @@ set(
         gladius/graphics/render3d/render3d_pipeline.cpp
         gladius/graphics/render3d/render3d_pipeline.h
 
-        main.cpp)
-
-if (LINUX)
-    set(_SYS pthread dl atomic xcb)
-    set(_VULKAN_LIB vulkan)
-elseif (WINDOWS)
-    set(_SYS mingw32 version Imm32 Winmm)
-    include_directories($ENV{VULKAN_HOME}/Include/)
-    link_directories($ENV{VULKAN_HOME}/Bin/)
-    set(_VULKAN_LIB vulkan-1)
-else ()
-    message(FATAL_ERROR "Unhandled case")
-endif ()
+        main.cpp gladius/core/collections/concurrent_queue.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/gli"
+        $ENV{VULKAN_SDK}/include/
 )
+
+link_directories($ENV{VULKAN_SDK}/lib/)
 
 add_executable(gladius ${SOURCE_FILES})
 target_link_libraries(gladius ${_SYS} ${_VULKAN_LIB})

@@ -7,18 +7,16 @@
 
 #include <stdint.h>
 
-namespace gladius
-{
-    namespace graphics
-    {
-        namespace render3d
-        {
-            namespace resources
-            {
-                bool load_texture(const char *filename, uint32_t format);
-            }
-        }
-    }
+namespace gladius {
+namespace graphics {
+namespace render3d {
+namespace resources {
+
+bool load_texture(const char *filename, uint32_t format);
+
+}
+}
+}
 }
 
 #endif //GLADIUS_RENDERER3D_TEXTURE_H

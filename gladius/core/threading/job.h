@@ -9,27 +9,25 @@
 #include <stddef.h>
 #include "../types.h"
 
-namespace gladius
-{
-    namespace core
-    {
-        namespace threading
-        {
-            typedef handle_t job_handle_t;
+namespace gladius {
+namespace core {
+namespace threading {
 
-            struct c_job;
+typedef handle_t job_handle_t;
 
-            typedef void (*job_function_t) (void *);
+struct c_job;
 
-            struct c_job
-            {
-                job_function_t m_function;
-                c_job *m_parent;
-                std::atomic_size_t m_unfinished_jobs;
-                void* m_data;
-            };
-        }
-    }
+typedef void (*job_function_t)(void *);
+
+struct c_job {
+    job_function_t m_function;
+    c_job *m_parent;
+    std::atomic_size_t m_unfinished_jobs;
+    void *m_data;
+};
+
+}
+}
 }
 
 #endif //GLADIUS_JOB_H

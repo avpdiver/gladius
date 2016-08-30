@@ -4,34 +4,28 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <vector>
-#include <mutex>
 #include "logging.h"
 
-namespace gladius
-{
-    namespace core
-    {
-        namespace logging
-        {
-            bool init()
-            {
-                return true;
-            }
+namespace gladius {
+namespace core {
+namespace logging {
 
-            void shutdown()
-            {
+bool init() {
+    return true;
+}
 
-            }
+void shutdown() {
 
-            void add_log(const char *format, ...)
-            {
-                /*char* buffer;
-                va_list args;
-                va_start (args, format);
-                vsnprintf(buffer, 1, format, args);
-                va_end (args);*/
-            }
-        }
-    }
+}
+
+void log(e_log_level level, const char *type, const char *format, ...) {
+    /*char* buffer;
+	va_list args;
+	va_start (args, format);
+	vsnprintf(buffer, 1, format, args);
+	va_end (args);*/
+}
+
+}
+}
 }

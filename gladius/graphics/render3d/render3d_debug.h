@@ -11,24 +11,20 @@
 #define VK_VERIFY(r) { VkResult result = (r); if (result != VK_SUCCESS) { SET_ERRORF("%s", debug::error_text(result)); return false; } }
 #define VK_VERIFY_RETURN(r, ret) { VkResult result = (r); if (result != VK_SUCCESS) { SET_ERRORF("%s", debug::error_text(result)); return ret; } }
 
-namespace gladius
-{
-    namespace graphics
-    {
-        namespace render3d
-        {
-            namespace debug
-            {
-                extern std::vector<const char *> validation_layer_names;
+namespace gladius {
+namespace graphics {
+namespace render3d {
+namespace debug {
 
-                bool init();
+extern std::vector<const char *> validation_layer_names;
 
-                void shutdown();
+bool init();
+void shutdown();
+const char *error_text(int result);
 
-                const char *error_text(int result);
-            }
-        }
-    }
+}
+}
+}
 }
 
 #endif //GLADIUS_RENDER3D_DEBUG_H

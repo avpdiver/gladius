@@ -10,51 +10,46 @@
 #include <initializer_list>
 #include "file.h"
 
-namespace gladius
-{
-    namespace core
-    {
-        namespace filesystem
-        {
-            typedef c_file *(*file_creator_t)(const char *filename, c_file *fallback, e_file_mode mode);
+namespace gladius {
+namespace core {
+namespace filesystem {
 
-            bool init();
+typedef c_file *(*file_creator_t)(const char *filename, c_file *fallback, e_file_mode mode);
 
-            void shutdown();
+bool init();
 
-            void add_device(const char *device, file_creator_t creator);
+void shutdown();
 
-            handle_t open(const char *devices, const char *filename, e_file_mode mode);
+void add_device(const char *device, file_creator_t creator);
 
-            void close(handle_t file);
+handle_t open(const char *devices, const char *filename, e_file_mode mode);
 
-            size_t read(handle_t file, char *buf, size_t bytes);
+void close(handle_t file);
 
-            size_t write(handle_t file, const char *buf, size_t bytes);
+size_t read(handle_t file, char *buf, size_t bytes);
 
-            template<typename T>
-            bool read(handle_t file, T &value)
-            {
-                size_t actual = read(file, &value, sizeof(T));
-                if (actual == sizeof(T))
-                {
-                    return true;
-                }
-                return false;
-            }
+size_t write(handle_t file, const char *buf, size_t bytes);
 
-            template<typename T>
-            bool write(handle_t file, const T &value)
-            {
-                size_t actual = write(file, &value, sizeof(T));
-                if (actual == sizeof(T))
-                {
-                    return true;
-                }
-                return false;
-            }
-        }
+template<typename T>
+bool read(handle_t file, T &value) {
+    size_t actual = read(file, &value, sizeof(T));
+    if (actual == sizeof(T)) {
+        return true;
     }
+    return false;
+}
+
+template<typename T>
+bool write(handle_t file, const T &value) {
+    size_t actual = write(file, &value, sizeof(T));
+    if (actual == sizeof(T)) {
+        return true;
+    }
+    return false;
+}
+
+}
+}
 }
 
 #endif //GLADIUS_FILESYSTEM_H

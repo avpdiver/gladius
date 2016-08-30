@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 
-namespace gladius
-{
-    typedef size_t handle_t;
-    static const handle_t INVALID_HANDLE = -1;
+namespace gladius {
+
+typedef size_t handle_t;
+static const handle_t INVALID_HANDLE = -1;
+
 }
 
 #endif //GLADIUS_TYPES_H

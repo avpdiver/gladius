@@ -25,19 +25,15 @@ int main (int argc, char *argv[])
                                     gladius::core::filesystem::e_file_mode::read);
     gladius::core::c_window window;
 
-    window.create ();
+    window.create();
 
-    if (!gladius::graphics::render3d::init (&window, false))
-    {
-        std::cout << gladius::core::logging::get_error () << std::endl;
-        exit (-1);
+    if (!gladius::graphics::render3d::init(&window, false)) {
+        exit(-1);
     }
 
-    while (true)
-    {
-        window.process_events ();
-        if (!gladius::graphics::render3d::render())
-        {
+    while (true) {
+        window.process_events();
+        if (!gladius::graphics::render3d::render()) {
             break;
         }
     }

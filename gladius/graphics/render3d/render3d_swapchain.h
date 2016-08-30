@@ -7,16 +7,15 @@
 
 #include <glm/vec2.hpp>
 
-namespace gladius
-{
-    namespace graphics
-    {
-        namespace render3d
-        {
-            bool create_swap_chain(bool create_veiws = false);
-            void shutdown_swap_chain();
-        }
-    }
+namespace gladius {
+namespace graphics {
+namespace render3d {
+
+bool create_swap_chain(bool create_veiws = false);
+void shutdown_swap_chain();
+
+}
+}
 }
 
 #endif //GLADIUS_RENDER3D_SWAPCHAIN_H

@@ -49,66 +49,61 @@
 #include <vector>
 #include <glm/vec2.hpp>
 
-namespace gladius
-{
-    namespace graphics
-    {
-        namespace render3d
-        {
-            namespace vk_globals
-            {
-                extern bool is_init;
+namespace gladius {
+namespace graphics {
+namespace render3d {
+namespace vk_globals {
 
-                extern VkInstance instance;
-                extern VkSurfaceKHR surface;
-                extern VkPhysicalDevice gpu;
-                extern VkDevice device;
+extern bool is_init;
 
-                struct s_device_queue {
-                    uint32_t index = UINT32_MAX;
-                    VkQueue handle = nullptr;
-                };
+extern VkInstance instance;
+extern VkSurfaceKHR surface;
+extern VkPhysicalDevice gpu;
+extern VkDevice device;
 
-                extern s_device_queue graphics_queue;
-                extern s_device_queue present_queue;
+struct s_device_queue {
+	uint32_t index = UINT32_MAX;
+	VkQueue handle = nullptr;
+};
 
-                extern VkSurfaceFormatKHR surface_format;
-                extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
+extern s_device_queue graphics_queue;
+extern s_device_queue present_queue;
 
-                struct s_swapchain
-                {
-                    VkFormat format;
-                    VkSwapchainKHR handle;
-                    std::vector<VkImage> images;
-                    std::vector<VkImageView> views;
-                };
-                extern s_swapchain swapchain;
+extern VkSurfaceFormatKHR surface_format;
+extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
 
-                extern std::vector<VkCommandBuffer> present_command_buffers;
+struct s_swapchain {
+	VkFormat format;
+	VkSwapchainKHR handle;
+	std::vector<VkImage> images;
+	std::vector<VkImageView> views;
+};
+extern s_swapchain swapchain;
 
-                namespace depth_buffer_info
-                {
-                    extern VkImage image;
-                    extern VkImageView image_view;
-                    extern VkFormat format;
-                }
+extern std::vector<VkCommandBuffer> present_command_buffers;
 
-                struct s_thread_context
-                {
-                    VkQueue queue = nullptr;
-                    VkCommandPool command_pool = nullptr;
-                };
-                extern thread_local s_thread_context thread_context;
+struct s_depth_buffer_info {
+	VkImage image;
+	VkImageView image_view;
+	VkFormat format;
+};
+extern s_depth_buffer_info depth_buffer_info;
 
-                struct s_sync_semaphores
-                {
-                    VkSemaphore image_available_semaphore = nullptr;
-                    VkSemaphore rendering_finished_semaphore = nullptr;
-                };
-                extern s_sync_semaphores semaphores;
-            }
-        }
-    }
+struct s_thread_context {
+	VkQueue queue = nullptr;
+	VkCommandPool command_pool = nullptr;
+};
+extern thread_local s_thread_context thread_context;
+
+struct s_sync_semaphores {
+	VkSemaphore image_available_semaphore = nullptr;
+	VkSemaphore rendering_finished_semaphore = nullptr;
+};
+extern s_sync_semaphores semaphores;
+
+}
+}
+}
 }
 
 #include "render3d_debug.h"
