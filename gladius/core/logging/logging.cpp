@@ -14,11 +14,13 @@ namespace gladius {
 namespace core {
 namespace logging {
 
-const char* 	HEAD 	= "<html><head></head><body>\n<table style='border: 1px'>\n<tr><th>TYPE</th><th>LEVEL</th><th>FILE</th><th>LINE</th><th>DESC</th></tr>\n";
+const char* 	HEAD 	= "<html><head></head><body>\n<table style='border: 1px'>\n<tr><th>TIME</th><th>TYPE</th><th>LEVEL</th><th>FILE</th><th>LINE</th><th>DESC</th></tr>\n";
 const char* 	TAIL 	= "</table></body></html>";
-const char* 	ROW 	= "<tr><td>%s</td><td>%s</td><td>%s</td><td>%i</td><td>%s</td></tr>\n";
+const char* 	ROW 	= "<tr><td>%i</td><td>%s</td><td>%s</td><td>%s</td><td>%i</td><td>%s</td></tr>\n";
 const size_t 	ROW_LEN = std::char_traits<char>::length(ROW);
+
 const std::array<const char*, ((size_t)(e_log_level::debug) + 1)> LEVELS {{ "FATAL", "ERROR", "WARN", "INFO", "DEBUG" }};
+const auto 		START_TIME = std::chrono::system_clock::now();
 
 e_log_level 		g_log_level;
 std::atomic_flag 	g_is_running = ATOMIC_FLAG_INIT;
@@ -50,14 +52,19 @@ void log(e_log_level level, const char *type, const char* filename, int line, co
 		int w = std::vsnprintf(&(g_local_buffer.at(0)), g_local_buffer.length(), format, args);
 		va_end (args);
 		if (w > 0 && w < (int) g_local_buffer.size()) {
-			len = std::char_traits<char>::length(type)
+			auto now = std::chrono::system_clock::now();
+			auto time = now - START_TIME;
+
+			len = 10  										// space for time.count())
+				+ std::char_traits<char>::length(type)
 				+ std::char_traits<char>::length(LEVELS[(size_t)level])
 				+ std::char_traits<char>::length(filename)
 				+ g_local_buffer.length()
 				+ ROW_LEN;
+
 			buffer->resize(len);
-			w = std::snprintf(&(buffer->at(0)), buffer->length(), ROW, type, LEVELS[(size_t)level], filename, line,
-							  g_local_buffer.c_str());
+			w = std::snprintf(&(buffer->at(0)), buffer->length(), ROW, time.count(), type, LEVELS[(size_t)level],
+							  filename, line, g_local_buffer.c_str());
 			buffer->resize(w);
 
 			break;

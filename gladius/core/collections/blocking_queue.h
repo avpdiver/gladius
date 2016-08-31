@@ -26,7 +26,9 @@ public:
 
 	T pop() {
 		std::unique_lock<std::mutex> lock(m_mutex);
-		m_condition.wait(lock, [=] { return !m_queue.empty(); });
+		while (m_queue.empty()) {
+			m_condition.wait(lock, [=] { return !m_queue.empty(); });
+		}
 		T rc(std::move(m_queue.back()));
 		m_queue.pop_back();
 		return rc;
