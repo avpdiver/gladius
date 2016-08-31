@@ -14,12 +14,33 @@ namespace gladius {
 namespace core {
 namespace logging {
 
-const char* 	HEAD 	= "<html><head></head><body>\n<table style='border: 1px'>\n<tr><th>TIME</th><th>TYPE</th><th>LEVEL</th><th>FILE</th><th>LINE</th><th>DESC</th></tr>\n";
+const char* 	HEAD 	=
+	"<html>\n"
+		"<head>\n"
+		"<style>\n"
+		"   table {\n"
+		"    border: 4px double #333;\n"
+		"    border-collapse: separate;\n"
+		"    width: 100%;\n"
+		"    border-spacing: 3px 3px;\n"
+		"   }\n"
+		"   td {\n"
+		"    padding: 5px;\n"
+		"    border: 1px solid #a52a2a;\n"
+		"   }\n"
+		"  </style>\n"
+		"</head>\n"
+		"<body>\n"
+		"<table style='border: 1px'>\n"
+		"<tr><th>TIME</th><th>TYPE</th><th>LEVEL</th><th>FILE</th><th>LINE</th><th>DESC</th></tr>\n";
+
 const char* 	TAIL 	= "</table></body></html>";
-const char* 	ROW 	= "<tr><td>%i</td><td>%s</td><td>%s</td><td>%s</td><td>%i</td><td>%s</td></tr>\n";
-const size_t 	ROW_LEN = std::char_traits<char>::length(ROW);
+const char* 	ROW 	= "<tr style='background-color:%s'><td>%i</td><td>%s</td><td>%s</td><td>%s</td><td>%i</td><td>%s</td></tr>\n";
+const size_t 	ROW_LEN = std::char_traits<char>::length(ROW) + 7; // 7 for web color format #rrggbb
 
 const std::array<const char*, ((size_t)(e_log_level::debug) + 1)> LEVELS {{ "FATAL", "ERROR", "WARN", "INFO", "DEBUG" }};
+const std::array<const char*, ((size_t)(e_log_level::debug) + 1)> LEVELS_COLORS {{ "#ff0000", "#ff4000", "#ffff00", "#009800", "#0000ff" }};
+
 const auto 		START_TIME = std::chrono::system_clock::now();
 
 e_log_level 		g_log_level;
@@ -63,8 +84,8 @@ void log(e_log_level level, const char *type, const char* filename, int line, co
 				+ ROW_LEN;
 
 			buffer->resize(len);
-			w = std::snprintf(&(buffer->at(0)), buffer->length(), ROW, time.count(), type, LEVELS[(size_t)level],
-							  filename, line, g_local_buffer.c_str());
+			w = std::snprintf(&(buffer->at(0)), buffer->length(), ROW, LEVELS_COLORS[(size_t)level], time.count(), type,
+							  LEVELS[(size_t)level], filename, line, g_local_buffer.c_str());
 			buffer->resize(w);
 
 			break;

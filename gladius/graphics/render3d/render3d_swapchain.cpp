@@ -70,7 +70,7 @@ VkImageUsageFlags get_swapchain_usage_flags(VkSurfaceCapabilitiesKHR &surface_ca
     if (surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) {
         return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     }
-    SET_ERROR ("VK_IMAGE_USAGE_TRANSFER_DST image usage is not supported by the swap chain!", "");
+    SET_ERROR (LOG_TYPE, "VK_IMAGE_USAGE_TRANSFER_DST image usage is not supported by the swap chain!", "");
     return static_cast<VkImageUsageFlags>(-1);
 }
 
@@ -101,7 +101,7 @@ VkPresentModeKHR get_swapchain_present_mode(std::vector<VkPresentModeKHR> &prese
             return present_mode;
         }
     }
-    SET_ERROR ("FIFO present mode is not supported by the swap chain!", "");
+    SET_ERROR (LOG_TYPE, "FIFO present mode is not supported by the swap chain!", "");
     return static_cast<VkPresentModeKHR>(-1);
 }
 
@@ -121,7 +121,7 @@ bool create_swap_chain(bool create_veiws) {
     uint32_t formats_count;
     VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR(vk_globals::gpu, vk_globals::surface, &formats_count,
                                                    nullptr));
-    VERIFY_LOG(formats_count > 0, "Error occurred during presentation surface formats enumeration!", "");
+    VERIFY_LOG(formats_count > 0, LOG_TYPE, "Error occurred during presentation surface formats enumeration!", "");
 
     std::vector<VkSurfaceFormatKHR> surface_formats(formats_count);
     VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR(vk_globals::gpu, vk_globals::surface, &formats_count,
@@ -131,7 +131,7 @@ bool create_swap_chain(bool create_veiws) {
     uint32_t present_modes_count;
     VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR(vk_globals::gpu, vk_globals::surface,
                                                         &present_modes_count, nullptr));
-    VERIFY_LOG(present_modes_count > 0,
+    VERIFY_LOG(present_modes_count > 0, LOG_TYPE,
                "Error occurred during presentation surface present modes enumeration!", "");
 
     std::vector<VkPresentModeKHR> present_modes(present_modes_count);
@@ -180,7 +180,7 @@ bool create_swap_chain(bool create_veiws) {
 
     uint32_t image_count = 0;
     VK_VERIFY(vkGetSwapchainImagesKHR(vk_globals::device, vk_globals::swapchain.handle, &image_count, nullptr));
-    VERIFY_LOG(image_count > 0, "Could not get swap chain images!", "");
+    VERIFY_LOG(image_count > 0, LOG_TYPE, "Could not get swap chain images!", "");
 
     vk_globals::swapchain.images.resize(image_count);
     VK_VERIFY (vkGetSwapchainImagesKHR(vk_globals::device, vk_globals::swapchain.handle, &image_count,

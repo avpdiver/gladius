@@ -47,7 +47,7 @@ void on_window_close(void *) {
 bool create_instance(const char *app_name) {
     uint32_t extensions_count = 0;
     VK_VERIFY (vkEnumerateInstanceExtensionProperties(nullptr, &extensions_count, nullptr));
-    VERIFY_LOG (extensions_count > 0, "Error occurred during instance extensions enumeration!", "");
+    VERIFY_LOG (extensions_count > 0, LOG_TYPE, "Error occurred during instance extensions enumeration!", "");
 
     std::vector<VkExtensionProperties> available_extensions(extensions_count);
     VK_VERIFY (vkEnumerateInstanceExtensionProperties(nullptr, &extensions_count, &available_extensions[0]));
@@ -62,8 +62,8 @@ bool create_instance(const char *app_name) {
     };
 
     for (size_t i = 0; i < extensions.size(); ++i) {
-        VERIFY_LOG(utils::check_extension(extensions[i], available_extensions),
-                    "Could not find instance extension named \"%s\"!", extensions[i]);
+        VERIFY_LOG(utils::check_extension(extensions[i], available_extensions), LOG_TYPE,
+                   "Could not find instance extension named \"%s\"!", extensions[i]);
     }
 
     VkApplicationInfo application_info = {
@@ -152,7 +152,7 @@ bool create_present_command_buffer() {
     vk_globals::present_command_buffers.resize(vk_globals::swapchain.images.size());
     VERIFY_LOG(resources::create_command_buffers(
         vk_globals::present_command_buffers.size(),
-        &(vk_globals::present_command_buffers[0])), "Failed create present command buffers", "");
+        &(vk_globals::present_command_buffers[0])), LOG_TYPE, "Failed create present command buffers", "");
 
     VkCommandBufferBeginInfo cmd_buffer_begin_info = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,  // VkStructureType                        sType
@@ -310,7 +310,7 @@ bool render() {
         create_swap_chain();
         return true;
     default:
-        SET_ERROR ("Problem occurred during swap chain image acquisition!", "");
+        SET_ERROR (LOG_TYPE, "Problem occurred during swap chain image acquisition!", "");
         return false;
     }
 
@@ -348,7 +348,7 @@ bool render() {
     case VK_SUBOPTIMAL_KHR:
         return true;
     default:
-        SET_ERROR ("Problem occurred during image presentation!", "");
+        SET_ERROR (LOG_TYPE, "Problem occurred during image presentation!", "");
         return false;
     }
 

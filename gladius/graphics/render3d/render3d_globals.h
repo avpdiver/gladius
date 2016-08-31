@@ -29,7 +29,7 @@
     entrypoint = (PFN_vk##entrypoint) vkGetInstanceProcAddr(inst, "vk"#entrypoint); \
     if (entrypoint == nullptr)                                                      \
 	{																                \
-        SET_ERROR("Faulid to get vk"#entrypoint, "");                               \
+        SET_ERROR(LOG_TYPE, "Faulid to get vk"#entrypoint, "");                     \
         return false;                                                               \
     }                                                                               \
 }
@@ -40,7 +40,7 @@
     entrypoint = (PFN_vk##entrypoint) vkGetDeviceProcAddr(dev, "vk"#entrypoint);    \
     if (entrypoint == nullptr)                                                      \
 	{																                \
-        SET_ERROR("Faulid to get vk"#entrypoint);                                   \
+        SET_ERROR(LOG_TYPE, "Faulid to get vk"#entrypoint);                         \
         return false;                                                               \
     }                                                                               \
 }
@@ -52,6 +52,8 @@
 namespace gladius {
 namespace graphics {
 namespace render3d {
+
+constexpr char const *LOG_TYPE = "RENDER3D";
 namespace vk_globals {
 
 extern bool is_init;
@@ -103,6 +105,7 @@ extern s_sync_semaphores semaphores;
 
 }
 }
+
 }
 }
 

@@ -5,12 +5,12 @@
 #ifndef GLADIUS_LOGGING_H
 #define GLADIUS_LOGGING_H
 
-#define SET_ERROR(format, ...) gladius::core::logging::log(gladius::core::logging::e_log_level::error, "general", \
+#define SET_ERROR(type, format, ...) gladius::core::logging::log(gladius::core::logging::e_log_level::error, type, \
 															__FILENAME__, __LINE__, format, __VA_ARGS__)
 
-#define VERIFY_LOG(c, format, ...) 																				\
+#define VERIFY_LOG(c, type, format, ...) 																		\
 if (!(c)) {																										\
-	gladius::core::logging::log(gladius::core::logging::e_log_level::error, "general", __FILENAME__, __LINE__, 	\
+	gladius::core::logging::log(gladius::core::logging::e_log_level::error, type, __FILENAME__, __LINE__, 		\
 								format, __VA_ARGS__); 															\
 	return false; 																								\
 }
