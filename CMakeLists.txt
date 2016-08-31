@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 project(gladius)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Werror=return-type")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -Wall -pedantic -Werror=return-type")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_CURRENT_SOURCE_DIR}/,,$(abspath $<))\"'")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
@@ -80,6 +80,8 @@ set(
 
         gladius/core/collections/aligned_allocator.h
         gladius/core/collections/steal_queue.h
+        gladius/core/collections/concurrent_queue.h
+        gladius/core/collections/blocking_queue.h
 
         gladius/core/threading/job_executor.h
         gladius/core/threading/job_executor.cpp
@@ -125,7 +127,10 @@ set(
         gladius/graphics/render3d/render3d_pipeline.cpp
         gladius/graphics/render3d/render3d_pipeline.h
 
-        main.cpp gladius/core/collections/concurrent_queue.h gladius/core/collections/blocking_queue.h)
+        gladius/gladius.h
+        gladius/gladius.cpp
+
+        main.cpp)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

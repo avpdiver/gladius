@@ -48,7 +48,7 @@ bool create_staging_texture(VkImageCreateInfo &image_create_info, s_texture &tex
 
         mem_alloc_info.memoryTypeIndex = utils::get_memory_type(mem_reqs.memoryTypeBits,
                                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-        VERIFY_LOG(mem_alloc_info.memoryTypeIndex >= 0, "There is no required memory type");
+        VERIFY_LOG(mem_alloc_info.memoryTypeIndex >= 0, "There is no required memory type", "");
 
         VK_VERIFY(vkAllocateMemory(vk_globals::device, &mem_alloc_info, nullptr, &mip_levels[level].memory));
         VK_VERIFY(vkBindImageMemory(vk_globals::device, mip_levels[level].image, mip_levels[level].memory, 0));
@@ -87,7 +87,7 @@ bool create_staging_texture(VkImageCreateInfo &image_create_info, s_texture &tex
     mem_alloc_info.allocationSize = mem_reqs.size;
     mem_alloc_info.memoryTypeIndex = utils::get_memory_type(mem_reqs.memoryTypeBits,
                                                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    VERIFY_LOG(mem_alloc_info.memoryTypeIndex >= 0, "There is no required memory type");
+    VERIFY_LOG(mem_alloc_info.memoryTypeIndex >= 0, "There is no required memory type", "");
 
     VK_VERIFY(vkAllocateMemory(vk_globals::device, &mem_alloc_info, nullptr, &texture.device_memory));
     VK_VERIFY(vkBindImageMemory(vk_globals::device, texture.image, texture.device_memory, 0));
@@ -219,7 +219,7 @@ bool load_texture(const char *filename, uint32_t image_format) {
     VkFormatProperties formatProperties;
 
     gli::texture2d tex2d(gli::load(filename));
-    VERIFY_LOGF(!tex2d.empty(), "Failed to load texture %s", filename);
+    VERIFY_LOG(!tex2d.empty(), "Failed to load texture %s", filename);
 
     VkFormat format = static_cast<VkFormat>(image_format);
 
@@ -248,10 +248,10 @@ bool load_texture(const char *filename, uint32_t image_format) {
 
     if (use_staging) {
         VERIFY_LOG(create_staging_texture(image_create_info, texture, tex2d),
-                   "Failed create staged texture");
+                   "Failed create staged texture", "");
     } else {
         VERIFY_LOG(create_mapped_texture(image_create_info, texture, tex2d),
-                   "Failed create mapped texture");
+                   "Failed create mapped texture", "");
     }
 
     // Create sampler

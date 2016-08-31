@@ -26,20 +26,20 @@ bool check_physical_device_properties(VkPhysicalDevice physical_device,
     if ((vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extensions_count, nullptr)
         != VK_SUCCESS)
         || (extensions_count == 0)) {
-        SET_ERRORF ("Error occurred during physical device %d extensions enumeration!", physical_device);
+        SET_ERROR ("Error occurred during physical device %d extensions enumeration!", physical_device);
         return false;
     }
 
     std::vector<VkExtensionProperties> available_extensions(extensions_count);
     if (vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extensions_count,
                                              &available_extensions[0]) != VK_SUCCESS) {
-        SET_ERRORF ("Error occurred during physical device %d extensions enumeration!", physical_device);
+        SET_ERROR ("Error occurred during physical device %d extensions enumeration!", physical_device);
         return false;
     }
 
     for (size_t i = 0; i < device_extensions.size(); ++i) {
         if (!utils::check_extension(device_extensions[i], available_extensions)) {
-            SET_ERRORF ("Physical device %d doesn't support extension named \"%s\"!", physical_device,
+            SET_ERROR ("Physical device %d doesn't support extension named \"%s\"!", physical_device,
                         device_extensions[i]);
             return false;
         }
@@ -54,14 +54,14 @@ bool check_physical_device_properties(VkPhysicalDevice physical_device,
     uint32_t major_version = VK_VERSION_MAJOR(device_properties.apiVersion);
 
     if ((major_version < 1) && (device_properties.limits.maxImageDimension2D < 4096)) {
-        SET_ERRORF ("Physical device %d doesn't support required parameters!", physical_device);
+        SET_ERROR ("Physical device %d doesn't support required parameters!", physical_device);
         return false;
     }
 
     uint32_t queue_families_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_families_count, nullptr);
     if (queue_families_count == 0) {
-        SET_ERRORF ("Physical device %d doesn't have any handle families!", physical_device);
+        SET_ERROR ("Physical device %d doesn't have any handle families!", physical_device);
         return false;
     }
 
@@ -102,7 +102,7 @@ bool check_physical_device_properties(VkPhysicalDevice physical_device,
 
     // If this device doesn't support queues with graphics and present capabilities don't use it
     if ((graphics_queue_family_index == UINT32_MAX) || (present_queue_family_index == UINT32_MAX)) {
-        SET_ERRORF ("Could not find handle families with required properties on physical device %d!",
+        SET_ERROR ("Could not find handle families with required properties on physical device %d!",
                     physical_device);
         return false;
     }
@@ -115,7 +115,7 @@ bool check_physical_device_properties(VkPhysicalDevice physical_device,
 bool create_device() {
     uint32_t num_devices = 0;
     VK_VERIFY (vkEnumeratePhysicalDevices(vk_globals::instance, &num_devices, nullptr));
-    VERIFY_LOG (num_devices > 0, "Error occurred during physical devices enumeration!");
+    VERIFY_LOG (num_devices > 0, "Error occurred during physical devices enumeration!", "");
 
     std::vector<VkPhysicalDevice> physical_devices(num_devices);
     VK_VERIFY(vkEnumeratePhysicalDevices(vk_globals::instance, &num_devices, &physical_devices[0]));
@@ -136,7 +136,7 @@ bool create_device() {
     }
 
     VERIFY_LOG (vk_globals::gpu != nullptr,
-                "Could not select physical device based on the chosen properties!");
+                "Could not select physical device based on the chosen properties!", "");
 
     std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
     std::vector<float> queue_priorities = {1.0f};

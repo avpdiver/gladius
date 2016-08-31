@@ -29,7 +29,7 @@
     entrypoint = (PFN_vk##entrypoint) vkGetInstanceProcAddr(inst, "vk"#entrypoint); \
     if (entrypoint == nullptr)                                                      \
 	{																                \
-        SET_ERROR("Faulid to get vk"#entrypoint);                                   \
+        SET_ERROR("Faulid to get vk"#entrypoint, "");                               \
         return false;                                                               \
     }                                                                               \
 }

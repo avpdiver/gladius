@@ -2,6 +2,7 @@
 // Created by pav on 12.08.15.
 //
 
+#include <cassert>
 #include "filesystem.h"
 #include "disk_file.h"
 
@@ -34,10 +35,12 @@ c_disk_file::~c_disk_file() {
 }
 
 size_t c_disk_file::read(char *buf, size_t bytes) {
+    assert(m_mode == e_file_mode::read || m_mode == e_file_mode::read_write);
     return dynamic_cast<std::ifstream *>(m_stream)->readsome(buf, bytes);
 }
 
 size_t c_disk_file::write(const char *buf, size_t bytes) {
+	assert(m_mode == e_file_mode::write || m_mode == e_file_mode::read_write);
     auto stream = dynamic_cast<std::ofstream *>(m_stream);
     auto before = stream->tellp();
     stream->write(buf, bytes);
