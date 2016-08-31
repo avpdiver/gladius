@@ -99,9 +99,10 @@ void c_window::process_events() {
 	while (true) {
 		event = xcb_poll_for_event(m_window_info.connection);
 		if (event) {
+
 			switch (event->response_type & 0x7f) {
 				// Resize
-			case XCB_CONFIGURE_NOTIFY:
+			case XCB_CONFIGURE_NOTIFY: {
 				xcb_configure_notify_event_t *configure_event = (xcb_configure_notify_event_t *) event;
 				static uint16_t width = configure_event->width;
 				static uint16_t height = configure_event->height;
@@ -112,6 +113,7 @@ void c_window::process_events() {
 					height = configure_event->height;
 				}
 				break;
+			}
 
 				// Close
 			case XCB_CLIENT_MESSAGE:
@@ -121,8 +123,10 @@ void c_window::process_events() {
 					return;
 				}
 				break;
-			case XCB_KEY_PRESS:break;
+			case XCB_KEY_PRESS:
+				break;
 			}
+
 			free(event);
 		} else {
 			break;

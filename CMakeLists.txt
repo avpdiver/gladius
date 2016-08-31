@@ -125,7 +125,7 @@ set(
         gladius/graphics/render3d/render3d_pipeline.cpp
         gladius/graphics/render3d/render3d_pipeline.h
 
-        main.cpp gladius/core/collections/concurrent_queue.h)
+        main.cpp gladius/core/collections/concurrent_queue.h gladius/core/collections/blocking_queue.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

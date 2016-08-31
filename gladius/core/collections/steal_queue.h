@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 #include <atomic>
+#include <vector>
 
 namespace gladius {
 namespace core {
-namespace threading {
+namespace collections {
 
 template<typename T, size_t CAPACITY>
 class c_steal_queue {
@@ -18,9 +19,7 @@ private:
     static const size_t MASK = (CAPACITY - 1);
 
 public:
-    c_steal_queue() {
-        m_bottom = 0;
-        m_top = 0;
+    c_steal_queue() : m_data(CAPACITY), m_bottom(0), m_top(0) {
     }
 
 public:
@@ -85,7 +84,7 @@ public:
     }
 
 private:
-    T m_data[CAPACITY];
+    std::vector<T> m_data;
     size_t m_bottom;
     std::atomic_size_t m_top;
 };

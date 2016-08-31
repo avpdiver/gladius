@@ -18,27 +18,26 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 int main (int argc, char *argv[])
 #endif
 {
-    core::filesystem::init();
+	core::logging::init(core::logging::e_log_level::debug);
+	core::c_window window;
 
-    core::filesystem::open("disk",
-                                    "D:/dev/gamedev/gladius/CMakeLists.txt",
-                                    core::filesystem::e_file_mode::read);
-    core::c_window window;
+	window.create();
 
-    window.create();
+	/*if (!graphics::render3d::init(&window, false)) {
+		exit(-1);
+	}*/
 
-    if (!graphics::render3d::init(&window, false)) {
-        exit(-1);
-    }
+	while (true) {
+		window.process_events();
+		if (window.is_closed()) {
+			break;
+		}
+		/*if (!graphics::render3d::render()) {
+			break;
+		}*/
+	}
 
-    while (true) {
-        window.process_events();
-        if (!graphics::render3d::render()) {
-            break;
-        }
-    }
+	core::logging::shutdown();
 
-    core::filesystem::shutdown();
-
-    return 0;
+	return 0;
 }

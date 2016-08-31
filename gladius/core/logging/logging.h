@@ -19,11 +19,11 @@ enum class e_log_level {
     fatal,
     error,
     warn,
-    debug,
-    info
+    info,
+	debug
 };
 
-bool init();
+bool init(e_log_level level);
 void shutdown();
 
 void log(e_log_level level, const char *type, const char *format, ...);

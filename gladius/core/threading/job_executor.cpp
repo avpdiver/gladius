@@ -4,7 +4,6 @@
 
 #include <thread>
 #include <queue>
-#include <stdlib.h>
 #include "job_executor.h"
 #include "../collections/steal_queue.h"
 
@@ -19,7 +18,7 @@ static const size_t JOB_COUNT = 1024;
 struct s_thread_context {
 public:
     std::thread *m_thread;
-    c_steal_queue<c_job*, JOB_COUNT> m_jobs_queue;
+    collections::c_steal_queue<c_job*, JOB_COUNT> m_jobs_queue;
     c_job m_job_pool[JOB_COUNT];
     size_t m_jobs_counter = 0;
 
