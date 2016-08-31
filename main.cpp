@@ -1,6 +1,7 @@
 #include "gladius/gladius.h"
 
 #ifdef PLATFORM_WINDOWS
+#include <windows.h>
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 #endif
 

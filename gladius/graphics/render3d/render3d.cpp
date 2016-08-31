@@ -13,7 +13,7 @@
 namespace gladius {
 namespace graphics {
 namespace render3d {
-size_t on_window_close_listener = static_cast<size_t >(-1);
+
 size_t on_window_resize_listener = static_cast<size_t >(-1);
 
 std::atomic_bool flag_needs_shutdown;
@@ -38,10 +38,6 @@ thread_local s_thread_context thread_context = {};
 
 void on_window_resize(void *value) {
     flag_needs_recreate_swapchain.store(true);
-}
-
-void on_window_close(void *) {
-    flag_needs_shutdown.store(true);
 }
 
 bool create_instance(const char *app_name) {
@@ -238,14 +234,14 @@ bool init(core::c_window *window, bool validation) {
     flag_needs_recreate_swapchain.store(false);
     flag_needs_shutdown.store(false);
 
-    on_window_close_listener = window->add_event_listener(core::e_window_event::ON_CLOSE, on_window_close);
     on_window_resize_listener = window->add_event_listener(core::e_window_event::ON_RESIZE, on_window_resize);
 
     return true;
 }
 
 void shutdown() {
-    on_window_close_listener = static_cast<size_t >(-1);
+
+    on_window_resize_listener = static_cast<size_t >(-1);
 
     if (vk_globals::device != nullptr) {
         vkDeviceWaitIdle(vk_globals::device);
@@ -260,6 +256,7 @@ void shutdown() {
         shutdown_swap_chain();
 
         vkDestroyDevice(vk_globals::device, nullptr);
+        vk_globals::device = nullptr;
     }
 
     if (vk_globals::surface != nullptr) {
@@ -273,17 +270,10 @@ void shutdown() {
 
 bool check_events() {
     bool true_value = true;
-    if (flag_needs_shutdown.compare_exchange_weak(true_value, false)) {
-        shutdown();
-        return false;
-    }
-
-    true_value = true;
     if (flag_needs_recreate_swapchain.compare_exchange_weak(true_value, false)) {
         create_swap_chain();
         create_present_command_buffer();
     }
-
     return true;
 }
 

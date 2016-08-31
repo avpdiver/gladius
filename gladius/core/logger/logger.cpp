@@ -2,7 +2,8 @@
 // Created by pav on 19.02.16.
 //
 
-#include <stdio.h>
+//#include <stdio.h>
+#include <cstdarg>
 #include <string>
 #include <memory>
 #include <thread>

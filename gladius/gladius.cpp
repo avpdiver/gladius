@@ -31,6 +31,9 @@ bool start() {
 
 	while (true) {
 		g_window.process_events();
+		if (g_window.is_closed()) {
+			break;
+		}
 		if (!graphics::render3d::render()) {
 			break;
 		}
