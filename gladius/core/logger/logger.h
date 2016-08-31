@@ -5,12 +5,12 @@
 #ifndef GLADIUS_LOGGING_H
 #define GLADIUS_LOGGING_H
 
-#define SET_ERROR(type, format, ...) gladius::core::logging::log(gladius::core::logging::e_log_level::error, type, \
+#define SET_ERROR(type, format, ...) gladius::core::logger::log(gladius::core::logger::e_log_level::error, type, \
 															__FILENAME__, __LINE__, format, __VA_ARGS__)
 
 #define VERIFY_LOG(c, type, format, ...) 																		\
 if (!(c)) {																										\
-	gladius::core::logging::log(gladius::core::logging::e_log_level::error, type, __FILENAME__, __LINE__, 		\
+	gladius::core::logger::log(gladius::core::logger::e_log_level::error, type, __FILENAME__, __LINE__, 		\
 								format, __VA_ARGS__); 															\
 	return false; 																								\
 }
@@ -19,7 +19,7 @@ if (!(c)) {																										\
 
 namespace gladius {
 namespace core {
-namespace logging {
+namespace logger {
 
 enum class e_log_level {
 	fatal,

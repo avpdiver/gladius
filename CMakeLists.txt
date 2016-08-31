@@ -71,8 +71,8 @@ set(
         gladius/core/platform.h
         gladius/core/types.h
 
-        gladius/core/logging/logging.h
-        gladius/core/logging/logging.cpp
+        gladius/core/logger/logger.h
+        gladius/core/logger/logger.cpp
 
         gladius/core/memory/memory_utils.h
         gladius/core/memory/allocator.h

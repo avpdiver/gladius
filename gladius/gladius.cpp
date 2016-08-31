@@ -4,7 +4,7 @@
 
 #include "gladius.h"
 #include "core/window/window.h"
-#include "core/logging/logging.h"
+#include "core/logger/logger.h"
 #include "graphics/render3d/render3d.h"
 
 namespace gladius {
@@ -14,7 +14,7 @@ core::c_window g_window;
 void shutdown();
 
 bool start() {
-	if (!core::logging::init(core::logging::e_log_level::debug)) {
+	if (!core::logger::init(core::logger::e_log_level::debug)) {
 		shutdown();
 		return false;
 	}
@@ -43,7 +43,7 @@ bool start() {
 void shutdown() {
 	graphics::render3d::shutdown();
 	g_window.close();
-	core::logging::shutdown();
+	core::logger::shutdown();
 }
 
 }

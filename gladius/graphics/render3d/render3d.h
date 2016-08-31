@@ -5,7 +5,7 @@
 #ifndef GLADIUS_RENDERER3D_H
 #define GLADIUS_RENDERER3D_H
 
-#include "../../core/logging/logging.h"
+#include "../../core/logger/logger.h"
 #include "../../core/window/window.h"
 
 namespace gladius {

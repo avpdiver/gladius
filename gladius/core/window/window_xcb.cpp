@@ -6,7 +6,7 @@
 
 #include <cstring>
 #include "window.h"
-#include "../logging/logging.h"
+#include "../logger/logger.h"
 
 namespace gladius {
 namespace core {
