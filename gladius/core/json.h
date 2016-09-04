@@ -18,20 +18,27 @@ namespace gladius {
 namespace core {
 namespace json {
 
+enum class e_json_field_type {
+    primitive,
+    object,
+    vector
+};
+
 template<typename CLASS, typename TYPE>
 struct s_json_field {
-    constexpr s_json_field(TYPE CLASS::*member, const char *name, bool is_object)
-            : m_member{member}, m_name{name}, m_is_object{is_object} {
+    constexpr s_json_field(TYPE CLASS::*member, const char *name, e_json_field_type type)
+            : m_member{member}, m_name{name}, m_type{type} {
     }
 
     using Type = TYPE;
 
     TYPE CLASS::*m_member;
     const char *m_name;
-    bool m_is_object;
+    e_json_field_type m_type;
 };
 
 namespace __impl {
+
 template<typename T>
 struct is_vector : public std::false_type {
 };
@@ -39,33 +46,65 @@ struct is_vector : public std::false_type {
 template<typename T, typename A>
 struct is_vector<std::vector<T, A>> : public std::true_type {
 };
+
+template<typename T>
+struct is_vector_type_class : public std::false_type {
+};
+
+template<typename T, typename A>
+struct is_vector_type_class<std::vector<T, A>>
+        : public std::integral_constant<bool, (std::is_class<T>::value && !std::is_same<std::string, T>::value)> {
+};
+
 }
 
 template<typename CLASS, typename TYPE>
 constexpr auto make_json_field(TYPE CLASS::*member, const char *name) {
-    bool is_object = false;
-    if (std::is_same<std::string, TYPE>::value || __impl::is_vector<TYPE>::value) {
-        is_object = false;
+    e_json_field_type type = e_json_field_type::primitive;
+    if (std::is_same<std::string, TYPE>::value) {
+        type = e_json_field_type::primitive;
+    } else if (__impl::is_vector<TYPE>::value) {
+        if (__impl::is_vector_type_class<TYPE>::value) {
+            type = e_json_field_type::vector;
+        } else {
+            type = e_json_field_type::primitive;
+        }
+    } else if (std::is_class<TYPE>::value) {
+        type = e_json_field_type::object;
     } else {
-        is_object = std::is_class<TYPE>::value;
+        type = e_json_field_type::primitive;
     }
-    return s_json_field<CLASS, TYPE>{member, name, is_object};
+    return s_json_field<CLASS, TYPE>{member, name, type};
 }
 
 template<typename CLASS>
 void from_json(CLASS &object, const nlohmann::json &data);
 
 namespace __impl {
-template<bool IS_OBJECT, typename CLASS, typename TYPE>
-std::enable_if_t<IS_OBJECT>
+
+template<e_json_field_type FIELD, typename CLASS, typename TYPE>
+std::enable_if_t<FIELD == e_json_field_type::primitive>
+read_json_value(CLASS &object, const nlohmann::json &data, TYPE CLASS::*member, const char *name) {
+    object.*(member) = data[name].get<TYPE>();
+}
+
+template<e_json_field_type FIELD, typename CLASS, typename TYPE>
+std::enable_if_t<FIELD == e_json_field_type::object>
 read_json_value(CLASS &object, const nlohmann::json &data, TYPE CLASS::*member, const char *name) {
     from_json(object.*(member), data[name]);
 }
 
-template<bool IS_OBJECT, typename CLASS, typename TYPE>
-std::enable_if_t<!IS_OBJECT>
+template<e_json_field_type FIELD, typename CLASS, typename TYPE>
+std::enable_if_t<FIELD == e_json_field_type::vector>
 read_json_value(CLASS &object, const nlohmann::json &data, TYPE CLASS::*member, const char *name) {
-    object.*(member) = data[name].get<TYPE>();
+    auto vector = data[name];
+    using VALUE_TYPE = typename TYPE::value_type;
+    for (auto& v : vector) {
+        VALUE_TYPE value;
+        from_json(value, v);
+        (object.*(member)).push_back(std::move(value));
+    }
+    //object.*(member) = data[name].get<TYPE>();
 }
 
 // deserialize functions
@@ -73,7 +112,7 @@ template<std::size_t I, typename CLASS>
 void read_json_field(CLASS &object, const nlohmann::json &data) {
     constexpr auto property = std::get<I>(std::decay_t<CLASS>::json_fields);
     using TYPE = typename decltype(property)::Type;
-    read_json_value<property.m_is_object, CLASS, TYPE>(object, data, property.m_member, property.m_name);
+    read_json_value<property.m_type, CLASS, TYPE>(object, data, property.m_member, property.m_name);
 }
 
 template<std::size_t I, typename CLASS>

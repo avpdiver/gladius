@@ -75,6 +75,8 @@ extern VkSurfaceFormatKHR surface_format;
 extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
 
 struct s_swapchain {
+	size_t width;
+	size_t height;
 	VkFormat format;
 	VkSwapchainKHR handle;
 	std::vector<VkImage> images;
