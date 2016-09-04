@@ -31,6 +31,9 @@ public:
     virtual size_t read(char *buf, size_t bytes);
     virtual size_t write(const char *buf, size_t bytes);
 
+public:
+    virtual size_t size();
+
 private:
     std::basic_ios<char> *m_stream;
     c_file *m_fallback_file;

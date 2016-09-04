@@ -14,9 +14,7 @@ namespace gladius {
 namespace core {
 namespace filesystem {
 
-const size_t MAX_FILES_NUMBER = 1024;
-c_file *g_files[MAX_FILES_NUMBER] = {nullptr};
-
+std::unordered_map<c_file*, bool> g_files;
 std::unordered_map<const char *, file_creator_t> g_devices;
 
 bool init() {
@@ -27,10 +25,9 @@ bool init() {
 void shutdown() {
     g_devices.clear();
     for (auto &f : g_files) {
-        if (f == nullptr)
+        if (f.first == nullptr)
             continue;
-        delete f;
-        f = nullptr;
+        delete f.first;
     }
 }
 
@@ -60,58 +57,51 @@ bool parse_devices(const char *devices, std::vector<const char *> &devices_vecto
     return !devices_vector.empty();
 }
 
-handle_t get_free_slot() {
-    for (size_t i = 0; i < MAX_FILES_NUMBER; ++i) {
-        if (g_files[i] == nullptr) {
-            return i;
-        }
-    }
-    return INVALID_HANDLE;
-}
-
-handle_t open(const char *devices, const char *filename, e_file_mode mode) {
+c_file* open(const char *devices, const char *filename, e_file_mode mode) {
     assert(g_devices.size() > 0);
-
-    handle_t file_handle = get_free_slot();
-    if (file_handle == INVALID_HANDLE) {
-        return INVALID_HANDLE;
-    }
 
     std::vector<const char *> devices_vector;
     if (!parse_devices(devices, devices_vector)) {
-        return INVALID_HANDLE;
+        return nullptr;
     }
 
     c_file *file = nullptr;
     c_file *new_file = nullptr;
     for (const auto device : devices_vector) {
-        g_files[file_handle] = file;
         new_file = (*g_devices[device])(filename, file, mode);
         if (new_file == nullptr) {
-            close(file_handle);
-            file_handle = INVALID_HANDLE;
-            break;
+            close(file);
+            return nullptr;
         } else {
             file = new_file;
         }
     }
 
-    return file_handle;
+    g_files[file] = true;
+    return file;
 }
 
-void close(handle_t file) {
-    assert(file < MAX_FILES_NUMBER && g_files[file] != nullptr);
-    delete g_files[file];
+void close(c_file *file) {
+    assert(file != nullptr);
+    g_files.erase(file);
+    delete file;
 }
 
-size_t read(handle_t file, char *buf, size_t bytes) {
-    assert(file < MAX_FILES_NUMBER && g_files[file] != nullptr);
-    return g_files[file]->read(buf, bytes);
-}
+bool read(const char *devices, const char *filename, std::vector<char>& buffer) {
+    c_file *file = open(devices, filename, e_file_mode::read);
+    if (file == nullptr) {
+        return false;
+    }
 
-size_t write(handle_t file, const char *buf, size_t bytes) {
-    assert(file < MAX_FILES_NUMBER && g_files[file] != nullptr);
-    return g_files[file]->write(buf, bytes);
+    size_t size = file->size();
+    buffer.resize(size);
+    size_t r = file->read(&(buffer[0]), size);
+    close(file);
+    if (r == size) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 }

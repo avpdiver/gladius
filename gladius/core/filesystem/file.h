@@ -24,6 +24,9 @@ public:
 public:
     virtual size_t read(char *buf, size_t bytes) = 0;
     virtual size_t write(const char *buf, size_t bytes) = 0;
+
+public:
+    virtual size_t size() = 0;
 };
 
 }

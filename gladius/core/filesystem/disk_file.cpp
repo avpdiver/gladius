@@ -47,6 +47,15 @@ size_t c_disk_file::write(const char *buf, size_t bytes) {
     return stream->tellp() - before;
 }
 
+size_t c_disk_file::size() {
+    auto s = dynamic_cast<std::ifstream *>(m_stream);
+    size_t pos = s->tellg();
+    s->seekg (0, s->end);
+    size_t length = s->tellg();
+    s->seekg (pos, s->beg);
+    return length;
+}
+
 }
 }
 }

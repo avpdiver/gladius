@@ -70,6 +70,7 @@ set(
 
         gladius/core/platform.h
         gladius/core/types.h
+        gladius/core/json.h
 
         gladius/core/logger/logger.h
         gladius/core/logger/logger.cpp
@@ -93,6 +94,8 @@ set(
         gladius/core/filesystem/file.h
         gladius/core/filesystem/disk_file.cpp
         gladius/core/filesystem/disk_file.h
+        gladius/core/filesystem/json_file.cpp
+        gladius/core/filesystem/json_file.h
 
         gladius/core/window/window.h
         gladius/core/window/window.cpp
@@ -120,6 +123,8 @@ set(
         gladius/graphics/render3d/render3d_swapchain.h
         gladius/graphics/render3d/render3d_command_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.cpp
+        gladius/graphics/render3d/render3d_shader.cpp
+        gladius/graphics/render3d/render3d_shader.h
         gladius/graphics/render3d/render3d_render_pass.h
         gladius/graphics/render3d/render3d_render_pass.cpp
         gladius/graphics/render3d/render3d_texture.cpp
@@ -135,6 +140,7 @@ set(
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/gli"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/json/src"
         $ENV{VULKAN_SDK}/include/
 )
 

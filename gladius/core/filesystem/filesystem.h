@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <initializer_list>
+#include <vector>
 #include "file.h"
 
 namespace gladius {
@@ -22,31 +22,11 @@ void shutdown();
 
 void add_device(const char *device, file_creator_t creator);
 
-handle_t open(const char *devices, const char *filename, e_file_mode mode);
+c_file *open(const char *devices, const char *filename, e_file_mode mode);
 
-void close(handle_t file);
+void close(c_file *file);
 
-size_t read(handle_t file, char *buf, size_t bytes);
-
-size_t write(handle_t file, const char *buf, size_t bytes);
-
-template<typename T>
-bool read(handle_t file, T &value) {
-    size_t actual = read(file, &value, sizeof(T));
-    if (actual == sizeof(T)) {
-        return true;
-    }
-    return false;
-}
-
-template<typename T>
-bool write(handle_t file, const T &value) {
-    size_t actual = write(file, &value, sizeof(T));
-    if (actual == sizeof(T)) {
-        return true;
-    }
-    return false;
-}
+bool read(const char *devices, const char *filename, std::vector<char> &buffer);
 
 }
 }
