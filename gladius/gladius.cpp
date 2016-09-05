@@ -3,9 +3,14 @@
 //
 
 #include "gladius.h"
-#include "core/window/window.h"
+
 #include "core/logger/logger.h"
+#include "core/filesystem/filesystem.h"
+#include "core/window/window.h"
+
 #include "graphics/render3d/render3d.h"
+#include "graphics/render3d/render3d_globals.h"
+#include "graphics/render3d/render3d_pipeline.h"
 
 namespace gladius {
 
@@ -19,6 +24,11 @@ bool start() {
 		return false;
 	}
 
+	if (!core::filesystem::init()) {
+		shutdown();
+		return false;
+	}
+
 	if (!g_window.create()) {
 		shutdown();
 		return false;
@@ -28,6 +38,8 @@ bool start() {
 		shutdown();
 		return false;
 	}
+
+	graphics::render3d::resources::load_pipeline("pipeline.json");
 
 	while (true) {
 		g_window.process_events();
@@ -46,6 +58,7 @@ bool start() {
 void shutdown() {
 	graphics::render3d::shutdown();
 	g_window.close();
+	core::filesystem::shutdown();
 	core::logger::shutdown();
 }
 

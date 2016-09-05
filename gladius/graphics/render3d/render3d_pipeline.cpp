@@ -27,7 +27,7 @@ struct s_framebuffer_desc {
             JSON_FIELD(s_framebuffer_desc, layer)
     );
 
-    void get(VkFramebufferCreateInfo& info) {
+    void get(VkFramebufferCreateInfo& info) const {
         info.width = (uint32_t) (vk_globals::swapchain.width * width);
         info.height = (uint32_t) (vk_globals::swapchain.height * height);
         info.layers = layer;
@@ -54,13 +54,15 @@ struct s_viewport_desc {
             JSON_FIELD(s_viewport_desc, maxDepth)
     );
 
-    void get(VkViewport& info) {
+	VkViewport&& get() const {
+		VkViewport info;
         info.x = x;
         info.y = y;
         info.width = vk_globals::swapchain.width * width;
         info.height = vk_globals::swapchain.height * height;
         info.minDepth = minDepth;
         info.maxDepth = maxDepth;
+		return std::move(info);
     }
 };
 
@@ -76,11 +78,13 @@ struct s_scissor_desc {
             JSON_FIELD(s_scissor_desc, height)
     );
 
-    void get(VkRect2D& info) {
+	VkRect2D&& get() const {
+		VkRect2D info;
         info.offset.x = xOffset;
         info.offset.y = yOffset;
         info.extent.width = (uint32_t) (vk_globals::swapchain.width * width);
         info.extent.height = (uint32_t) (vk_globals::swapchain.height * height);
+		return std::move(info);
     }
 };
 
@@ -93,13 +97,23 @@ struct s_viewport_state_desc {
             JSON_FIELD(s_viewport_state_desc, scissors)
     );
 
-    void get(VkPipelineViewportStateCreateInfo &info) {
-        info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        info.pNext = nullptr;
-        info.flags = 0;
+    void get(s_pipeline_create_info &info) const {
+        info.m_viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        info.m_viewport_state.pNext = nullptr;
+        info.m_viewport_state.flags = 0;
 
-        info.viewportCount = viewports.size();
-        info.scissorCount = scissors.size();
+        info.m_viewport_state.viewportCount = viewports.size();
+        info.m_viewport_state.scissorCount = scissors.size();
+
+		for (const auto& v : viewports) {
+			info.m_viewports.push_back(v.get());
+		}
+		info.m_viewport_state.pViewports = &(info.m_viewports[0]);
+
+		for (const auto& s : scissors) {
+			info.m_scissors.push_back(s.get());
+		}
+		info.m_viewport_state.pScissors = &(info.m_scissors[0]);
     }
 };
 
@@ -165,7 +179,7 @@ private:
     }
 
 public:
-    void get(VkPipelineRasterizationStateCreateInfo& info) {
+    void get(VkPipelineRasterizationStateCreateInfo& info) const {
         info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         info.pNext = nullptr;
         info.flags = 0;
@@ -197,7 +211,7 @@ struct s_multisample_state_desc {
             JSON_FIELD(s_multisample_state_desc, alphaToOneEnable)
     );
 private:
-    VkSampleCountFlagBits get_samples () {
+    VkSampleCountFlagBits get_samples () const {
         if (rasterizationSamples == 1)
             return VK_SAMPLE_COUNT_1_BIT;
         if (rasterizationSamples == 2)
@@ -215,7 +229,7 @@ private:
         return VK_SAMPLE_COUNT_1_BIT;
     }
 public:
-    void get(VkPipelineMultisampleStateCreateInfo & info) {
+    void get(VkPipelineMultisampleStateCreateInfo & info) const {
         info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         info.pNext = nullptr;
         info.flags = 0;
@@ -291,7 +305,7 @@ private:
         return VK_BLEND_FACTOR_ZERO;
     }
 
-    VkBlendOp get_blend_op(const std::string& value) {
+    VkBlendOp get_blend_op(const std::string& value) const {
         if (value == "add")
             return VK_BLEND_OP_ADD;
         if (value == "subtract")
@@ -305,7 +319,7 @@ private:
         return VK_BLEND_OP_ADD;
     }
 
-    VkColorComponentFlags get_color_comp_flag() {
+    VkColorComponentFlags get_color_comp_flag() const {
         VkColorComponentFlags flag = 0;
         if (colorWriteMask.find('r') != std::string::npos)
             flag |= VK_COLOR_COMPONENT_R_BIT;
@@ -319,7 +333,8 @@ private:
     }
 
 public:
-    void get(VkPipelineColorBlendAttachmentState& info) {
+	VkPipelineColorBlendAttachmentState&& get() const {
+		VkPipelineColorBlendAttachmentState info;
         info.blendEnable = blendEnable;
         info.srcColorBlendFactor = get_blend_color(srcColorBlendFactor);
         info.dstColorBlendFactor = get_blend_color(dstColorBlendFactor);
@@ -328,6 +343,7 @@ public:
         info.dstAlphaBlendFactor = get_blend_color(dstAlphaBlendFactor);
         info.alphaBlendOp = get_blend_op(alphaBlendOp);
         info.colorWriteMask = get_color_comp_flag();
+		return std::move(info);
     }
 };
 
@@ -382,64 +398,95 @@ private:
     }
 
 public:
-    void get(VkPipelineColorBlendStateCreateInfo& info) {
-        info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        info.pNext = nullptr;
-        info.flags = 0;
+    void get(s_pipeline_create_info& info) {
+        info.m_color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        info.m_color_blend_state.pNext = nullptr;
+        info.m_color_blend_state.flags = 0;
 
-        info.logicOpEnable = logicOpEnable;
-        info.logicOp = get_logic_op();
+        info.m_color_blend_state.logicOpEnable = logicOpEnable;
+        info.m_color_blend_state.logicOp = get_logic_op();
         if (blendConstants.size() == 0) {
-            info.blendConstants[0]
-                    = info.blendConstants[1]
-                    = info.blendConstants[2]
-                    = info.blendConstants[3] = 0.0f;
+            info.m_color_blend_state.blendConstants[0]
+                    = info.m_color_blend_state.blendConstants[1]
+                    = info.m_color_blend_state.blendConstants[2]
+                    = info.m_color_blend_state.blendConstants[3] = 0.0f;
         } else if (blendConstants.size() == 1) {
-            info.blendConstants[0]
-                    = info.blendConstants[1]
-                    = info.blendConstants[2]
-                    = info.blendConstants[3] = blendConstants[0];
+            info.m_color_blend_state.blendConstants[0]
+                    = info.m_color_blend_state.blendConstants[1]
+                    = info.m_color_blend_state.blendConstants[2]
+                    = info.m_color_blend_state.blendConstants[3] = blendConstants[0];
         } else {
             size_t i = 0;
             for (auto& f : blendConstants) {
-                info.blendConstants[i++] = f;
+                info.m_color_blend_state.blendConstants[i++] = f;
             }
         }
+
+		info.m_color_blend_state.attachmentCount = color_blend_attachment_states.size();
+		for (const auto& a : color_blend_attachment_states) {
+			info.m_color_blend_attachment_states.push_back(a.get());
+		}
+		info.m_color_blend_state.pAttachments = &(info.m_color_blend_attachment_states[0]);
+
     }
 };
 
 struct s_pipeline_desc {
-    std::string name;
-    std::vector<s_framebuffer_desc> framebuffers;
-    s_viewport_state_desc viewport;
-    s_rasterization_state_desc rasterization_state;
-    s_multisample_state_desc multisample_state;
-    s_color_blend_attachment_state_desc color_blend_attachment_state;
-    JSON_FIELDS(
-            JSON_FIELD(s_pipeline_desc, name),
-            JSON_FIELD(s_pipeline_desc, framebuffers),
-            JSON_FIELD(s_pipeline_desc, viewport),
-            JSON_FIELD(s_pipeline_desc, rasterization_state),
-            JSON_FIELD(s_pipeline_desc, multisample_state),
-            JSON_FIELD(s_pipeline_desc, color_blend_attachment_state)
-    );
+	std::string name;
+	std::vector<s_framebuffer_desc> framebuffers;
+	s_viewport_state_desc viewport_state;
+	s_rasterization_state_desc rasterization_state;
+	s_multisample_state_desc multisample_state;
+	s_color_blend_state_desc color_blend_state;
+	JSON_FIELDS(
+		JSON_FIELD(s_pipeline_desc, name),
+		JSON_FIELD(s_pipeline_desc, framebuffers),
+		JSON_FIELD(s_pipeline_desc, viewport_state),
+		JSON_FIELD(s_pipeline_desc, rasterization_state),
+		JSON_FIELD(s_pipeline_desc, multisample_state),
+		JSON_FIELD(s_pipeline_desc, color_blend_state)
+	);
 
-    void get(VkGraphicsPipelineCreateInfo &info) {
-        info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        info.pNext = nullptr;
-        info.flags = 0;
+	void get(s_pipeline_create_info &info) {
+		info.m_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		info.m_pipeline_create_info.pNext = nullptr;
+		info.m_pipeline_create_info.flags = 0;
+		info.m_pipeline_create_info.subpass = 0;
+		info.m_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+		info.m_pipeline_create_info.basePipelineIndex = -1;
 
-        /*
-        info.pViewportState
-        info.pRasterizationState
-        info.pMultisampleState
-        info.pDepthStencilState
-        info.pColorBlendState
-        info.subpass = 0;
-        info.basePipelineHandle = VK_NULL_HANDLE;
-        info.basePipelineIndex = -1;
-         */
-    }
+		viewport_state.get(info);
+		rasterization_state.get(info.m_rasterization_state);
+		multisample_state.get(info.m_multisample_state);
+		color_blend_state.get(info);
+	}
 };
+
+s_pipeline_create_info::s_pipeline_create_info() {
+	m_pipeline_create_info.pStages = &m_stages;
+	m_pipeline_create_info.pVertexInputState = &m_vertex_input_state;
+	m_pipeline_create_info.pInputAssemblyState = &m_input_assembly_state;
+	m_pipeline_create_info.pTessellationState = &m_tessellation_state;
+	m_pipeline_create_info.pViewportState = &m_viewport_state;
+	m_pipeline_create_info.pRasterizationState = &m_rasterization_state;
+	m_pipeline_create_info.pMultisampleState = &m_multisample_state;
+	m_pipeline_create_info.pDepthStencilState = &m_depth_stencil_state;
+	m_pipeline_create_info.pColorBlendState = &m_color_blend_state;
+	m_pipeline_create_info.pDynamicState = &m_dynamic_state;
+}
+
+bool load_pipeline(const char *filename) {
+    core::filesystem::c_json_file* file = reinterpret_cast<core::filesystem::c_json_file*>(
+        core::filesystem::open("disk:json", filename, core::filesystem::e_file_mode::read));
+
+    s_pipeline_desc pipeline_desc;
+    file->read(pipeline_desc);
+	core::filesystem::close(file);
+
+	s_pipeline_create_info pipeline_create_info;
+	pipeline_desc.get(pipeline_create_info);
+
+    return true;
+}
 
 }}}}
