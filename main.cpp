@@ -10,6 +10,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 int main (int argc, char *argv[])
 #endif
 {
-	gladius::start();
+	gladius::start("gladius.json");
 	return 0;
 }

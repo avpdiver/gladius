@@ -38,6 +38,23 @@ public:
         return (ptr + BOUNDS_POLICY::SIZE_FRONT);
     }
 
+    void *alloc(size_t size) {
+        m_thread_guard.lock();
+
+        const size_t original_size = size;
+        const size_t new_size = BOUNDS_POLICY::SIZE_FRONT + size + BOUNDS_POLICY::SIZE_BACK;
+        char *ptr = static_cast<char *>(m_allocator.alloc(new_size));
+
+        m_bounds_checker.guard_front(ptr);
+        m_bounds_checker.guard_back(ptr + BOUNDS_POLICY::SIZE_FRONT + original_size);
+        m_tagger.alloc(ptr + BOUNDS_POLICY::SIZE_FRONT, original_size);
+        m_tracker.alloc(ptr, new_size, 0);
+
+        m_thread_guard.unlock();
+
+        return (ptr + BOUNDS_POLICY::SIZE_FRONT);
+    }
+
     void free(void *ptr) {
         m_thread_guard.lock();
 

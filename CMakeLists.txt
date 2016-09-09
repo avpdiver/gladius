@@ -135,7 +135,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp)
+        main.cpp gladius/network/network.cpp gladius/network/network.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

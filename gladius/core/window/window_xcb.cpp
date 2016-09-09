@@ -11,7 +11,7 @@
 namespace gladius {
 namespace core {
 
-bool c_window::create() {
+bool c_window::create(const s_window_desc& desc) {
 	int screen_index;
 	m_window_info.connection = xcb_connect(nullptr, &screen_index);
 
@@ -40,10 +40,10 @@ bool c_window::create() {
 		XCB_COPY_FROM_PARENT,
 		m_window_info.handle,
 		screen->root,
-		20,
-		20,
-		500,
-		500,
+		0,
+		0,
+		desc.width,
+		desc.height,
 		0,
 		XCB_WINDOW_CLASS_INPUT_OUTPUT,
 		screen->root_visual,
@@ -57,8 +57,8 @@ bool c_window::create() {
 		XCB_ATOM_WM_NAME,
 		XCB_ATOM_STRING,
 		8,
-		strlen("gladius"),
-		"gladius");
+		desc.caption.length(),
+		desc.caption.c_str());
 
 	// Prepare notification for window destruction
 	xcb_intern_atom_cookie_t protocols_cookie = xcb_intern_atom(m_window_info

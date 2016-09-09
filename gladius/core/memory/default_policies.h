@@ -35,7 +35,7 @@ public:
     inline void free(void *, size_t) const {}
 };
 
-class c_single_thread_policy {
+class c_no_thread_policy {
 public:
     inline void lock(void) const {}
     inline void unlock(void) const {}

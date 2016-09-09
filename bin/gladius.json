@@ -1,0 +1,11 @@
+{
+  "name": "gladius",
+  "logging": true,
+  "screen": {
+    "width": 800,
+    "height": 600,
+    "fullscreen": false,
+    "caption": "gladius window"
+  },
+  "pipeline" : "pipeline.json"
+}

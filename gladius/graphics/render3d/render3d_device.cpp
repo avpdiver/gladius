@@ -147,7 +147,7 @@ bool create_device() {
             nullptr,                                          // const void                  *pNext
             0,                                                // VkDeviceQueueCreateFlags     flags
             selected_graphics_queue_family_index,             // uint32_t                     queueFamilyIndex
-            static_cast<uint32_t>(queue_priorities.size()),  // uint32_t                     queueCount
+            static_cast<uint32_t>(queue_priorities.size()),   // uint32_t                     queueCount
             &queue_priorities[0]                              // const float                 *pQueuePriorities
         }
     );

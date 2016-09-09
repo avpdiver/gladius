@@ -6,7 +6,7 @@
 
 #include "core/logger/logger.h"
 #include "core/filesystem/filesystem.h"
-#include "core/window/window.h"
+#include "core/filesystem/json_file.h"
 
 #include "graphics/render3d/render3d.h"
 #include "graphics/render3d/render3d_globals.h"
@@ -14,22 +14,29 @@
 
 namespace gladius {
 
+s_gladius_desc g_gladius_desc;
 core::c_window g_window;
 
 void shutdown();
 
-bool start() {
-	if (!core::logger::init(core::logger::e_log_level::debug)) {
-		shutdown();
-		return false;
-	}
+bool start(const char* config_filename) {
 
 	if (!core::filesystem::init()) {
 		shutdown();
 		return false;
 	}
 
-	if (!g_window.create()) {
+	core::filesystem::c_json_file* file = reinterpret_cast<core::filesystem::c_json_file*>(
+		core::filesystem::open("disk:json", config_filename, core::filesystem::e_file_mode::read));
+	file->read(g_gladius_desc);
+	core::filesystem::close(file);
+
+	if (g_gladius_desc.logging && !core::logger::init(core::logger::e_log_level::debug)) {
+		shutdown();
+		return false;
+	}
+
+	if (!g_window.create(g_gladius_desc.screen)) {
 		shutdown();
 		return false;
 	}
@@ -39,7 +46,7 @@ bool start() {
 		return false;
 	}
 
-	graphics::render3d::resources::load_pipeline("pipeline.json");
+	graphics::render3d::resources::load_pipeline(g_gladius_desc.pipeline.c_str());
 
 	while (true) {
 		g_window.process_events();

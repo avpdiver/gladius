@@ -14,7 +14,7 @@ namespace gladius
 
         LRESULT CALLBACK wnd_proc(HWND,UINT,WPARAM,LPARAM);
 
-        bool c_window::create ()
+        bool c_window::create (const s_window_desc& desc)
         {
             TCHAR app_name[] = TEXT ("gladius");
             WNDCLASS wndclass;

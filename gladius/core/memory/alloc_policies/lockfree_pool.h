@@ -9,16 +9,21 @@
 #include <atomic>
 #include <memory>
 
+#include "../memory_utils.h"
+
 namespace gladius {
 namespace core {
 namespace memory {
 
-template<size_t MAX_BLOCK_SIZE, size_t MAX_ALIGNMENT>
+template<typename TYPE>
 class c_lockfree_pool {
+    constexpr size_t MAX_ALIGNMENT = alignof(TYPE);
+    constexpr size_t MAX_BLOCK_SIZE = sizeof(TYPE);
+
 public:
     c_lockfree_pool(size_t size, void *start) {
-        assert(size > MAX_BLOCK_SIZE);
         assert(start != nullptr);
+		assert(is_aligned(start, MAX_ALIGNMENT));
 
         union {
             void *as_void;
@@ -27,21 +32,17 @@ public:
         };
 
         as_void = start;
-        std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_void, size);
-        assert(as_void != nullptr && "Memory region is too small");
 
         tagget_ptr_t tagget_ptr = {as_node, 0};
         m_head.store(tagget_ptr);
 
         node_t *runner = as_node;
         as_char += MAX_BLOCK_SIZE;
-        std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_void, size);
 
         while (as_char != nullptr) {
             runner->next = as_node;
             runner = as_node;
             as_char += MAX_BLOCK_SIZE;
-            std::align(MAX_ALIGNMENT, MAX_BLOCK_SIZE, as_void, size);
         }
 
         runner->next = nullptr;
@@ -49,7 +50,7 @@ public:
 
     inline void *alloc(size_t size = MAX_BLOCK_SIZE, size_t align = MAX_ALIGNMENT, size_t offset = 0) {
         assert (size <= MAX_BLOCK_SIZE && "Alloc size is greater then MAX_BLOCK_SIZE");
-        assert(align <= MAX_ALIGNMENT && "Alignment is greater then MAX_ALIGNMENT");
+        assert (align <= MAX_ALIGNMENT && "Alignment is greater then MAX_ALIGNMENT");
 
         tagget_ptr_t current_head = m_head.load(std::memory_order_acquire);
         tagget_ptr_t new_head;

@@ -11,6 +11,7 @@
 #include <functional>
 
 #include "glm/vec2.hpp"
+#include "../json.h"
 
 #ifdef PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -52,6 +53,20 @@ struct s_window_info {
 #endif
 };
 
+struct s_window_desc {
+    uint32_t width;
+    uint32_t height;
+    bool fullscreen;
+	std::string caption;
+
+    JSON_FIELDS(
+        JSON_FIELD(s_window_desc, width),
+        JSON_FIELD(s_window_desc, height),
+        JSON_FIELD(s_window_desc, fullscreen),
+		JSON_FIELD(s_window_desc, caption)
+    );
+};
+
 class c_window;
 
 typedef std::function<void(void *)> window_event_listener_t;
@@ -63,7 +78,7 @@ public:
     ~c_window();
 
 public:
-    bool create();
+    bool create(const s_window_desc& desc);
 
     void close();
 
