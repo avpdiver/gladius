@@ -78,6 +78,7 @@ private:
     TAGGING_POLICY m_tagger;
 };
 
+/*
 template<class T>
 T *alloc_new(c_allocator &allocator) {
     return new(allocator.alloc(sizeof(T), __alignof(T))) T;
@@ -130,7 +131,7 @@ void free_array(c_allocator &allocator, T *array) {
 
     allocator.free(array - headerSize);
 }
-
+*/
 }
 }
 }

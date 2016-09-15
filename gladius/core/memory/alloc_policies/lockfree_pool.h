@@ -17,8 +17,8 @@ namespace memory {
 
 template<typename TYPE>
 class c_lockfree_pool {
-    constexpr size_t MAX_ALIGNMENT = alignof(TYPE);
-    constexpr size_t MAX_BLOCK_SIZE = sizeof(TYPE);
+    static constexpr size_t MAX_ALIGNMENT = alignof(TYPE);
+    static constexpr size_t MAX_BLOCK_SIZE = sizeof(TYPE);
 
 public:
     c_lockfree_pool(size_t size, void *start) {

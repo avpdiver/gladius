@@ -2,9 +2,16 @@
 // Created by avpdiver on 09.09.16.
 //
 
+#ifdef PLATFORM_WINDOWS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
+#ifdef PLATFORM_LINUX
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
 
 #include "network.h"
 #include "../core/logger/logger.h"
@@ -33,6 +40,21 @@ core::memory::c_allocator<
 	core::memory::c_no_tracking_policy,
 	core::memory::c_no_tagging_policy> g_connection_pool(32, storage);
 
+bool init() {
+#ifdef PLATFORM_WINDOWS
+    WSADATA wsaData;
+    int res;
+    VERIFY_LOG((res = WSAStartup(MAKEWORD(2,2), &wsaData)) == 0, LOG_TYPE, "WSAStartup failed with error: %d", res);
+#endif
+    return true;
+}
+
+void shutdown() {
+#ifdef PLATFORM_WINDOWS
+    WSACleanup();
+#endif
+}
+
 bool connect(const char* remote_ip, uint16_t remote_port, handle_t& handle) {
 	s_connection* connection = (s_connection*)g_connection_pool.alloc(sizeof(connection));
 	if (connection == nullptr) {
@@ -59,15 +81,15 @@ bool connect(const char* remote_ip, uint16_t remote_port, handle_t& handle) {
 	return true;
 }
 
-bool send(handle_t handle, const void* buffer, size_t len) {
+bool send(handle_t handle, const char* buffer, size_t len) {
 	s_connection* c = (s_connection*)((size_t)storage + handle);
 	VERIFY_LOG(sendto(c->socket, buffer, len, 0, (sockaddr*)&(c->remote_addr), sizeof(c->remote_addr)) == len, LOG_TYPE,
 			   "Failed send", "");
 	return true;
 }
 
-void receive(handle_t handle, void* buffer, size_t len) {
-	s_connection* c = static_cast<s_connection*>((size_t)storage + handle);
+void receive(handle_t handle, char* buffer, size_t len) {
+	s_connection* c = reinterpret_cast<s_connection*>((size_t)storage + handle);
 
 	socklen_t size = sizeof(c->remote_addr);
 	ssize_t r = recvfrom(c->socket, buffer, len, 0, (sockaddr*)&(c->remote_addr), &size);

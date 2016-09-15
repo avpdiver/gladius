@@ -10,7 +10,7 @@ namespace core {
 namespace memory {
 
 bool is_aligned(void *ptr, int ALIGN) {
-    return ((unsigned long)ptr & (ALIGN - 1)) == 0;
+    return (reinterpret_cast<size_t>(ptr) & (ALIGN - 1)) == 0;
 }
 
 }

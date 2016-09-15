@@ -5,9 +5,14 @@
 #ifndef GLADIUS_NETWORK_H
 #define GLADIUS_NETWORK_H
 
+#include <cstdint>
 #include "../core/types.h"
+
 namespace gladius {
 namespace network {
+
+bool init();
+void shutdown();
 
 bool connect(const char* remote_ip, uint16_t remote_port, handle_t& handle);
 bool send(handle_t handle, const char* buffer, size_t len);
