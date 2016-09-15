@@ -23,6 +23,7 @@ namespace gladius {
 namespace network {
 
 const char* LOG_TYPE = "NETWORK";
+constexpr size_t CONNECTIONS = 4;
 
 struct s_connection {
 	sockaddr_in local_addr;
@@ -31,14 +32,14 @@ struct s_connection {
 };
 
 typedef typename std::aligned_storage<sizeof(s_connection), alignof(s_connection)>::type s_connection_t;
-s_connection_t storage[32];
+s_connection_t storage[CONNECTIONS];
 
 core::memory::c_allocator<
 	core::memory::c_lockfree_pool<s_connection_t>,
 	core::memory::c_no_thread_policy,
 	core::memory::c_no_bounds_policy,
 	core::memory::c_no_tracking_policy,
-	core::memory::c_no_tagging_policy> g_connection_pool(32, storage);
+	core::memory::c_no_tagging_policy> g_connection_pool(CONNECTIONS, storage);
 
 bool init() {
 #ifdef PLATFORM_WINDOWS

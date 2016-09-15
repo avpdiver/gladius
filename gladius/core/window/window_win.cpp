@@ -36,10 +36,10 @@ namespace gladius
                 return false;
             }
 
-            m_window_info.handle = CreateWindow (app_name, TEXT("Environment List Box"),
+            m_window_info.handle = CreateWindow (app_name, TEXT(desc.caption.c_str()),
                                  WS_OVERLAPPEDWINDOW,
                                  CW_USEDEFAULT, CW_USEDEFAULT,
-                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                 desc.width, desc.height,
                                  nullptr, nullptr, m_window_info.instance, nullptr);
 
             ShowWindow(m_window_info.handle, SW_SHOW);

@@ -39,7 +39,7 @@ public:
         node_t *runner = as_node;
         as_char += MAX_BLOCK_SIZE;
 
-        while (as_char != nullptr) {
+        while (--size > 0) {
             runner->next = as_node;
             runner = as_node;
             as_char += MAX_BLOCK_SIZE;
