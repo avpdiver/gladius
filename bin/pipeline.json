@@ -1,5 +1,13 @@
 {
   "name": "deferred",
+
+  "swapchain": {
+    "width": 1.0,
+    "height": 1.0,
+    "format": "R8G8B8A8",
+    "images": 2
+  },
+
   "framebuffers": [{
     "width": 1.0,
     "height": 1.0,

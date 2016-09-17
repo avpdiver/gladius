@@ -21,7 +21,7 @@ class c_lockfree_pool {
     static constexpr size_t MAX_BLOCK_SIZE = sizeof(TYPE);
 
 public:
-    c_lockfree_pool(size_t size, void *start) {
+    c_lockfree_pool(TYPE *start, size_t size) {
         assert(start != nullptr);
 		assert(is_aligned(start, MAX_ALIGNMENT));
 

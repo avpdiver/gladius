@@ -9,7 +9,7 @@ namespace gladius {
 namespace core {
 namespace memory {
 
-bool is_aligned(void *ptr, int ALIGN) {
+inline bool is_aligned(void *ptr, int ALIGN) {
     return (reinterpret_cast<size_t>(ptr) & (ALIGN - 1)) == 0;
 }
 

@@ -32,14 +32,14 @@ struct s_connection {
 };
 
 typedef typename std::aligned_storage<sizeof(s_connection), alignof(s_connection)>::type s_connection_t;
-s_connection_t storage[CONNECTIONS];
 
 core::memory::c_allocator<
+	std::array<s_connection_t, CONNECTIONS>,
 	core::memory::c_lockfree_pool<s_connection_t>,
 	core::memory::c_no_thread_policy,
 	core::memory::c_no_bounds_policy,
 	core::memory::c_no_tracking_policy,
-	core::memory::c_no_tagging_policy> g_connection_pool(CONNECTIONS, storage);
+	core::memory::c_no_tagging_policy> g_connection_pool;
 
 bool init() {
 #ifdef PLATFORM_WINDOWS
@@ -78,19 +78,19 @@ bool connect(const char* remote_ip, uint16_t remote_port, handle_t& handle) {
 	VERIFY_LOG(bind(connection->socket, (sockaddr*)&(connection->local_addr), sizeof(connection->local_addr)) < 0,
 			   LOG_TYPE, "Failed bind socket", "");
 
-	handle = (size_t)connection - (size_t)storage;
+	handle = reinterpret_cast<handle_t>(connection);
 	return true;
 }
 
 bool send(handle_t handle, const char* buffer, size_t len) {
-	s_connection* c = (s_connection*)((size_t)storage + handle);
+	s_connection* c = reinterpret_cast<s_connection*>(handle);
 	VERIFY_LOG(sendto(c->socket, buffer, len, 0, (sockaddr*)&(c->remote_addr), sizeof(c->remote_addr)) == len, LOG_TYPE,
 			   "Failed send", "");
 	return true;
 }
 
 void receive(handle_t handle, char* buffer, size_t len) {
-	s_connection* c = reinterpret_cast<s_connection*>((size_t)storage + handle);
+	s_connection* c = reinterpret_cast<s_connection*>(handle);
 
 	socklen_t size = sizeof(c->remote_addr);
 	ssize_t r = recvfrom(c->socket, buffer, len, 0, (sockaddr*)&(c->remote_addr), &size);

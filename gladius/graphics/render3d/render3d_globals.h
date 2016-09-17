@@ -84,27 +84,12 @@ struct s_swapchain {
 };
 extern s_swapchain swapchain;
 
-extern std::vector<VkCommandBuffer> present_command_buffers;
-
 struct s_depth_buffer_info {
 	VkImage image;
 	VkImageView image_view;
 	VkFormat format;
 };
 extern s_depth_buffer_info depth_buffer_info;
-
-struct s_thread_context {
-	VkQueue queue = nullptr;
-	VkCommandPool command_pool = nullptr;
-};
-extern thread_local s_thread_context thread_context;
-
-struct s_sync_semaphores {
-	VkSemaphore image_available_semaphore = nullptr;
-	VkSemaphore rendering_finished_semaphore = nullptr;
-};
-extern s_sync_semaphores semaphores;
-
 }
 }
 

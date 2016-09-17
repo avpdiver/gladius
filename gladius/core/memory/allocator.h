@@ -13,11 +13,17 @@ namespace gladius {
 namespace core {
 namespace memory {
 
-template<class ALLOC_POLICY, class THREAD_POLICY, class BOUNDS_POLICY, class TRACKING_POLICY, class TAGGING_POLICY>
+template<
+        typename STORAGE,
+        typename ALLOC_POLICY,
+        typename THREAD_POLICY,
+        typename BOUNDS_POLICY,
+        typename TRACKING_POLICY,
+        typename TAGGING_POLICY>
 class c_allocator {
 public:
-    c_allocator(size_t size, void *start)
-        : m_allocator(size, start) {
+    c_allocator() :
+        m_allocator(m_storage.data(), m_storage.size()) {
     }
 
 public:
@@ -71,6 +77,7 @@ public:
     }
 
 private:
+    STORAGE m_storage;
     ALLOC_POLICY m_allocator;
     THREAD_POLICY m_thread_guard;
     BOUNDS_POLICY m_bounds_checker;
