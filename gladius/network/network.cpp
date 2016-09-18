@@ -17,7 +17,6 @@
 #include "../core/logger/logger.h"
 #include "../core/memory/allocator.h"
 #include "../core/memory/alloc_policies/lockfree_pool.h"
-#include "../core/memory/default_policies.h"
 
 namespace gladius {
 namespace network {
@@ -32,14 +31,7 @@ struct s_connection {
 };
 
 typedef typename std::aligned_storage<sizeof(s_connection), alignof(s_connection)>::type s_connection_t;
-
-core::memory::c_allocator<
-	std::array<s_connection_t, CONNECTIONS>,
-	core::memory::c_lockfree_pool<s_connection_t>,
-	core::memory::c_no_thread_policy,
-	core::memory::c_no_bounds_policy,
-	core::memory::c_no_tracking_policy,
-	core::memory::c_no_tagging_policy> g_connection_pool;
+core::memory::c_allocator<std::array<s_connection_t, CONNECTIONS>, core::memory::c_lockfree_pool<s_connection_t>> g_connection_pool;
 
 bool init() {
 #ifdef PLATFORM_WINDOWS

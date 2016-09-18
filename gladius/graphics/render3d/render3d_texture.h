@@ -18,7 +18,7 @@ bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t dep
                   uint32_t array_layers, VkImage *image);
 bool create_image_view(VkImage image, VkFormat format, uint32_t mip_levels, uint32_t array_layers, VkImageView* view);
 
-bool load_texture(const char *filename, handle_t& handle);
+bool load_texture(const char *filename, handle_t* handle);
 
 }
 }

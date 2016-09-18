@@ -14,6 +14,23 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
+struct s_buffer_desc {
+    VkBuffer handle;
+    VkDeviceMemory memory;
+    size_t size;
+};
+
+struct s_texture_desc {
+    uint32_t width, height, depth;
+    uint32_t mip_levels;
+    uint32_t array_layers;
+    VkFormat format;
+    VkImage image;
+    VkImageView view;
+    VkDeviceMemory memory;
+    VkImageLayout image_layout;
+};
+
 constexpr size_t RENDER_CONTEXT_NUMBER = 3;
 
 struct s_render_context {
@@ -21,6 +38,7 @@ struct s_render_context {
     VkSemaphore image_available_semaphore = nullptr;
     VkSemaphore rendering_finished_semaphore = nullptr;
     VkFence fence = nullptr;
+    handle_t staging_buffer;
 };
 
 struct s_thread_context {

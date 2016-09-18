@@ -5,10 +5,10 @@
 #include <gli/gli.hpp>
 
 #include "../../core/memory/allocator.h"
-#include "../../core/memory/default_policies.h"
 #include "../../core/memory/alloc_policies/lockfree_pool.h"
 
 #include "render3d_globals.h"
+#include "render3d_resources.h"
 
 namespace gladius {
 namespace graphics {
@@ -17,26 +17,8 @@ namespace resources {
 
 constexpr size_t TEXTURES_NUMBER = 32;
 
-struct s_texture {
-    uint32_t width, height, depth;
-    uint32_t mip_levels;
-    uint32_t array_layers;
-    VkFormat format;
-    VkImage image;
-    VkImageView view;
-    VkDeviceMemory memory;
-    VkImageLayout image_layout;
-};
-
-typedef typename std::aligned_storage<sizeof(s_texture), alignof(s_texture)>::type s_texture_t;
-
-core::memory::c_allocator<
-        std::array<s_texture_t, TEXTURES_NUMBER>,
-        core::memory::c_lockfree_pool<s_texture_t>,
-        core::memory::c_no_thread_policy,
-        core::memory::c_no_bounds_policy,
-        core::memory::c_no_tracking_policy,
-        core::memory::c_no_tagging_policy> g_texture_pool;
+typedef typename std::aligned_storage<sizeof(s_texture_desc), alignof(s_texture_desc)>::type s_texture_t;
+core::memory::c_allocator<std::array<s_texture_t, TEXTURES_NUMBER>, core::memory::c_lockfree_pool<s_texture_t>> g_texture_pool;
 
 
 bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
@@ -131,14 +113,12 @@ bool allocate_memory(VkImage image, VkMemoryPropertyFlagBits property, VkDeviceM
 
     for (uint32_t i = 0; i < properties.memoryTypeCount; ++i) {
         if ((requirements.memoryTypeBits & (1 << i)) && (properties.memoryTypes[i].propertyFlags & property)) {
-
             VkMemoryAllocateInfo memory_allocate_info = {
                     VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,     // VkStructureType                        sType
                     nullptr,                                    // const void                            *pNext
                     requirements.size,                          // VkDeviceSize                           allocationSize
                     i                                           // uint32_t                               memoryTypeIndex
             };
-
             VK_VERIFY(vkAllocateMemory(vk_globals::device, &memory_allocate_info, nullptr, memory));
             return true;
         }
@@ -146,11 +126,137 @@ bool allocate_memory(VkImage image, VkMemoryPropertyFlagBits property, VkDeviceM
     VERIFY_LOG(false, LOG_TYPE, "Failed allocate image memory", "");
 }
 
+bool copy_texture_data(const gli::texture2d& tex2d, s_texture_desc& desc) {
+    // Prepare data in staging buffer
+    resources::s_render_context const *render_context;
+    VERIFY(resources::get_current_render_context(&render_context));
+
+    auto staging_buffer = reinterpret_cast<s_buffer_desc*>(render_context->staging_buffer);
+
+    // Copy texture data into staging buffer
+    uint8_t *data;
+    VK_VERIFY(vkMapMemory(vk_globals::device, staging_buffer->memory, 0, tex2d.size(), 0,
+                          (void **) &data));
+    memcpy(data, tex2d.data(), tex2d.size());
+    VkMappedMemoryRange flush_range = {
+            VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,              // VkStructureType                        sType
+            nullptr,                                            // const void                            *pNext
+            staging_buffer->memory,                           // VkDeviceMemory                         memory
+            0,                                                  // VkDeviceSize                           offset
+            tex2d.size()                                        // VkDeviceSize                           size
+    };
+    vkFlushMappedMemoryRanges(vk_globals::device, 1, &flush_range);
+    vkUnmapMemory(vk_globals::device, staging_buffer->memory);
+
+
+    // Prepare command buffer to copy data from staging buffer to a image
+    VkCommandBuffer command_buffer = render_context->command_buffer;
+    VkCommandBufferBeginInfo begin_info = {
+            VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,        // VkStructureType                        sType
+            nullptr,                                            // const void                            *pNext
+            VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,        // VkCommandBufferUsageFlags              flags
+            nullptr                                             // const VkCommandBufferInheritanceInfo  *pInheritanceInfo
+    };
+
+    vkBeginCommandBuffer(command_buffer, &begin_info);
+
+    VkImageSubresourceRange image_subresource_range = {
+            VK_IMAGE_ASPECT_COLOR_BIT,                          // VkImageAspectFlags                     aspectMask
+            0,                                                  // uint32_t                               baseMipLevel
+            desc.mip_levels,                                    // uint32_t                               levelCount
+            0,                                                  // uint32_t                               baseArrayLayer
+            desc.array_layers                                   // uint32_t                               layerCount
+    };
+
+    VkImageMemoryBarrier from_undefined_to_transfer_dst = {
+            VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,             // VkStructureType                        sType
+            nullptr,                                            // const void                            *pNext
+            0,                                                  // VkAccessFlags                          srcAccessMask
+            VK_ACCESS_TRANSFER_WRITE_BIT,                       // VkAccessFlags                          dstAccessMask
+            VK_IMAGE_LAYOUT_UNDEFINED,                          // VkImageLayout                          oldLayout
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,               // VkImageLayout                          newLayout
+            VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               srcQueueFamilyIndex
+            VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               dstQueueFamilyIndex
+            desc.image,                                         // VkImage                                image
+            image_subresource_range                             // VkImageSubresourceRange                subresourceRange
+    };
+    vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
+                         nullptr, 0, nullptr, 1, &from_undefined_to_transfer_dst);
+
+
+    // Setup buffer copy regions for each mip level
+    std::vector<VkBufferImageCopy> buffer_copy_regions;
+    uint32_t offset = 0;
+    for (uint32_t i = 0; i < desc.mip_levels; i++) {
+        VkBufferImageCopy buffer_image_copy_info = {
+                offset,                                             // VkDeviceSize                           bufferOffset
+                0,                                                  // uint32_t                               bufferRowLength
+                0,                                                  // uint32_t                               bufferImageHeight
+                {                                                   // VkImageSubresourceLayers               imageSubresource
+                        VK_IMAGE_ASPECT_COLOR_BIT,                  // VkImageAspectFlags                     aspectMask
+                        i,                                          // uint32_t                               mipLevel
+                        0,                                          // uint32_t                               baseArrayLayer
+                        desc.array_layers                           // uint32_t                               layerCount
+                },
+                {                                                   // VkOffset3D                             imageOffset
+                        0,                                          // int32_t                                x
+                        0,                                          // int32_t                                y
+                        0                                           // int32_t                                z
+                },
+                {                                                   // VkExtent3D                             imageExtent
+                        static_cast<uint32_t>(tex2d[i].extent().x), // uint32_t                               width
+                        static_cast<uint32_t>(tex2d[i].extent().y), // uint32_t                               height
+                        1                                           // uint32_t                               depth
+                }
+        };
+        buffer_copy_regions.push_back(buffer_image_copy_info);
+        offset += static_cast<uint32_t>(tex2d[i].size());
+    }
+    vkCmdCopyBufferToImage(command_buffer, staging_buffer->handle, desc.image,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, buffer_copy_regions.size(),
+                           buffer_copy_regions.data());
+
+    VkImageMemoryBarrier from_transfer_to_shader_read = {
+            VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,             // VkStructureType                        sType
+            nullptr,                                            // const void                            *pNext
+            VK_ACCESS_TRANSFER_WRITE_BIT,                       // VkAccessFlags                          srcAccessMask
+            VK_ACCESS_SHADER_READ_BIT,                          // VkAccessFlags                          dstAccessMask
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,               // VkImageLayout                          oldLayout
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,           // VkImageLayout                          newLayout
+            VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               srcQueueFamilyIndex
+            VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               dstQueueFamilyIndex
+            desc.image,                                         // VkImage                                image
+            image_subresource_range                             // VkImageSubresourceRange                subresourceRange
+    };
+    vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                         nullptr, 0, nullptr, 1, &from_transfer_to_shader_read);
+
+    vkEndCommandBuffer(command_buffer);
+
+    // Submit command buffer and copy data from staging buffer to a vertex buffer
+    VkSubmitInfo submit_info = {
+            VK_STRUCTURE_TYPE_SUBMIT_INFO,                      // VkStructureType                        sType
+            nullptr,                                            // const void                            *pNext
+            0,                                                  // uint32_t                               waitSemaphoreCount
+            nullptr,                                            // const VkSemaphore                     *pWaitSemaphores
+            nullptr,                                            // const VkPipelineStageFlags            *pWaitDstStageMask;
+            1,                                                  // uint32_t                               commandBufferCount
+            &command_buffer,                                    // const VkCommandBuffer                 *pCommandBuffers
+            0,                                                  // uint32_t                               signalSemaphoreCount
+            nullptr                                             // const VkSemaphore                     *pSignalSemaphores
+    };
+
+    VK_VERIFY (vkQueueSubmit(vk_globals::graphics_queue.handle, 1, &submit_info, VK_NULL_HANDLE));
+    vkDeviceWaitIdle(vk_globals::device);
+
+    return true;
+}
+
 bool load_texture(const char *filename, handle_t& handle) {
     gli::texture2d tex2d(gli::load(filename));
     VERIFY_LOG(!tex2d.empty(), LOG_TYPE, "Failed to load texture %s", filename);
 
-    s_texture tex;
+    s_texture_desc tex;
     tex.width = tex2d[0].extent().x;
     tex.height = tex2d[0].extent().y;
     tex.mip_levels = tex2d.levels();
@@ -160,8 +266,9 @@ bool load_texture(const char *filename, handle_t& handle) {
     VERIFY(allocate_memory(tex.image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &tex.memory));
     VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory, 0));
     VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
+    VERIFY(copy_texture_data(tex2d, tex));
 
-    s_texture* texture = (s_texture*)g_texture_pool.alloc(1);
+    s_texture_desc* texture = (s_texture_desc*)g_texture_pool.alloc(1);
     (*texture) = std::move(tex);
     handle = reinterpret_cast<handle_t>(texture);
 

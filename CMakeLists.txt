@@ -135,7 +135,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/network/network.cpp gladius/network/network.h gladius/graphics/render3d/render3d_resources.cpp gladius/graphics/render3d/render3d_resources.h)
+        main.cpp gladius/network/network.cpp gladius/network/network.h gladius/graphics/render3d/render3d_resources.cpp gladius/graphics/render3d/render3d_resources.h gladius/graphics/render3d/render3d_buffer.cpp gladius/graphics/render3d/render3d_buffer.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

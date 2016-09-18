@@ -8,6 +8,7 @@
 #include <memory>
 #include <cstddef>
 #include <stdint.h>
+#include "default_policies.h"
 
 namespace gladius {
 namespace core {
@@ -20,9 +21,9 @@ template<
         typename BOUNDS_POLICY,
         typename TRACKING_POLICY,
         typename TAGGING_POLICY>
-class c_allocator {
+class c_base_allocator {
 public:
-    c_allocator() :
+    c_base_allocator() :
         m_allocator(m_storage.data(), m_storage.size()) {
     }
 
@@ -84,6 +85,9 @@ private:
     TRACKING_POLICY m_tracker;
     TAGGING_POLICY m_tagger;
 };
+
+template<typename STORAGE, typename ALLOC_POLICY>
+using c_allocator = c_base_allocator<STORAGE, ALLOC_POLICY, c_no_thread_policy, c_no_bounds_policy, c_no_tracking_policy, c_no_tagging_policy>;
 
 /*
 template<class T>
