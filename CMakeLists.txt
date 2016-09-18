@@ -72,6 +72,8 @@ set(
         gladius/core/types.h
         gladius/core/json.h
 
+        gladius/core/meta/fixed_function.h
+
         gladius/core/logger/logger.h
         gladius/core/logger/logger.cpp
 
@@ -84,9 +86,8 @@ set(
         gladius/core/collections/concurrent_queue.h
         gladius/core/collections/blocking_queue.h
 
-        gladius/core/threading/job_executor.h
-        gladius/core/threading/job_executor.cpp
-        gladius/core/threading/job.h
+        gladius/core/threading/worker_pool.h
+        gladius/core/threading/worker.h
         gladius/core/threading/weak_semaphore.h
 
         gladius/core/filesystem/filesystem.cpp
@@ -121,6 +122,10 @@ set(
         gladius/graphics/render3d/render3d_device.h
         gladius/graphics/render3d/render3d_swapchain.cpp
         gladius/graphics/render3d/render3d_swapchain.h
+        gladius/graphics/render3d/render3d_resources.cpp
+        gladius/graphics/render3d/render3d_resources.h
+        gladius/graphics/render3d/render3d_buffer.cpp
+        gladius/graphics/render3d/render3d_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.cpp
         gladius/graphics/render3d/render3d_shader.cpp
@@ -132,10 +137,14 @@ set(
         gladius/graphics/render3d/render3d_pipeline.cpp
         gladius/graphics/render3d/render3d_pipeline.h
 
+
+        gladius/network/network.cpp
+        gladius/network/network.h
+
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/network/network.cpp gladius/network/network.h gladius/graphics/render3d/render3d_resources.cpp gladius/graphics/render3d/render3d_resources.h gladius/graphics/render3d/render3d_buffer.cpp gladius/graphics/render3d/render3d_buffer.h)
+        main.cpp gladius/core/threading/movable_atomic.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

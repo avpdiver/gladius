@@ -7,6 +7,12 @@
 
 #include <stddef.h>
 
+#define MOVE_ONLY(T)                    \
+    T(const T&) = delete;               \
+    T& operator=(const T&) = delete;    \
+    T(T&&) = default;                   \
+    T& operator=(T&&) = default
+
 namespace gladius {
 
 typedef size_t handle_t;

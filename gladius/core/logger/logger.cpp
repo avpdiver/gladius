@@ -52,8 +52,8 @@ std::thread *g_writing_thread;
 std::ofstream g_file;
 thread_local std::string g_local_buffer;
 
-collections::c_blocking_queue<std::shared_ptr<std::string>> g_log_queue;
-collections::c_blocking_queue<std::shared_ptr<std::string>> g_free_queue;
+collections::c_blocking_queue<std::shared_ptr<std::string>, 32> g_log_queue;
+collections::c_blocking_queue<std::shared_ptr<std::string>, 32> g_free_queue;
 
 void log(e_log_level level, const char *type, const char *filename, int line, const char *format, ...) {
 	if (level > g_log_level) {
@@ -108,8 +108,9 @@ void log(e_log_level level, const char *type, const char *filename, int line, co
 }
 
 void write_log() {
+	std::shared_ptr<std::string> buffer;
 	do {
-		std::shared_ptr<std::string> buffer = g_log_queue.pop();
+		g_log_queue.pop(buffer);
 		if (buffer.get() == nullptr) {
 			break;
 		}

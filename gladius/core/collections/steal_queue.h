@@ -23,8 +23,11 @@ public:
     }
 
 public:
-    bool push(T value) {
-        size_t b = m_bottom;
+    MOVE_ONLY(c_steal_queue);
+
+public:
+    bool push(T const& value) {
+        ssize_t b = m_bottom;
         m_data[b & MASK] = value;
 
         std::atomic_signal_fence(std::memory_order_consume); // compiler barrier
@@ -33,15 +36,25 @@ public:
         return true;
     }
 
+    bool push(T&& value) {
+        ssize_t b = m_bottom;
+        m_data[b & MASK] = std::move(value);
+
+        std::atomic_signal_fence(std::memory_order_consume); // compiler barrier
+
+        m_bottom = b + 1;
+        return true;
+    }
+
     bool pop(T& value) {
-        size_t b = m_bottom - 1;
+        ssize_t b = m_bottom - 1;
         m_bottom = b;
 
-        size_t t = m_top.load(std::memory_order_seq_cst);
+        ssize_t t = m_top.load(std::memory_order_seq_cst);
 
         if (t <= b) {
             // non-empty handle
-            value = m_data[b & MASK];
+            value = std::move(m_data[b & MASK]);
             if (t != b) {
                 // there's still more than one item left in the handle
                 return true;
@@ -55,7 +68,7 @@ public:
             }
 
             m_bottom = t + 1;
-            return value;
+            return true;
         } else {
             // deque was already empty
             m_bottom = t;
@@ -64,11 +77,11 @@ public:
     }
 
     bool steal(T& value) {
-        size_t t = m_top.load(std::memory_order_consume);
-        size_t b = m_bottom;
+        ssize_t t = m_top.load(std::memory_order_consume);
+        ssize_t b = m_bottom;
         if (t < b) {
             // non-empty handle
-            value = m_data[t & MASK];
+            value = std::move(m_data[t & MASK]);
 
             // the interlocked function serves as a compiler barrier, and guarantees that the read happens before the CAS.
             if (!m_top.compare_exchange_strong(t, t + 1)) // TO DO ensure memory ordering
@@ -85,8 +98,8 @@ public:
 
 private:
     std::vector<T> m_data;
-    size_t m_bottom;
-    std::atomic_size_t m_top;
+    ssize_t m_bottom;
+    std::atomic<ssize_t> m_top;
 };
 
 }
