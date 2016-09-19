@@ -84,7 +84,6 @@ set(
         gladius/core/collections/aligned_allocator.h
         gladius/core/collections/steal_queue.h
         gladius/core/collections/concurrent_queue.h
-        gladius/core/collections/blocking_queue.h
 
         gladius/core/threading/worker_pool.h
         gladius/core/threading/worker.h

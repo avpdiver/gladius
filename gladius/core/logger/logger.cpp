@@ -9,7 +9,7 @@
 #include <thread>
 #include <fstream>
 #include "logger.h"
-#include "../collections/blocking_queue.h"
+#include "../collections/concurrent_queue.h"
 
 namespace gladius {
 namespace core {
@@ -52,8 +52,8 @@ std::thread *g_writing_thread;
 std::ofstream g_file;
 thread_local std::string g_local_buffer;
 
-collections::c_blocking_queue<std::shared_ptr<std::string>, 32> g_log_queue;
-collections::c_blocking_queue<std::shared_ptr<std::string>, 32> g_free_queue;
+collections::c_concurrent_queue<std::shared_ptr<std::string>, 32> g_log_queue;
+collections::c_concurrent_queue<std::shared_ptr<std::string>, 32> g_free_queue;
 
 void log(e_log_level level, const char *type, const char *filename, int line, const char *format, ...) {
 	if (level > g_log_level) {
@@ -104,7 +104,7 @@ void log(e_log_level level, const char *type, const char *filename, int line, co
 		len = w + 1;
 	}
 
-	g_log_queue.push(buffer);
+	g_log_queue.push(std::move(buffer));
 }
 
 void write_log() {

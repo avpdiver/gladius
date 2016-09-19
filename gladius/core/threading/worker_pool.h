@@ -7,7 +7,7 @@
 
 #include <atomic>
 
-#include "../collections/blocking_queue.h"
+#include "../collections/concurrent_queue.h"
 
 #include "worker.h"
 

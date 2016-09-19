@@ -15,7 +15,7 @@ namespace core {
 namespace threading {
 
 using task_t = core::fixed_function<void(), 128>;
-using task_queue_t = collections::c_blocking_queue<task_t, 8>;
+using task_queue_t = collections::c_concurrent_queue<task_t, 8>;
 
 class c_worker {
 private:

@@ -19,14 +19,14 @@ core::c_window g_window;
 
 void shutdown();
 
-bool start(const char* config_filename) {
+bool start(const char *config_filename) {
 
 	if (!core::filesystem::init()) {
 		shutdown();
 		return false;
 	}
 
-	core::filesystem::c_json_file* file = reinterpret_cast<core::filesystem::c_json_file*>(
+	core::filesystem::c_json_file *file = reinterpret_cast<core::filesystem::c_json_file *>(
 		core::filesystem::open("disk:json", config_filename, core::filesystem::e_file_mode::read));
 	file->read(g_gladius_desc);
 	core::filesystem::close(file);
