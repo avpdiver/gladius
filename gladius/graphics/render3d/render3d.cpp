@@ -10,6 +10,7 @@
 #include "render3d_command_buffer.h"
 #include "render3d_utils.h"
 #include "render3d_resources.h"
+#include "render3d_pipeline.h"
 
 namespace gladius {
 namespace graphics {
@@ -28,7 +29,6 @@ bool is_init = false;
 VkInstance instance = nullptr;
 VkSurfaceKHR surface = nullptr;
 VkSurfaceFormatKHR surface_format = {};
-VkPhysicalDeviceMemoryProperties gpu_memory_properties = {};
 }
 
 void on_window_resize(void *value) {
@@ -112,7 +112,7 @@ bool create_surface(core::c_window *window) {
     return true;
 }
 
-bool init(core::c_window *window, bool validation) {
+bool init(const char* pipeline, core::c_window *window, bool validation) {
     VERIFY(create_instance("appname"));
     VERIFY(create_surface(window));
     VERIFY(create_device());
@@ -125,6 +125,8 @@ bool init(core::c_window *window, bool validation) {
     flag_needs_shutdown.store(false);
 
     on_window_resize_listener = window->add_event_listener(core::e_window_event::ON_RESIZE, on_window_resize);
+
+	graphics::render3d::resources::load_pipeline(pipeline);
 
     return true;
 }
@@ -294,6 +296,7 @@ bool render() {
 
     return true;
 }
+
 }
 }
 }

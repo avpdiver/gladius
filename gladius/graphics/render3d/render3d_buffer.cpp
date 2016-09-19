@@ -16,20 +16,19 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
-constexpr size_t TEXTURES_NUMBER = 32;
+constexpr size_t RESOURCES_NUMBER = 32;
 
 typedef typename std::aligned_storage<sizeof(s_buffer_desc), alignof(s_buffer_desc)>::type s_buffer_t;
-core::memory::c_allocator<std::array<s_buffer_t, TEXTURES_NUMBER>, core::memory::c_lockfree_pool<s_buffer_t>> g_buffer_pool;
+core::memory::c_allocator<std::array<s_buffer_t, RESOURCES_NUMBER>, core::memory::c_lockfree_pool<s_buffer_t>> g_buffer_pool;
 
 bool alloc_memory(VkBuffer buffer, VkMemoryPropertyFlagBits property, VkDeviceMemory *memory) {
     VkMemoryRequirements buffer_memory_requirements;
     vkGetBufferMemoryRequirements(vk_globals::device, buffer, &buffer_memory_requirements);
 
-    VkPhysicalDeviceMemoryProperties memory_properties;
-    vkGetPhysicalDeviceMemoryProperties(vk_globals::gpu, &memory_properties);
+    for (uint32_t i = 0; i < vk_globals::gpu_memory_properties.memoryTypeCount; ++i) {
+        if ((buffer_memory_requirements.memoryTypeBits & (1 << i))
+            && (vk_globals::gpu_memory_properties.memoryTypes[i].propertyFlags & property)) {
 
-    for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i) {
-        if ((buffer_memory_requirements.memoryTypeBits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & property)) {
             VkMemoryAllocateInfo memory_allocate_info = {
                     VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,     // VkStructureType                        sType
                     nullptr,                                    // const void                            *pNext

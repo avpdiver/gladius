@@ -13,6 +13,7 @@ namespace render3d {
 namespace vk_globals {
 VkPhysicalDevice gpu = nullptr;
 VkDevice device = nullptr;
+VkPhysicalDeviceMemoryProperties gpu_memory_properties = {};
 
 s_device_queue graphics_queue = {};
 s_device_queue present_queue = {};
@@ -137,6 +138,8 @@ bool create_device() {
 
     VERIFY_LOG (vk_globals::gpu != nullptr, LOG_TYPE,
                 "Could not select physical device based on the chosen properties!", "");
+
+    vkGetPhysicalDeviceMemoryProperties(vk_globals::gpu, &vk_globals::gpu_memory_properties);
 
     std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
     std::vector<float> queue_priorities = {1.0f};

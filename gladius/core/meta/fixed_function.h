@@ -22,7 +22,7 @@ private:
     using method_type = ret_type (*)(storage_type *, fn_ptr_type, ARGS...);
     using alloc_type = void (*)(storage_type *, void *object_ptr);
 
-private:
+public:
     union {
         storage_type m_storage;
         fn_ptr_type m_function_ptr;
@@ -82,6 +82,10 @@ public:
             return reinterpret_cast<unref_type*>(s)->operator()(xs...);
         };
 
+        if (m_method_ptr == nullptr) {
+            m_method_ptr = nullptr;
+        }
+
         m_alloc_ptr = [](storage_type *s, void *o) {
             if (o) {
                 new(s) unref_type(std::move(*static_cast<unref_type*>(o)));
@@ -110,9 +114,9 @@ public:
      * @brief operator () Execute stored functional object.
      */
     template<typename... TFwdTs>
-    auto operator()(TFwdTs &&... xs) noexcept(noexcept(m_method_ptr(&m_storage, m_function_ptr, FWD(xs)...))) {
+    auto operator()(TFwdTs &&... xs) noexcept {
         assert(m_method_ptr != nullptr);
-        return m_method_ptr(&m_storage, m_function_ptr, FWD(xs)...);
+        return m_method_ptr(&m_storage, m_function_ptr, std::forward(xs)...);
     }
 };
 

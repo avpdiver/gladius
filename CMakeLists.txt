@@ -88,6 +88,7 @@ set(
         gladius/core/threading/worker_pool.h
         gladius/core/threading/worker.h
         gladius/core/threading/weak_semaphore.h
+        gladius/core/threading/movable_atomic.h
 
         gladius/core/filesystem/filesystem.cpp
         gladius/core/filesystem/filesystem.h
@@ -143,7 +144,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/core/threading/movable_atomic.h)
+        main.cpp)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

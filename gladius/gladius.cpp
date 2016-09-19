@@ -9,8 +9,6 @@
 #include "core/filesystem/json_file.h"
 
 #include "graphics/render3d/render3d.h"
-#include "graphics/render3d/render3d_globals.h"
-#include "graphics/render3d/render3d_pipeline.h"
 
 namespace gladius {
 
@@ -41,12 +39,10 @@ bool start(const char *config_filename) {
 		return false;
 	}
 
-	if (!graphics::render3d::init(&g_window, false)) {
+	if (!graphics::render3d::init(g_gladius_desc.pipeline.c_str(), &g_window, false)) {
 		shutdown();
 		return false;
 	}
-
-	graphics::render3d::resources::load_pipeline(g_gladius_desc.pipeline.c_str());
 
 	while (true) {
 		g_window.process_events();

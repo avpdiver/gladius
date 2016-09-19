@@ -62,6 +62,7 @@ extern VkInstance instance;
 extern VkSurfaceKHR surface;
 extern VkPhysicalDevice gpu;
 extern VkDevice device;
+extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
 
 struct s_device_queue {
 	uint32_t index = UINT32_MAX;
@@ -72,7 +73,6 @@ extern s_device_queue graphics_queue;
 extern s_device_queue present_queue;
 
 extern VkSurfaceFormatKHR surface_format;
-extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
 
 struct s_swapchain {
 	size_t width;
