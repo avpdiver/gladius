@@ -14,35 +14,31 @@ namespace vk_globals {
 s_swapchain swapchain = {};
 }
 
-uint32_t get_swapchain_num_images(VkSurfaceCapabilitiesKHR &surface_capabilities) {
-    // Set of images defined in a swap chain may not always be available for application to render to:
-    // One may be displayed and one may wait in a handle to be presented
-    // If application wants to use more images at the same time it must ask for more images
-    uint32_t image_count = surface_capabilities.minImageCount + 1;
-    if ((surface_capabilities.maxImageCount > 0) && (image_count > surface_capabilities.maxImageCount)) {
-        image_count = surface_capabilities.maxImageCount;
+uint32_t get_swapchain_num_images(size_t images, VkSurfaceCapabilitiesKHR &surface_capabilities) {
+    if ((surface_capabilities.maxImageCount > 0) && (images > surface_capabilities.maxImageCount)) {
+        images = surface_capabilities.maxImageCount;
     }
-    return image_count;
+    return images;
 }
 
-VkSurfaceFormatKHR get_swapchain_format(std::vector<VkSurfaceFormatKHR> &surface_formats) {
+VkSurfaceFormatKHR get_swapchain_format(VkFormat format, std::vector<VkSurfaceFormatKHR> &surface_formats) {
     // If the list contains only one entry with undefined format
     // it means that there are no preferred surface formats and any can be chosen
     if ((surface_formats.size() == 1) &&
         (surface_formats[0].format == VK_FORMAT_UNDEFINED)) {
-        return {VK_FORMAT_R8G8B8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR};
+        return {format, VK_COLORSPACE_SRGB_NONLINEAR_KHR};
     }
 
     // Check if list contains most widely used R8 G8 B8 A8 format
     // with nonlinear color space
     for (VkSurfaceFormatKHR &surface_format : surface_formats) {
-        if (surface_format.format == VK_FORMAT_R8G8B8A8_UNORM) {
+        if (surface_format.format == format) {
             return surface_format;
         }
     }
 
     // Return the first format from the list
-    return surface_formats[0];
+    return {VK_FORMAT_UNDEFINED, VK_COLORSPACE_SRGB_NONLINEAR_KHR};
 }
 
 VkExtent2D get_swapchain_extent(VkSurfaceCapabilitiesKHR &surface_capabilities) {
@@ -105,7 +101,7 @@ VkPresentModeKHR get_swapchain_present_mode(std::vector<VkPresentModeKHR> &prese
     return static_cast<VkPresentModeKHR>(-1);
 }
 
-bool create_swap_chain(bool create_veiws) {
+bool create_swap_chain(VkFormat format, size_t images) {
     if (vk_globals::device != nullptr) {
         vkDeviceWaitIdle(vk_globals::device);
     }
@@ -138,8 +134,13 @@ bool create_swap_chain(bool create_veiws) {
     VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR(vk_globals::gpu, vk_globals::surface,
                                                         &present_modes_count, &present_modes[0]));
 
-    uint32_t desired_number_of_images = get_swapchain_num_images(surface_capabilities);
-    VkSurfaceFormatKHR desired_format = get_swapchain_format(surface_formats);
+    uint32_t desired_number_of_images = get_swapchain_num_images(images, surface_capabilities);
+    VERIFY_LOG(desired_number_of_images == images, LOG_TYPE, "Requested %i swapchain images, but get %i",
+               images, desired_number_of_images);
+
+    VkSurfaceFormatKHR desired_format = get_swapchain_format(format, surface_formats);
+    VERIFY_LOG(desired_number_of_images == images, LOG_TYPE, "Requested %i swapchain format not supported", format);
+
     VkExtent2D desired_extent = get_swapchain_extent(surface_capabilities);
     VkImageUsageFlags desired_usage = get_swapchain_usage_flags(surface_capabilities);
     VkSurfaceTransformFlagBitsKHR desired_transform = get_swapchain_transform(surface_capabilities);
@@ -150,24 +151,24 @@ bool create_swap_chain(bool create_veiws) {
     VERIFY (static_cast<int>(desired_present_mode) != -1);
 
     VkSwapchainCreateInfoKHR swap_chain_create_info = {
-        VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,  // VkStructureType                sType
-        nullptr,                                      // const void                    *pNext
-        0,                                            // VkSwapchainCreateFlagsKHR      flags
-        vk_globals::surface,                          // VkSurfaceKHR                   surface
-        desired_number_of_images,                     // uint32_t                       minImageCount
-        desired_format.format,                        // VkFormat                       imageFormat
-        desired_format.colorSpace,                    // VkColorSpaceKHR                imageColorSpace
-        desired_extent,                               // VkExtent2D                     imageExtent
-        1,                                            // uint32_t                       imageArrayLayers
-        desired_usage,                                // VkImageUsageFlags              imageUsage
-        VK_SHARING_MODE_EXCLUSIVE,                    // VkSharingMode                  imageSharingMode
-        0,                                            // uint32_t                       queueFamilyIndexCount
-        nullptr,                                      // const uint32_t                *pQueueFamilyIndices
-        desired_transform,                            // VkSurfaceTransformFlagBitsKHR  preTransform
-        VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,            // VkCompositeAlphaFlagBitsKHR    compositeAlpha
-        desired_present_mode,                         // VkPresentModeKHR               presentMode
-        VK_TRUE,                                      // VkBool32                       clipped
-        old_swap_chain                                // VkSwapchainKHR                 oldSwapchain
+            VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,  // VkStructureType                sType
+            nullptr,                                      // const void                    *pNext
+            0,                                            // VkSwapchainCreateFlagsKHR      flags
+            vk_globals::surface,                          // VkSurfaceKHR                   surface
+            desired_number_of_images,                     // uint32_t                       minImageCount
+            desired_format.format,                        // VkFormat                       imageFormat
+            desired_format.colorSpace,                    // VkColorSpaceKHR                imageColorSpace
+            desired_extent,                               // VkExtent2D                     imageExtent
+            1,                                            // uint32_t                       imageArrayLayers
+            desired_usage,                                // VkImageUsageFlags              imageUsage
+            VK_SHARING_MODE_EXCLUSIVE,                    // VkSharingMode                  imageSharingMode
+            0,                                            // uint32_t                       queueFamilyIndexCount
+            nullptr,                                      // const uint32_t                *pQueueFamilyIndices
+            desired_transform,                            // VkSurfaceTransformFlagBitsKHR  preTransform
+            VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,            // VkCompositeAlphaFlagBitsKHR    compositeAlpha
+            desired_present_mode,                         // VkPresentModeKHR               presentMode
+            VK_TRUE,                                      // VkBool32                       clipped
+            old_swap_chain                                // VkSwapchainKHR                 oldSwapchain
     };
 
     VK_VERIFY (vkCreateSwapchainKHR(vk_globals::device, &swap_chain_create_info, nullptr,
@@ -186,35 +187,34 @@ bool create_swap_chain(bool create_veiws) {
     VK_VERIFY (vkGetSwapchainImagesKHR(vk_globals::device, vk_globals::swapchain.handle, &image_count,
                                        &(vk_globals::swapchain.images[0])));
 
-    if (create_veiws) {
-        vk_globals::swapchain.views.resize(vk_globals::swapchain.images.size());
-        for (size_t i = 0; i < vk_globals::swapchain.images.size(); ++i) {
-            VkImageViewCreateInfo image_view_create_info =
+
+    vk_globals::swapchain.views.resize(vk_globals::swapchain.images.size());
+    for (size_t i = 0; i < vk_globals::swapchain.images.size(); ++i) {
+        VkImageViewCreateInfo image_view_create_info =
                 {
-                    VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,   // VkStructureType                sType
-                    nullptr,                                    // const void                    *pNext
-                    0,                                          // VkImageViewCreateFlags         flags
-                    vk_globals::swapchain.images[i],            // VkImage                        image
-                    VK_IMAGE_VIEW_TYPE_2D,                      // VkImageViewType                viewType
-                    vk_globals::swapchain.format,               // VkFormat                       format
-                    {                                           // VkComponentMapping             components
-                        VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             r
-                        VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             g
-                        VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             b
-                        VK_COMPONENT_SWIZZLE_IDENTITY       // VkComponentSwizzle             a
-                    },
-                    {                                           // VkImageSubresourceRange        subresourceRange
-                        VK_IMAGE_ASPECT_COLOR_BIT,          // VkImageAspectFlags             aspectMask
-                        0,                                  // uint32_t                       baseMipLevel
-                        1,                                  // uint32_t                       levelCount
-                        0,                                  // uint32_t                       baseArrayLayer
-                        1                                   // uint32_t                       layerCount
-                    }
+                        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,   // VkStructureType                sType
+                        nullptr,                                    // const void                    *pNext
+                        0,                                          // VkImageViewCreateFlags         flags
+                        vk_globals::swapchain.images[i],            // VkImage                        image
+                        VK_IMAGE_VIEW_TYPE_2D,                      // VkImageViewType                viewType
+                        vk_globals::swapchain.format,               // VkFormat                       format
+                        {                                           // VkComponentMapping             components
+                                VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             r
+                                VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             g
+                                VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             b
+                                VK_COMPONENT_SWIZZLE_IDENTITY       // VkComponentSwizzle             a
+                        },
+                        {                                           // VkImageSubresourceRange        subresourceRange
+                                VK_IMAGE_ASPECT_COLOR_BIT,          // VkImageAspectFlags             aspectMask
+                                0,                                  // uint32_t                       baseMipLevel
+                                1,                                  // uint32_t                       levelCount
+                                0,                                  // uint32_t                       baseArrayLayer
+                                1                                   // uint32_t                       layerCount
+                        }
                 };
 
-            VK_VERIFY (vkCreateImageView(vk_globals::device, &image_view_create_info, nullptr,
-                                         &vk_globals::swapchain.views[i]));
-        }
+        VK_VERIFY (vkCreateImageView(vk_globals::device, &image_view_create_info, nullptr,
+                                     &vk_globals::swapchain.views[i]));
     }
 
     return true;

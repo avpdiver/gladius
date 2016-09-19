@@ -10,16 +10,40 @@
 
 #include "render3d_globals.h"
 #include "render3d_pipeline.h"
+#include "render3d_swapchain.h"
+#include "render3d_utils.h"
+#include "render3d_texture.h"
 
 namespace gladius { namespace graphics { namespace render3d { namespace resources {
 
+struct s_swapchain_desc {
+    std::string format = "R8G8B8A8_UNORM";
+    size_t images = 1;
+
+    JSON_FIELDS(
+            JSON_FIELD(s_swapchain_desc, format),
+            JSON_FIELD(s_swapchain_desc, images)
+    );
+
+    bool create() {
+        VkFormat vkFormat = utils::string_to_format(format);
+        if (vkFormat == VK_FORMAT_UNDEFINED) {
+            return false;
+        }
+        VERIFY(create_swap_chain(vkFormat, images));
+        return true;
+    }
+};
+
 struct s_framebuffer_desc {
+    bool swapchain = false;
     float width = 1.0f;
     float height = 1.0f;
-    std::string format = "r8g8b8a8";
+    std::string format = "R8G8B8A8_UNORM";
     uint32_t samples = 1;
     uint32_t layer = 1;
     JSON_FIELDS(
+            JSON_FIELD(s_framebuffer_desc, swapchain),
             JSON_FIELD(s_framebuffer_desc, width),
             JSON_FIELD(s_framebuffer_desc, height),
             JSON_FIELD(s_framebuffer_desc, format),
@@ -27,14 +51,50 @@ struct s_framebuffer_desc {
             JSON_FIELD(s_framebuffer_desc, layer)
     );
 
-    void get(VkFramebufferCreateInfo& info) const {
-        info.width = (uint32_t) (vk_globals::swapchain.width * width);
-        info.height = (uint32_t) (vk_globals::swapchain.height * height);
-        info.layers = layer;
-
+    static bool create(std::vector<s_framebuffer_info>& buffers, const std::vector<s_framebuffer_desc>& descs) {
+        VkFramebufferCreateInfo info;
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         info.pNext = nullptr;
         info.flags = 0;
+
+        buffers.resize(vk_globals::swapchain.views.size());
+
+        if (descs.empty()) { // create from swapchain
+            info.width = vk_globals::swapchain.width;
+            info.height = vk_globals::swapchain.height;
+            info.layers = 1;
+            info.attachmentCount = 1;
+            for (size_t i = 0; i < vk_globals::swapchain.views.size(); ++i) {
+                info.pAttachments = &(vk_globals::swapchain.views[i]);
+                VK_VERIFY(vkCreateFramebuffer(vk_globals::device, &info, nullptr, &(buffers[i].m_handle)));
+            }
+        } else {
+
+            for (size_t i = 0; i < descs.size(); ++i) {
+                const auto& d = descs[i];
+                VkFormat format = utils::string_to_format(d.format);
+                VERIFY(format != VK_FORMAT_UNDEFINED);
+                uint32_t width = (uint32_t) (vk_globals::swapchain.width * d.width);
+                uint32_t height = (uint32_t) (vk_globals::swapchain.height * d.height);
+                VkSampleCountFlagBits samples = utils::get_sample_count(d.samples);
+
+                VERIFY(create_texture(format, width, height, 1, 1, 1, samples,
+                                      VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                                      ));
+            }
+        }
+
+        return true;
+    }
+
+    bool create(size_t index) const {
+        VkFramebufferCreateInfo info;
+        info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        info.pNext = nullptr;
+        info.width = (uint32_t) (vk_globals::swapchain.width * width);
+        info.height = (uint32_t) (vk_globals::swapchain.height * height);
+        info.layers = layer;
+        return true;
     }
 };
 
@@ -210,31 +270,13 @@ struct s_multisample_state_desc {
             JSON_FIELD(s_multisample_state_desc, alphaToCoverageEnable),
             JSON_FIELD(s_multisample_state_desc, alphaToOneEnable)
     );
-private:
-    VkSampleCountFlagBits get_samples () const {
-        if (rasterizationSamples == 1)
-            return VK_SAMPLE_COUNT_1_BIT;
-        if (rasterizationSamples == 2)
-            return VK_SAMPLE_COUNT_2_BIT;
-        if (rasterizationSamples == 4)
-            return VK_SAMPLE_COUNT_4_BIT;
-        if (rasterizationSamples == 8)
-            return VK_SAMPLE_COUNT_8_BIT;
-        if (rasterizationSamples == 16)
-            return VK_SAMPLE_COUNT_16_BIT;
-        if (rasterizationSamples == 32)
-            return VK_SAMPLE_COUNT_32_BIT;
-        if (rasterizationSamples == 64)
-            return VK_SAMPLE_COUNT_64_BIT;
-        return VK_SAMPLE_COUNT_1_BIT;
-    }
 public:
     void get(VkPipelineMultisampleStateCreateInfo & info) const {
         info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         info.pNext = nullptr;
         info.flags = 0;
 
-        info.rasterizationSamples = get_samples();
+        info.rasterizationSamples = utils::get_sample_count(rasterizationSamples);
         info.sampleShadingEnable = sampleShadingEnable;
         info.minSampleShading = minSampleShading;
         info.alphaToCoverageEnable = alphaToCoverageEnable;
@@ -433,6 +475,7 @@ public:
 
 struct s_pipeline_desc {
 	std::string name;
+    s_swapchain_desc swapchain;
 	std::vector<s_framebuffer_desc> framebuffers;
 	s_viewport_state_desc viewport_state;
 	s_rasterization_state_desc rasterization_state;
@@ -440,6 +483,7 @@ struct s_pipeline_desc {
 	s_color_blend_state_desc color_blend_state;
 	JSON_FIELDS(
 		JSON_FIELD(s_pipeline_desc, name),
+        JSON_FIELD(s_pipeline_desc, swapchain),
 		JSON_FIELD(s_pipeline_desc, framebuffers),
 		JSON_FIELD(s_pipeline_desc, viewport_state),
 		JSON_FIELD(s_pipeline_desc, rasterization_state),
@@ -447,22 +491,27 @@ struct s_pipeline_desc {
 		JSON_FIELD(s_pipeline_desc, color_blend_state)
 	);
 
-	void get(s_pipeline_create_info &info) {
-		info.m_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		info.m_pipeline_create_info.pNext = nullptr;
-		info.m_pipeline_create_info.flags = 0;
-		info.m_pipeline_create_info.subpass = 0;
-		info.m_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
-		info.m_pipeline_create_info.basePipelineIndex = -1;
+	bool create(s_pipeline_create_info &info) {
+        VERIFY(swapchain.create());
+        VERIFY(s_framebuffer_desc::create(info.m_framebuffers, framebuffers));
 
+        /*
 		viewport_state.get(info);
 		rasterization_state.get(info.m_rasterization_state);
 		multisample_state.get(info.m_multisample_state);
 		color_blend_state.get(info);
+        */
+        return true;
 	}
 };
 
 s_pipeline_create_info::s_pipeline_create_info() {
+    m_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    m_pipeline_create_info.pNext = nullptr;
+    m_pipeline_create_info.flags = 0;
+    m_pipeline_create_info.subpass = 0;
+    m_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+    m_pipeline_create_info.basePipelineIndex = -1;
 	m_pipeline_create_info.pStages = &m_stages;
 	m_pipeline_create_info.pVertexInputState = &m_vertex_input_state;
 	m_pipeline_create_info.pInputAssemblyState = &m_input_assembly_state;
@@ -475,18 +524,20 @@ s_pipeline_create_info::s_pipeline_create_info() {
 	m_pipeline_create_info.pDynamicState = &m_dynamic_state;
 }
 
+s_pipeline_desc g_pipeline_desc;
+
 bool load_pipeline(const char *filename) {
     core::filesystem::c_json_file* file = reinterpret_cast<core::filesystem::c_json_file*>(
         core::filesystem::open("disk:json", filename, core::filesystem::e_file_mode::read));
 
-    s_pipeline_desc pipeline_desc;
-    file->read(pipeline_desc);
+    file->read(g_pipeline_desc);
 	core::filesystem::close(file);
-
-	s_pipeline_create_info pipeline_create_info;
-	pipeline_desc.get(pipeline_create_info);
-
     return true;
+}
+
+bool create_pipeline() {
+    s_pipeline_create_info pipeline_create_info;
+    return g_pipeline_desc.create(pipeline_create_info);
 }
 
 }}}}

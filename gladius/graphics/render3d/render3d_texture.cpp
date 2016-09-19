@@ -22,7 +22,8 @@ core::memory::c_allocator<std::array<s_texture_t, RESOURCES_NUMBER>, core::memor
 
 
 bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
-                  uint32_t mip_levels, uint32_t array_layers, VkImage *image) {
+                  uint32_t mip_levels, uint32_t array_layers, VkSampleCountFlagBits samples,
+                  VkImageUsageFlags usage, VkImage *image) {
     VkImageCreateInfo image_create_info = {
             VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,                  // VkStructureType            sType;
             nullptr,                                              // const void                *pNext
@@ -36,10 +37,9 @@ bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t dep
             },
             mip_levels,                                           // uint32_t                   mipLevels
             array_layers,                                         // uint32_t                   arrayLayers
-            VK_SAMPLE_COUNT_1_BIT,                                // VkSampleCountFlagBits      samples
+            samples,                                              // VkSampleCountFlagBits      samples
             VK_IMAGE_TILING_OPTIMAL,                              // VkImageTiling              tiling
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT |                     // VkImageUsageFlags          usage
-            VK_IMAGE_USAGE_SAMPLED_BIT,
+            usage,                                                // VkImageUsageFlags          usage
             VK_SHARING_MODE_EXCLUSIVE,                            // VkSharingMode              sharingMode
             0,                                                    // uint32_t                   queueFamilyIndexCount
             nullptr,                                              // const uint32_t*            pQueueFamilyIndices
@@ -50,7 +50,7 @@ bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t dep
     return true;
 }
 
-bool create_image_view(VkImage image, VkFormat format, uint32_t mip_levels, uint32_t array_layers, VkImageView* view) {
+bool create_image_view(VkImage image, VkFormat format, uint32_t mip_levels, uint32_t array_layers, VkImageView *view) {
     VkImageViewCreateInfo image_view_create_info =
             {
                     VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,   // VkStructureType                sType
@@ -125,12 +125,12 @@ bool allocate_memory(VkImage image, VkMemoryPropertyFlagBits property, VkDeviceM
     VERIFY_LOG(false, LOG_TYPE, "Failed allocate image memory", "");
 }
 
-bool copy_texture_data(const gli::texture2d& tex2d, s_texture_desc& desc) {
+bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
     // Prepare data in staging buffer
     resources::s_render_context const *render_context;
     VERIFY(resources::get_current_render_context(&render_context));
 
-    auto staging_buffer = reinterpret_cast<s_buffer_desc*>(render_context->staging_buffer);
+    auto staging_buffer = reinterpret_cast<s_buffer_desc *>(render_context->staging_buffer);
 
     // Copy texture data into staging buffer
     uint8_t *data;
@@ -251,7 +251,7 @@ bool copy_texture_data(const gli::texture2d& tex2d, s_texture_desc& desc) {
     return true;
 }
 
-bool load_texture(const char *filename, handle_t& handle) {
+bool load_texture(const char *filename, handle_t &handle) {
     gli::texture2d tex2d(gli::load(filename));
     VERIFY_LOG(!tex2d.empty(), LOG_TYPE, "Failed to load texture %s", filename);
 
@@ -261,13 +261,40 @@ bool load_texture(const char *filename, handle_t& handle) {
     tex.mip_levels = tex2d.levels();
     tex.format = (VkFormat) tex2d.format();
 
-    VERIFY(create_image(tex.format, tex.width, tex.height, 1, tex.mip_levels, 1, &tex.image));
+    VERIFY(create_image(tex.format, tex.width, tex.height, 1, tex.mip_levels, 1, VK_SAMPLE_COUNT_1_BIT,
+                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &tex.image));
     VERIFY(allocate_memory(tex.image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &tex.memory));
     VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory, 0));
     VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
     VERIFY(copy_texture_data(tex2d, tex));
 
-    s_texture_desc* texture = (s_texture_desc*)g_texture_pool.alloc(1);
+    s_texture_desc *texture = (s_texture_desc *) g_texture_pool.alloc(1);
+    (*texture) = std::move(tex);
+    handle = reinterpret_cast<handle_t>(texture);
+
+    return true;
+}
+
+bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
+                    uint32_t mip_levels, uint32_t array_layers, VkSampleCountFlagBits samples, VkImageUsageFlags usage,
+                    handle_t &handle) {
+
+    s_texture_desc tex;
+    tex.width = width;
+    tex.height = height;
+    tex.depth = depth;
+    tex.mip_levels = mip_levels;
+    tex.array_layers = array_layers;
+    tex.format = format;
+    tex.samples = samples;
+
+    VERIFY(create_image(tex.format, tex.width, tex.height, 1, tex.mip_levels, tex.array_layers, tex.samples, usage,
+                        &tex.image));
+    VERIFY(allocate_memory(tex.image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &tex.memory));
+    VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory, 0));
+    VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
+
+    s_texture_desc *texture = (s_texture_desc *) g_texture_pool.alloc(1);
     (*texture) = std::move(tex);
     handle = reinterpret_cast<handle_t>(texture);
 

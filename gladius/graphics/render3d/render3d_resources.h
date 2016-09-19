@@ -25,6 +25,7 @@ struct s_texture_desc {
     uint32_t mip_levels;
     uint32_t array_layers;
     VkFormat format;
+    VkSampleCountFlagBits samples;
     VkImage image;
     VkImageView view;
     VkDeviceMemory memory;

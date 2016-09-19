@@ -1,38 +1,72 @@
 {
   "name": "deferred",
-
   "swapchain": {
-    "width": 1.0,
-    "height": 1.0,
-    "format": "R8G8B8A8",
+    "format": "B8G8R8A8_UNORM",
     "images": 2
   },
-
-  "framebuffers": [{
+  "depthbuffer": {
     "width": 1.0,
     "height": 1.0,
-    "format": "R8G8B8A8",
-    "samples": 1,
-    "layer": 1
-  }],
-
-  "viewport_state": {
-    "viewports": [{
-      "x": 0.0,
-      "y": 0.0,
-      "width": 1.0,
-      "height": 1.0,
-      "minDepth": 0.0,
-      "maxDepth": 1.0
-    }],
-    "scissors": [{
-      "xOffset": 0,
-      "yOffset": 0,
-      "width": 1.0,
-      "height": 1.0
-    }]
+    "format": "D32_SFLOAT"
   },
-
+  "framebuffers": [
+    {
+      "width": 0.5,
+      "height": 0.5,
+      "format": "R16G16B16A16_UNORM",
+      "samples": 4,
+      "layer": 1
+    },
+    {
+      "swapchain": true
+    }
+  ],
+  "render_passes": [
+    {
+      "attachments": [
+        {
+          "index": 0,
+          "loadOp": "",
+          "storeOp": "store",
+          "stencilLoadOp": "",
+          "stencilStoreOp": "",
+          "initialLayout": "",
+          "finalLayout": "shader_read_only_optimal"
+        }
+      ],
+      "subpasses": [
+        {
+          "bind_point": "graphics",
+          "attachments": [
+            {
+              "index": 0,
+              "layout": "color_attachment_optimal"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "viewport_state": {
+    "viewports": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1.0,
+        "height": 1.0,
+        "minDepth": 0.0,
+        "maxDepth": 1.0
+      }
+    ],
+    "scissors": [
+      {
+        "xOffset": 0,
+        "yOffset": 0,
+        "width": 1.0,
+        "height": 1.0
+      }
+    ]
+  },
   "rasterization_state": {
     "depthClampEnable": false,
     "rasterizerDiscardEnable": false,
@@ -45,7 +79,6 @@
     "depthBiasSlopeFactor": 0.0,
     "lineWidth": 1.0
   },
-
   "multisample_state": {
     "rasterizationSamples": 1,
     "sampleShadingEnable": false,
@@ -53,20 +86,26 @@
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false
   },
-
   "color_blend_state": {
     "logicOpEnable": false,
     "logicOp": "copy",
-    "blendConstants": [0.0, 0.0, 0.0, 0.0],
-    "color_blend_attachment_states": [{
-      "blendEnable": false,
-      "srcColorBlendFactor": "one",
-      "dstColorBlendFactor": "zero",
-      "colorBlendOp": "add",
-      "srcAlphaBlendFactor": "one",
-      "dstAlphaBlendFactor": "zero",
-      "alphaBlendOp": "add",
-      "colorWriteMask": "rgba"
-    }]
+    "blendConstants": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "color_blend_attachment_states": [
+      {
+        "blendEnable": false,
+        "srcColorBlendFactor": "one",
+        "dstColorBlendFactor": "zero",
+        "colorBlendOp": "add",
+        "srcAlphaBlendFactor": "one",
+        "dstAlphaBlendFactor": "zero",
+        "alphaBlendOp": "add",
+        "colorWriteMask": "rgba"
+      }
+    ]
   }
 }

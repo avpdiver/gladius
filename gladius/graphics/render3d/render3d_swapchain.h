@@ -11,7 +11,7 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
-bool create_swap_chain(bool create_veiws = false);
+bool create_swap_chain(VkFormat format, size_t images);
 void shutdown_swap_chain();
 
 }

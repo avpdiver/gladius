@@ -2,7 +2,7 @@
 // Created by alexa on 022 22 02 2016.
 //
 
-#include <cstring>
+#include <map>
 #include "render3d_globals.h"
 #include "render3d_utils.h"
 
@@ -11,6 +11,196 @@ namespace graphics {
 namespace render3d {
 namespace utils {
 
+#define FORMAT(F) { #F, VK_FORMAT_##F }
+
+std::map<const std::string, VkFormat> g_formats_map = {
+        FORMAT(UNDEFINED),
+        FORMAT(R4G4_UNORM_PACK8),
+        FORMAT(R4G4B4A4_UNORM_PACK16),
+        FORMAT(B4G4R4A4_UNORM_PACK16),
+        FORMAT(R5G6B5_UNORM_PACK16),
+        FORMAT(B5G6R5_UNORM_PACK16),
+        FORMAT(R5G5B5A1_UNORM_PACK16),
+        FORMAT(B5G5R5A1_UNORM_PACK16),
+        FORMAT(A1R5G5B5_UNORM_PACK16),
+        FORMAT(R8_UNORM),
+        FORMAT(R8_SNORM),
+        FORMAT(R8_USCALED),
+        FORMAT(R8_SSCALED),
+        FORMAT(R8_UINT),
+        FORMAT(R8_SINT),
+        FORMAT(R8_SRGB),
+        FORMAT(R8G8_UNORM),
+        FORMAT(R8G8_SNORM),
+        FORMAT(R8G8_USCALED),
+        FORMAT(R8G8_SSCALED),
+        FORMAT(R8G8_UINT),
+        FORMAT(R8G8_SINT),
+        FORMAT(R8G8_SRGB),
+        FORMAT(R8G8B8_UNORM),
+        FORMAT(R8G8B8_SNORM),
+        FORMAT(R8G8B8_USCALED),
+        FORMAT(R8G8B8_SSCALED),
+        FORMAT(R8G8B8_UINT),
+        FORMAT(R8G8B8_SINT),
+        FORMAT(R8G8B8_SRGB),
+        FORMAT(B8G8R8_UNORM),
+        FORMAT(B8G8R8_SNORM),
+        FORMAT(B8G8R8_USCALED),
+        FORMAT(B8G8R8_SSCALED),
+        FORMAT(B8G8R8_UINT),
+        FORMAT(B8G8R8_SINT),
+        FORMAT(B8G8R8_SRGB),
+        FORMAT(R8G8B8A8_UNORM),
+        FORMAT(R8G8B8A8_SNORM),
+        FORMAT(R8G8B8A8_USCALED),
+        FORMAT(R8G8B8A8_SSCALED),
+        FORMAT(R8G8B8A8_UINT),
+        FORMAT(R8G8B8A8_SINT),
+        FORMAT(R8G8B8A8_SRGB),
+        FORMAT(B8G8R8A8_UNORM),
+        FORMAT(B8G8R8A8_SNORM),
+        FORMAT(B8G8R8A8_USCALED),
+        FORMAT(B8G8R8A8_SSCALED),
+        FORMAT(B8G8R8A8_UINT),
+        FORMAT(B8G8R8A8_SINT),
+        FORMAT(B8G8R8A8_SRGB),
+        FORMAT(A8B8G8R8_UNORM_PACK32),
+        FORMAT(A8B8G8R8_SNORM_PACK32),
+        FORMAT(A8B8G8R8_USCALED_PACK32),
+        FORMAT(A8B8G8R8_SSCALED_PACK32),
+        FORMAT(A8B8G8R8_UINT_PACK32),
+        FORMAT(A8B8G8R8_SINT_PACK32),
+        FORMAT(A8B8G8R8_SRGB_PACK32),
+        FORMAT(A2R10G10B10_UNORM_PACK32),
+        FORMAT(A2R10G10B10_SNORM_PACK32),
+        FORMAT(A2R10G10B10_USCALED_PACK32),
+        FORMAT(A2R10G10B10_SSCALED_PACK32),
+        FORMAT(A2R10G10B10_UINT_PACK32),
+        FORMAT(A2R10G10B10_SINT_PACK32),
+        FORMAT(A2B10G10R10_UNORM_PACK32),
+        FORMAT(A2B10G10R10_SNORM_PACK32),
+        FORMAT(A2B10G10R10_USCALED_PACK32),
+        FORMAT(A2B10G10R10_SSCALED_PACK32),
+        FORMAT(A2B10G10R10_UINT_PACK32),
+        FORMAT(A2B10G10R10_SINT_PACK32),
+        FORMAT(R16_UNORM),
+        FORMAT(R16_SNORM),
+        FORMAT(R16_USCALED),
+        FORMAT(R16_SSCALED),
+        FORMAT(R16_UINT),
+        FORMAT(R16_SINT),
+        FORMAT(R16_SFLOAT),
+        FORMAT(R16G16_UNORM),
+        FORMAT(R16G16_SNORM),
+        FORMAT(R16G16_USCALED),
+        FORMAT(R16G16_SSCALED),
+        FORMAT(R16G16_UINT),
+        FORMAT(R16G16_SINT),
+        FORMAT(R16G16_SFLOAT),
+        FORMAT(R16G16B16_UNORM),
+        FORMAT(R16G16B16_SNORM),
+        FORMAT(R16G16B16_USCALED),
+        FORMAT(R16G16B16_SSCALED),
+        FORMAT(R16G16B16_UINT),
+        FORMAT(R16G16B16_SINT),
+        FORMAT(R16G16B16_SFLOAT),
+        FORMAT(R16G16B16A16_UNORM),
+        FORMAT(R16G16B16A16_SNORM),
+        FORMAT(R16G16B16A16_USCALED),
+        FORMAT(R16G16B16A16_SSCALED),
+        FORMAT(R16G16B16A16_UINT),
+        FORMAT(R16G16B16A16_SINT),
+        FORMAT(R16G16B16A16_SFLOAT),
+        FORMAT(R32_UINT),
+        FORMAT(R32_SINT),
+        FORMAT(R32_SFLOAT),
+        FORMAT(R32G32_UINT),
+        FORMAT(R32G32_SINT),
+        FORMAT(R32G32_SFLOAT),
+        FORMAT(R32G32B32_UINT),
+        FORMAT(R32G32B32_SINT),
+        FORMAT(R32G32B32_SFLOAT),
+        FORMAT(R32G32B32A32_UINT),
+        FORMAT(R32G32B32A32_SINT),
+        FORMAT(R32G32B32A32_SFLOAT),
+        FORMAT(R64_UINT),
+        FORMAT(R64_SINT),
+        FORMAT(R64_SFLOAT),
+        FORMAT(R64G64_UINT),
+        FORMAT(R64G64_SINT),
+        FORMAT(R64G64_SFLOAT),
+        FORMAT(R64G64B64_UINT),
+        FORMAT(R64G64B64_SINT),
+        FORMAT(R64G64B64_SFLOAT),
+        FORMAT(R64G64B64A64_UINT),
+        FORMAT(R64G64B64A64_SINT),
+        FORMAT(R64G64B64A64_SFLOAT),
+        FORMAT(B10G11R11_UFLOAT_PACK32),
+        FORMAT(E5B9G9R9_UFLOAT_PACK32),
+        FORMAT(D16_UNORM),
+        FORMAT(X8_D24_UNORM_PACK32),
+        FORMAT(D32_SFLOAT),
+        FORMAT(S8_UINT),
+        FORMAT(D16_UNORM_S8_UINT),
+        FORMAT(D24_UNORM_S8_UINT),
+        FORMAT(D32_SFLOAT_S8_UINT),
+        FORMAT(BC1_RGB_UNORM_BLOCK),
+        FORMAT(BC1_RGB_SRGB_BLOCK),
+        FORMAT(BC1_RGBA_UNORM_BLOCK),
+        FORMAT(BC1_RGBA_SRGB_BLOCK),
+        FORMAT(BC2_UNORM_BLOCK),
+        FORMAT(BC2_SRGB_BLOCK),
+        FORMAT(BC3_UNORM_BLOCK),
+        FORMAT(BC3_SRGB_BLOCK),
+        FORMAT(BC4_UNORM_BLOCK),
+        FORMAT(BC4_SNORM_BLOCK),
+        FORMAT(BC5_UNORM_BLOCK),
+        FORMAT(BC5_SNORM_BLOCK),
+        FORMAT(BC6H_UFLOAT_BLOCK),
+        FORMAT(BC6H_SFLOAT_BLOCK),
+        FORMAT(BC7_UNORM_BLOCK),
+        FORMAT(BC7_SRGB_BLOCK),
+        FORMAT(ETC2_R8G8B8_UNORM_BLOCK),
+        FORMAT(ETC2_R8G8B8_SRGB_BLOCK),
+        FORMAT(ETC2_R8G8B8A1_UNORM_BLOCK),
+        FORMAT(ETC2_R8G8B8A1_SRGB_BLOCK),
+        FORMAT(ETC2_R8G8B8A8_UNORM_BLOCK),
+        FORMAT(ETC2_R8G8B8A8_SRGB_BLOCK),
+        FORMAT(EAC_R11_UNORM_BLOCK),
+        FORMAT(EAC_R11_SNORM_BLOCK),
+        FORMAT(EAC_R11G11_UNORM_BLOCK),
+        FORMAT(EAC_R11G11_SNORM_BLOCK),
+        FORMAT(ASTC_4x4_UNORM_BLOCK),
+        FORMAT(ASTC_4x4_SRGB_BLOCK),
+        FORMAT(ASTC_5x4_UNORM_BLOCK),
+        FORMAT(ASTC_5x4_SRGB_BLOCK),
+        FORMAT(ASTC_5x5_UNORM_BLOCK),
+        FORMAT(ASTC_5x5_SRGB_BLOCK),
+        FORMAT(ASTC_6x5_UNORM_BLOCK),
+        FORMAT(ASTC_6x5_SRGB_BLOCK),
+        FORMAT(ASTC_6x6_UNORM_BLOCK),
+        FORMAT(ASTC_6x6_SRGB_BLOCK),
+        FORMAT(ASTC_8x5_UNORM_BLOCK),
+        FORMAT(ASTC_8x5_SRGB_BLOCK),
+        FORMAT(ASTC_8x6_UNORM_BLOCK),
+        FORMAT(ASTC_8x6_SRGB_BLOCK),
+        FORMAT(ASTC_8x8_UNORM_BLOCK),
+        FORMAT(ASTC_8x8_SRGB_BLOCK),
+        FORMAT(ASTC_10x5_UNORM_BLOCK),
+        FORMAT(ASTC_10x5_SRGB_BLOCK),
+        FORMAT(ASTC_10x6_UNORM_BLOCK),
+        FORMAT(ASTC_10x6_SRGB_BLOCK),
+        FORMAT(ASTC_10x8_UNORM_BLOCK),
+        FORMAT(ASTC_10x8_SRGB_BLOCK),
+        FORMAT(ASTC_10x10_UNORM_BLOCK),
+        FORMAT(ASTC_10x10_SRGB_BLOCK),
+        FORMAT(ASTC_12x10_UNORM_BLOCK),
+        FORMAT(ASTC_12x10_SRGB_BLOCK),
+        FORMAT(ASTC_12x12_UNORM_BLOCK),
+        FORMAT(ASTC_12x12_SRGB_BLOCK)
+};
+
 bool check_extension(const char *extension_name, const std::vector<VkExtensionProperties> &available_extensions) {
     for (size_t i = 0; i < available_extensions.size(); ++i) {
         if (strcmp(available_extensions[i].extensionName, extension_name) == 0) {
@@ -18,6 +208,33 @@ bool check_extension(const char *extension_name, const std::vector<VkExtensionPr
         }
     }
     return false;
+}
+
+VkSampleCountFlagBits get_sample_count(size_t samples) {
+    if (samples == 1)
+        return VK_SAMPLE_COUNT_1_BIT;
+    if (samples == 2)
+        return VK_SAMPLE_COUNT_2_BIT;
+    if (samples == 4)
+        return VK_SAMPLE_COUNT_4_BIT;
+    if (samples == 8)
+        return VK_SAMPLE_COUNT_8_BIT;
+    if (samples == 16)
+        return VK_SAMPLE_COUNT_16_BIT;
+    if (samples == 32)
+        return VK_SAMPLE_COUNT_32_BIT;
+    if (samples == 64)
+        return VK_SAMPLE_COUNT_64_BIT;
+    return VK_SAMPLE_COUNT_1_BIT;
+}
+
+VkFormat string_to_format(const std::string &str) {
+    const auto it = g_formats_map.find(str);
+    if (it == g_formats_map.cend()) {
+        return VK_FORMAT_UNDEFINED;
+    } else {
+        return it->second;
+    }
 }
 
 }
