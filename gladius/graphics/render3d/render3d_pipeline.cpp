@@ -14,7 +14,10 @@
 #include "render3d_utils.h"
 #include "render3d_texture.h"
 
-namespace gladius { namespace graphics { namespace render3d { namespace resources {
+namespace gladius {
+namespace graphics {
+namespace render3d {
+namespace resources {
 
 template<typename OUT, typename IN>
 OUT get_swapchain_width(const IN& v) {
@@ -409,4 +412,7 @@ bool create_pipeline() {
 	return g_pipeline_json.create(pipeline_create_info);
 }
 
-}}}}
+}
+}
+}
+}
