@@ -11,14 +11,18 @@
   },
   "framebuffers": [
     {
-      "width": 0.5,
-      "height": 0.5,
-      "format": "R16G16B16A16_UNORM",
-      "samples": 4,
-      "layer": 1
-    },
-    {
-      "swapchain": true
+      "attachments": [
+        {
+          "width": 0.5,
+          "height": 0.5,
+          "format": "R16G16B16A16_UNORM",
+          "samples": 4,
+          "layer": 1
+        },
+        {
+          "swapchain": true
+        }
+      ]
     }
   ],
   "render_passes": [
@@ -27,20 +31,20 @@
         {
           "index": 0,
           "loadOp": "",
-          "storeOp": "store",
+          "storeOp": "STORE",
           "stencilLoadOp": "",
           "stencilStoreOp": "",
           "initialLayout": "",
-          "finalLayout": "shader_read_only_optimal"
+          "finalLayout": "SHADER_READ_ONLY_OPTIMAL"
         }
       ],
       "subpasses": [
         {
-          "bind_point": "graphics",
+          "bind_point": "GRAPHICS",
           "attachments": [
             {
               "index": 0,
-              "layout": "color_attachment_optimal"
+              "layout": "COLOR_ATTACHMENT_OPTIMAL"
             }
           ]
         }
@@ -70,9 +74,9 @@
   "rasterization_state": {
     "depthClampEnable": false,
     "rasterizerDiscardEnable": false,
-    "polygonMode": "fill",
-    "cullMode": "back",
-    "frontFace": "counter_clockwise",
+    "polygonMode": "FILL",
+    "cullMode": "BACK",
+    "frontFace": "COUNTER_CLOCKWISE",
     "depthBiasEnable": false,
     "depthBiasConstantFactor": 0.0,
     "depthBiasClamp": 0.0,
@@ -88,7 +92,7 @@
   },
   "color_blend_state": {
     "logicOpEnable": false,
-    "logicOp": "copy",
+    "logicOp": "COPY",
     "blendConstants": [
       0.0,
       0.0,
@@ -98,13 +102,13 @@
     "color_blend_attachment_states": [
       {
         "blendEnable": false,
-        "srcColorBlendFactor": "one",
-        "dstColorBlendFactor": "zero",
-        "colorBlendOp": "add",
-        "srcAlphaBlendFactor": "one",
-        "dstAlphaBlendFactor": "zero",
-        "alphaBlendOp": "add",
-        "colorWriteMask": "rgba"
+        "srcColorBlendFactor": "ONE",
+        "dstColorBlendFactor": "ZERO",
+        "colorBlendOp": "ADD",
+        "srcAlphaBlendFactor": "ONE",
+        "dstAlphaBlendFactor": "ZERO",
+        "alphaBlendOp": "ADD",
+        "colorWriteMask": "RGBA"
       }
     ]
   }

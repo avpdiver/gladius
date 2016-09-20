@@ -3,6 +3,7 @@
 //
 
 #include <map>
+#include <cstring>
 #include "render3d_globals.h"
 #include "render3d_utils.h"
 
@@ -10,6 +11,8 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 namespace utils {
+
+#define IF(S, SUFFIX, PREFIX)  if (S == #SUFFIX) return PREFIX##_##SUFFIX
 
 #define FORMAT(F) { #F, VK_FORMAT_##F }
 
@@ -235,6 +238,102 @@ VkFormat string_to_format(const std::string &str) {
     } else {
         return it->second;
     }
+}
+
+VkPolygonMode string_to_polygon_mode(const std::string &str) {
+    IF (str, FILL, VK_POLYGON_MODE);
+	IF (str, LINE, VK_POLYGON_MODE);
+	IF (str, POINT, VK_POLYGON_MODE);
+    return VK_POLYGON_MODE_FILL;
+}
+
+VkCullModeFlags string_to_cull_mode(const std::string &str) {
+    VkCullModeFlags flag = VK_CULL_MODE_NONE;
+    size_t pos = 0;
+    size_t n = 0;
+    while (n < str.length()) {
+        n = str.find_first_of(' ', pos);
+        if (n == std::string::npos) {
+            n = str.length();
+        }
+        std::string token = str.substr(pos, n);
+        if (token == "FRONT")
+            flag |= VK_CULL_MODE_FRONT_BIT;
+        if (token == "BACK")
+            flag |= VK_CULL_MODE_BACK_BIT;
+    }
+    return flag;
+}
+
+VkFrontFace string_to_front_face(const std::string &str) {
+	IF (str, COUNTER_CLOCKWISE, VK_FRONT_FACE);
+	IF (str, CLOCKWISE, VK_FRONT_FACE);
+    return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+}
+
+VkBlendFactor string_to_blend_color(const std::string &str) {
+	IF (str, ZERO, VK_BLEND_FACTOR);
+	IF (str, ONE, VK_BLEND_FACTOR);
+	IF (str, SRC_COLOR, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR);
+	IF (str, DST_COLOR, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_DST_COLOR, VK_BLEND_FACTOR);
+	IF (str, SRC_ALPHA, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_SRC_ALPHA, VK_BLEND_FACTOR);
+	IF (str, DST_ALPHA, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR);
+	IF (str, CONSTANT_COLOR, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR);
+	IF (str, CONSTANT_ALPHA, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_CONSTANT_ALPHA, VK_BLEND_FACTOR);
+	IF (str, SRC_ALPHA_SATURATE, VK_BLEND_FACTOR);
+	IF (str, SRC1_COLOR, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR);
+	IF (str, SRC1_ALPHA, VK_BLEND_FACTOR);
+	IF (str, ONE_MINUS_SRC1_ALPHA, VK_BLEND_FACTOR);
+	return VK_BLEND_FACTOR_ZERO;
+}
+
+VkBlendOp string_to_blend_op(const std::string &str) {
+	IF (str, ADD, VK_BLEND_OP);
+	IF (str, SUBTRACT, VK_BLEND_OP);
+	IF (str, REVERSE_SUBTRACT, VK_BLEND_OP);
+	IF (str, MIN, VK_BLEND_OP);
+	IF (str, MAX, VK_BLEND_OP);
+	return VK_BLEND_OP_ADD;
+}
+
+VkColorComponentFlags string_to_color_component_flag(const std::string &str) {
+	VkColorComponentFlags flag = 0;
+	if (str.find('R') != std::string::npos)
+		flag |= VK_COLOR_COMPONENT_R_BIT;
+	if (str.find('G') != std::string::npos)
+		flag |= VK_COLOR_COMPONENT_G_BIT;
+	if (str.find('B') != std::string::npos)
+		flag |= VK_COLOR_COMPONENT_B_BIT;
+	if (str.find('A') != std::string::npos)
+		flag |= VK_COLOR_COMPONENT_A_BIT;
+	return flag;
+}
+
+VkLogicOp string_to_logic_op(const std::string &str) {
+	IF (str, CLEAR, VK_LOGIC_OP);
+	IF (str, AND, VK_LOGIC_OP);
+	IF (str, AND_REVERSE, VK_LOGIC_OP);
+	IF (str, COPY, VK_LOGIC_OP);
+	IF (str, AND_INVERTED, VK_LOGIC_OP);
+	IF (str, NO_OP, VK_LOGIC_OP);
+	IF (str, XOR, VK_LOGIC_OP);
+	IF (str, OR, VK_LOGIC_OP);
+	IF (str, NOR, VK_LOGIC_OP);
+	IF (str, EQUIVALENT, VK_LOGIC_OP);
+	IF (str, INVERT, VK_LOGIC_OP);
+	IF (str, OR_REVERSE, VK_LOGIC_OP);
+	IF (str, COPY_INVERTED, VK_LOGIC_OP);
+	IF (str, OR_INVERTED, VK_LOGIC_OP);
+	IF (str, NAND, VK_LOGIC_OP);
+	IF (str, SET, VK_LOGIC_OP);
+	return VK_LOGIC_OP_COPY;
 }
 
 }

@@ -75,8 +75,8 @@ extern s_device_queue present_queue;
 extern VkSurfaceFormatKHR surface_format;
 
 struct s_swapchain {
-	size_t width;
-	size_t height;
+	uint32_t width;
+	uint32_t height;
 	VkFormat format;
 	VkSwapchainKHR handle;
 	std::vector<VkImage> images;

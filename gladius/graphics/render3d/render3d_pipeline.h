@@ -13,9 +13,9 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
-struct s_framebuffer_info {
-    std::vector<s_texture_desc*> m_texture_desc;
-    VkFramebuffer m_handle = VK_NULL_HANDLE;
+struct s_framebuffer_desc {
+	std::vector<VkFramebuffer> m_framebuffers; // for each swapchain image
+	std::vector<s_texture_desc*> m_attachments;
 };
 
 struct s_pipeline_create_info {
@@ -33,7 +33,7 @@ struct s_pipeline_create_info {
 	VkPipelineDynamicStateCreateInfo m_dynamic_state;
 	VkGraphicsPipelineCreateInfo m_pipeline_create_info;
 
-    std::vector<s_framebuffer_info> m_framebuffers;
+	std::vector<s_framebuffer_desc> m_framebuffers;
 	std::vector<VkViewport> m_viewports;
 	std::vector<VkRect2D> m_scissors;
 	std::vector<VkPipelineColorBlendAttachmentState> m_color_blend_attachment_states;
