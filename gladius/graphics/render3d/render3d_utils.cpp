@@ -213,7 +213,7 @@ bool check_extension(const char *extension_name, const std::vector<VkExtensionPr
     return false;
 }
 
-VkSampleCountFlagBits get_sample_count(size_t samples) {
+VkSampleCountFlagBits get_sample_count(const size_t& samples) {
     if (samples == 1)
         return VK_SAMPLE_COUNT_1_BIT;
     if (samples == 2)

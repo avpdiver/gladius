@@ -16,7 +16,7 @@ namespace utils {
 bool check_extension(const char *extension_name,
 					 const std::vector<VkExtensionProperties> &available_extensions);
 
-VkSampleCountFlagBits get_sample_count(size_t samples);
+VkSampleCountFlagBits get_sample_count(const size_t& samples);
 
 VkFormat string_to_format(const std::string &str);
 

@@ -16,38 +16,51 @@
 
 namespace gladius { namespace graphics { namespace render3d { namespace resources {
 
+template<typename OUT, typename IN>
+OUT get_swapchain_width(const IN& v) {
+	return static_cast<OUT>(vk_globals::swapchain.width * v);
+};
+
+template<typename OUT, typename IN>
+OUT get_swapchain_height(const IN& v) {
+	return static_cast<OUT>(vk_globals::swapchain.height * v);
+};
+
 struct s_swapchain_json {
-	std::string format = "R8G8B8A8_UNORM";
+	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
 	size_t images = 1;
 
 	JSON_FIELDS(
-		JSON_FIELD(s_swapchain_json, format),
+		JSON_FIELD_CONV(s_swapchain_json, format, utils::string_to_format),
 		JSON_FIELD(s_swapchain_json, images)
 	);
 
 	bool create() {
-		VkFormat vkFormat = utils::string_to_format(format);
-		if (vkFormat == VK_FORMAT_UNDEFINED) {
+		if (format == VK_FORMAT_UNDEFINED) {
 			return false;
 		}
-		VERIFY(create_swap_chain(vkFormat, images));
+		VERIFY(create_swap_chain(format, images));
 		return true;
 	}
 };
 
 struct s_framebuffer_attachment_json {
+	static constexpr auto width_func = get_swapchain_width<uint32_t, float>;
+	static constexpr auto height_func = get_swapchain_height<uint32_t, float>;
+
 	bool swapchain = false;
-	float width = 1.0f;
-	float height = 1.0f;
-	std::string format = "R8G8B8A8_UNORM";
-	uint32_t samples = 1;
+	uint32_t width;
+	uint32_t height;
+	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
+	VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
 	uint32_t layer = 1;
+
 	JSON_FIELDS(
 		JSON_FIELD(s_framebuffer_attachment_json, swapchain),
-		JSON_FIELD(s_framebuffer_attachment_json, width),
-		JSON_FIELD(s_framebuffer_attachment_json, height),
-		JSON_FIELD(s_framebuffer_attachment_json, format),
-		JSON_FIELD(s_framebuffer_attachment_json, samples),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, width, width_func),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, height, height_func),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, format, utils::string_to_format),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, samples, utils::get_sample_count),
 		JSON_FIELD(s_framebuffer_attachment_json, layer)
 	);
 
@@ -55,14 +68,12 @@ struct s_framebuffer_attachment_json {
 		if (swapchain) {
 			*desc = nullptr;
 		} else {
-			VkFormat vk_format = utils::string_to_format(format);
-			VERIFY(vk_format != VK_FORMAT_UNDEFINED);
+			VERIFY(format != VK_FORMAT_UNDEFINED);
 			uint32_t w = (uint32_t) (vk_globals::swapchain.width * width);
 			uint32_t h = (uint32_t) (vk_globals::swapchain.height * height);
-			VkSampleCountFlagBits vk_samples = utils::get_sample_count(samples);
 
 			handle_t handle;
-			VERIFY(create_texture(vk_format, w, h, 1, 1, 1, vk_samples,
+			VERIFY(create_texture(format, w, h, 1, 1, 1, samples,
 								  VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 								  handle));
 			*desc = reinterpret_cast<s_texture_desc*>(handle);
@@ -74,6 +85,7 @@ struct s_framebuffer_attachment_json {
 
 struct s_framebuffer_json {
 	std::vector<s_framebuffer_attachment_json> attachments;
+
 	JSON_FIELDS(
 		JSON_FIELD(s_framebuffer_json, attachments)
 	);
@@ -127,18 +139,15 @@ struct s_framebuffer_json {
 	}
 };
 
-struct s_viewport_json {
-	float x = 0.0;
-	float y = 0.0;
-	float width = 1.0;
-	float height = 1.0;
-	float minDepth = 0.0;
-	float maxDepth = 1.0;
+struct s_viewport_json : public VkViewport {
+	static constexpr auto width_func = get_swapchain_width<float, float>;
+	static constexpr auto height_func = get_swapchain_height<float, float>;
+
 	JSON_FIELDS(
 		JSON_FIELD(s_viewport_json, x),
 		JSON_FIELD(s_viewport_json, y),
-		JSON_FIELD(s_viewport_json, width),
-		JSON_FIELD(s_viewport_json, height),
+		JSON_FIELD_CONV(s_viewport_json, width, width_func),
+		JSON_FIELD_CONV(s_viewport_json, height, height_func),
 		JSON_FIELD(s_viewport_json, minDepth),
 		JSON_FIELD(s_viewport_json, maxDepth)
 	);
@@ -156,6 +165,9 @@ struct s_viewport_json {
 };
 
 struct s_scissor_json {
+	static constexpr auto width_func = get_swapchain_width<float, float>;
+	static constexpr auto height_func = get_swapchain_height<float, float>;
+
 	int32_t xOffset = 0;
 	int32_t yOffset = 0;
 	float width = 1.0f;
@@ -163,8 +175,8 @@ struct s_scissor_json {
 	JSON_FIELDS(
 		JSON_FIELD(s_scissor_json, xOffset),
 		JSON_FIELD(s_scissor_json, yOffset),
-		JSON_FIELD(s_scissor_json, width),
-		JSON_FIELD(s_scissor_json, height)
+		JSON_FIELD_CONV(s_scissor_json, width, width_func),
+		JSON_FIELD_CONV(s_scissor_json, height, height_func)
 	);
 
 	VkRect2D &&get() const {
@@ -209,9 +221,9 @@ struct s_viewport_state_json {
 struct s_rasterization_state_json {
 	bool depthClampEnable = false;
 	bool rasterizerDiscardEnable = false;
-	std::string polygonMode = "FILL";
-	std::string cullMode = "BACK";
-	std::string frontFace = "COUNTER_CLOCKWISE";
+	VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
+	VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
+	VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	bool depthBiasEnable = false;
 	float depthBiasConstantFactor = 0.0f;
 	float depthBiasClamp = 0.0f;
@@ -220,9 +232,9 @@ struct s_rasterization_state_json {
 	JSON_FIELDS(
 		JSON_FIELD(s_rasterization_state_json, depthClampEnable),
 		JSON_FIELD(s_rasterization_state_json, rasterizerDiscardEnable),
-		JSON_FIELD(s_rasterization_state_json, polygonMode),
-		JSON_FIELD(s_rasterization_state_json, cullMode),
-		JSON_FIELD(s_rasterization_state_json, frontFace),
+		JSON_FIELD_CONV(s_rasterization_state_json, polygonMode, utils::string_to_polygon_mode),
+		JSON_FIELD_CONV(s_rasterization_state_json, cullMode, utils::string_to_cull_mode),
+		JSON_FIELD_CONV(s_rasterization_state_json, frontFace, utils::string_to_front_face),
 		JSON_FIELD(s_rasterization_state_json, depthBiasEnable),
 		JSON_FIELD(s_rasterization_state_json, depthBiasConstantFactor),
 		JSON_FIELD(s_rasterization_state_json, depthBiasClamp),
@@ -238,9 +250,9 @@ public:
 
 		info.depthClampEnable = depthClampEnable;
 		info.rasterizerDiscardEnable = rasterizerDiscardEnable;
-		info.polygonMode = utils::string_to_polygon_mode(polygonMode);
-		info.cullMode = utils::string_to_cull_mode(cullMode);
-		info.frontFace = utils::string_to_front_face(frontFace);
+		info.polygonMode = polygonMode;
+		info.cullMode = cullMode;
+		info.frontFace = frontFace;
 		info.depthBiasEnable = depthBiasEnable;
 		info.depthBiasConstantFactor = depthBiasConstantFactor;
 		info.depthBiasClamp = depthBiasClamp;
@@ -249,77 +261,44 @@ public:
 	}
 };
 
-struct s_multisample_state_json {
-	size_t rasterizationSamples = 1;
-	bool sampleShadingEnable = false;
-	float minSampleShading = 1.0f;
-	bool alphaToCoverageEnable = false;
-	bool alphaToOneEnable = false;
+struct s_multisample_state_json : public VkPipelineMultisampleStateCreateInfo {
 	JSON_FIELDS(
-		JSON_FIELD(s_multisample_state_json, rasterizationSamples),
+		JSON_FIELD_CONV(s_multisample_state_json, rasterizationSamples, utils::get_sample_count),
 		JSON_FIELD(s_multisample_state_json, sampleShadingEnable),
 		JSON_FIELD(s_multisample_state_json, minSampleShading),
 		JSON_FIELD(s_multisample_state_json, alphaToCoverageEnable),
 		JSON_FIELD(s_multisample_state_json, alphaToOneEnable)
 	);
 public:
-	void get(VkPipelineMultisampleStateCreateInfo &info) const {
-		info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		info.pNext = nullptr;
-		info.flags = 0;
-
-		info.rasterizationSamples = utils::get_sample_count(rasterizationSamples);
-		info.sampleShadingEnable = sampleShadingEnable;
-		info.minSampleShading = minSampleShading;
-		info.alphaToCoverageEnable = alphaToCoverageEnable;
-		info.alphaToOneEnable = alphaToOneEnable;
+	s_multisample_state_json() {
+		sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		pNext = nullptr;
+		flags = 0;
 	}
 };
 
-struct s_color_blend_attachment_state_json {
-	bool blendEnable = false;
-	std::string srcColorBlendFactor = "ONE";
-	std::string dstColorBlendFactor = "ZERO";
-	std::string colorBlendOp = "ADD";
-	std::string srcAlphaBlendFactor = "ONE";
-	std::string dstAlphaBlendFactor = "ZERO";
-	std::string alphaBlendOp = "ADD";
-	std::string colorWriteMask = "RGBA";
+struct s_color_blend_attachment_state_json : public VkPipelineColorBlendAttachmentState {
 	JSON_FIELDS(
 		JSON_FIELD(s_color_blend_attachment_state_json, blendEnable),
-		JSON_FIELD(s_color_blend_attachment_state_json, srcColorBlendFactor),
-		JSON_FIELD(s_color_blend_attachment_state_json, dstColorBlendFactor),
-		JSON_FIELD(s_color_blend_attachment_state_json, colorBlendOp),
-		JSON_FIELD(s_color_blend_attachment_state_json, srcAlphaBlendFactor),
-		JSON_FIELD(s_color_blend_attachment_state_json, dstAlphaBlendFactor),
-		JSON_FIELD(s_color_blend_attachment_state_json, alphaBlendOp),
-		JSON_FIELD(s_color_blend_attachment_state_json, colorWriteMask)
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, srcColorBlendFactor, utils::string_to_blend_color),
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, dstColorBlendFactor, utils::string_to_blend_color),
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, colorBlendOp, utils::string_to_blend_op),
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, srcAlphaBlendFactor, utils::string_to_blend_color),
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, dstAlphaBlendFactor, utils::string_to_blend_color),
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, alphaBlendOp, utils::string_to_blend_op),
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, colorWriteMask, utils::string_to_color_component_flag)
 	);
-
-public:
-	VkPipelineColorBlendAttachmentState &&get() const {
-		VkPipelineColorBlendAttachmentState info;
-		info.blendEnable = blendEnable;
-		info.srcColorBlendFactor = utils::string_to_blend_color(srcColorBlendFactor);
-		info.dstColorBlendFactor = utils::string_to_blend_color(dstColorBlendFactor);
-		info.colorBlendOp = utils::string_to_blend_op(colorBlendOp);
-		info.srcAlphaBlendFactor = utils::string_to_blend_color(srcAlphaBlendFactor);
-		info.dstAlphaBlendFactor = utils::string_to_blend_color(dstAlphaBlendFactor);
-		info.alphaBlendOp = utils::string_to_blend_op(alphaBlendOp);
-		info.colorWriteMask = utils::string_to_color_component_flag(colorWriteMask);
-		return std::move(info);
-	}
 };
 
 struct s_color_blend_state_json {
 	bool logicOpEnable = false;
-	std::string logicOp = "COPY";
+	VkLogicOp logicOp = VK_LOGIC_OP_COPY;
 	std::vector<float> blendConstants {0.0, 0.0, 0.0, 0.0};
 	std::vector<s_color_blend_attachment_state_json> color_blend_attachment_states;
 
 	JSON_FIELDS(
 		JSON_FIELD(s_color_blend_state_json, logicOpEnable),
-		JSON_FIELD(s_color_blend_state_json, logicOp),
+		JSON_FIELD_CONV(s_color_blend_state_json, logicOp, utils::string_to_logic_op),
 		JSON_FIELD(s_color_blend_state_json, blendConstants),
 		JSON_FIELD(s_color_blend_state_json, color_blend_attachment_states)
 	);
@@ -331,7 +310,7 @@ public:
 		info.m_color_blend_state.flags = 0;
 
 		info.m_color_blend_state.logicOpEnable = logicOpEnable;
-		info.m_color_blend_state.logicOp = utils::string_to_logic_op(logicOp);
+		info.m_color_blend_state.logicOp = logicOp;
 		if (blendConstants.size() == 0) {
 			info.m_color_blend_state.blendConstants[0]
 				= info.m_color_blend_state.blendConstants[1]
@@ -351,7 +330,7 @@ public:
 
 		info.m_color_blend_state.attachmentCount = color_blend_attachment_states.size();
 		for (const auto &a : color_blend_attachment_states) {
-			info.m_color_blend_attachment_states.push_back(a.get());
+			info.m_color_blend_attachment_states.push_back(a);
 		}
 		info.m_color_blend_state.pAttachments = &(info.m_color_blend_attachment_states[0]);
 
