@@ -22,12 +22,12 @@ namespace resources {
 template<typename OUT, typename IN>
 OUT get_swapchain_width(const IN& v) {
 	return static_cast<OUT>(vk_globals::swapchain.width * v);
-};
+}
 
 template<typename OUT, typename IN>
 OUT get_swapchain_height(const IN& v) {
 	return static_cast<OUT>(vk_globals::swapchain.height * v);
-};
+}
 
 struct s_swapchain_json {
 	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
