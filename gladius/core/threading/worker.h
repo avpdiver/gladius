@@ -49,7 +49,7 @@ public:
     }
 
 public:
-    MOVE_ONLY(c_worker);
+    DEFAULT_MOVE_ONLY(c_worker);
 
 public:
     template<typename COUNTER>

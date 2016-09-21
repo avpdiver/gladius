@@ -18,7 +18,7 @@ namespace resources {
 constexpr size_t RESOURCES_NUMBER = 32;
 
 typedef typename std::aligned_storage<sizeof(s_texture_desc), alignof(s_texture_desc)>::type s_texture_t;
-core::memory::c_allocator<std::array<s_texture_t, RESOURCES_NUMBER>, core::memory::c_lockfree_pool<s_texture_t>> g_texture_pool;
+static core::memory::c_allocator<std::array<s_texture_t, RESOURCES_NUMBER>, core::memory::c_lockfree_pool<s_texture_t>> g_resource_pool;
 
 
 bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
@@ -268,7 +268,7 @@ bool load_texture(const char *filename, handle_t &handle) {
     VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
     VERIFY(copy_texture_data(tex2d, tex));
 
-    s_texture_desc *texture = (s_texture_desc *) g_texture_pool.alloc(1);
+    s_texture_desc *texture = (s_texture_desc *) g_resource_pool.alloc(1);
     (*texture) = std::move(tex);
     handle = reinterpret_cast<handle_t>(texture);
 
@@ -294,12 +294,35 @@ bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t d
     VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory, 0));
     VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
 
-    s_texture_desc *texture = (s_texture_desc *) g_texture_pool.alloc(1);
+    s_texture_desc *texture = (s_texture_desc *) g_resource_pool.alloc(1);
     (*texture) = std::move(tex);
     handle = reinterpret_cast<handle_t>(texture);
 
     return true;
 }
+
+void destroy(s_texture_desc* desc) {
+    vkFreeMemory(vk_globals::device, desc->memory, nullptr);
+    vkDestroyImageView(vk_globals::device, desc->view, nullptr);
+    vkDestroyImage(vk_globals::device, desc->image, nullptr);
+}
+
+void destroy_texture(const handle_t& handle) {
+    if (handle == INVALID_HANDLE) {
+        return;
+    }
+    s_texture_desc* desc = reinterpret_cast<s_texture_desc*>(handle);
+    destroy(desc);
+    g_resource_pool.free(desc);
+}
+
+s_texture_desc::~s_texture_desc() {
+    destroy(this);
+}
+
+
+DEFAULT_MOVE_IMPL(s_texture_desc)
+
 
 }
 }

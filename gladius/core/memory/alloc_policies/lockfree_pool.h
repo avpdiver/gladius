@@ -80,6 +80,10 @@ public:
                                                std::memory_order_relaxed));
     }
 
+    inline constexpr size_t size(void* ptr) {
+        return MAX_BLOCK_SIZE;
+    }
+
 private:
     struct node_t {
         node_t *next;

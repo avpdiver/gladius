@@ -181,6 +181,9 @@ read_json_value(CLASS &object, const nlohmann::json &data, TYPE CLASS::*member, 
 template<std::size_t I, typename CLASS>
 void read_json_field(CLASS &object, const nlohmann::json &data) {
 	constexpr auto property = std::get<I>(std::decay_t<CLASS>::json_fields);
+	if (data.find(property.m_name) == data.end()) {
+		return;
+	}
 	using TYPE = typename decltype(property)::Type;
 	using INITIAL_TYPE = typename decltype(property)::InitialType;
 	using CONVERTED_TYPE = typename decltype(property)::ConvertedType;
@@ -188,23 +191,23 @@ void read_json_field(CLASS &object, const nlohmann::json &data) {
 		object, data, property.m_member, property.m_name);
 }
 
-template<std::size_t I, typename CLASS>
-std::enable_if_t<(I == 0)>
+template<std::size_t I, std::size_t S, typename CLASS>
+std::enable_if_t<(I == S)>
 iterate_json_field(CLASS &object, const nlohmann::json &data) {
 	read_json_field<I>(object, data);
 }
 
-template<std::size_t I, typename CLASS>
-std::enable_if_t<(I > 0)>
+template<std::size_t I, std::size_t S, typename CLASS>
+std::enable_if_t<(I < S)>
 iterate_json_field(CLASS &object, const nlohmann::json &data) {
 	read_json_field<I>(object, data);
-	iterate_json_field<I - 1>(object, data);
+	iterate_json_field<I + 1, S>(object, data);
 }
 }
 
 template<typename CLASS>
 void from_json(CLASS &object, const nlohmann::json &data) {
-	__impl::iterate_json_field<std::tuple_size<decltype(std::decay_t<CLASS>::json_fields)>::value - 1>(object, data);
+	__impl::iterate_json_field<0, std::tuple_size<decltype(std::decay_t<CLASS>::json_fields)>::value - 1>(object, data);
 }
 
 }

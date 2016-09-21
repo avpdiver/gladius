@@ -3,6 +3,7 @@
 //
 
 #include <array>
+#include <cstring>
 
 #include "../../core/memory/allocator.h"
 #include "../../core/memory/alloc_policies/lockfree_pool.h"
@@ -19,7 +20,7 @@ namespace resources {
 constexpr size_t RESOURCES_NUMBER = 32;
 
 typedef typename std::aligned_storage<sizeof(s_buffer_desc), alignof(s_buffer_desc)>::type s_buffer_t;
-core::memory::c_allocator<std::array<s_buffer_t, RESOURCES_NUMBER>, core::memory::c_lockfree_pool<s_buffer_t>> g_buffer_pool;
+static core::memory::c_allocator<std::array<s_buffer_t, RESOURCES_NUMBER>, core::memory::c_lockfree_pool<s_buffer_t>> g_resource_pool;
 
 bool alloc_memory(VkBuffer buffer, VkMemoryPropertyFlagBits property, VkDeviceMemory *memory) {
     VkMemoryRequirements buffer_memory_requirements;
@@ -57,16 +58,37 @@ bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBi
 
     s_buffer_desc buf;
     buf.size = size;
+
     VK_VERIFY (vkCreateBuffer(vk_globals::device, &buffer_create_info, nullptr, &buf.handle));
     VERIFY(alloc_memory(buf.handle, memory_property, &buf.memory));
     VK_VERIFY (vkBindBufferMemory(vk_globals::device, buf.handle, buf.memory, 0));
 
-    s_buffer_desc* buffer = (s_buffer_desc*)g_buffer_pool.alloc(1);
+    s_buffer_desc* buffer = (s_buffer_desc*)g_resource_pool.alloc(1);
     (*buffer) = std::move(buf);
     (*handle) = reinterpret_cast<handle_t>(buffer);
 
     return true;
 }
+
+void destroy(s_buffer_desc* desc) {
+	vkFreeMemory(vk_globals::device, desc->memory, nullptr);
+	vkDestroyBuffer(vk_globals::device, desc->handle, nullptr);
+}
+
+void destroy_buffer(const handle_t& handle) {
+	if (handle == INVALID_HANDLE) {
+		return;
+	}
+	s_buffer_desc* desc = reinterpret_cast<s_buffer_desc*>(handle);
+	destroy(desc);
+	g_resource_pool.free(desc);
+}
+
+s_buffer_desc::~s_buffer_desc() {
+	destroy(this);
+}
+
+DEFAULT_MOVE_IMPL(s_buffer_desc)
 
 }
 }

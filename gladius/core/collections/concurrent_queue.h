@@ -45,7 +45,7 @@ private:
 public:
     c_concurrent_queue() {}
 
-    MOVE_ONLY(c_concurrent_queue);
+    DEFAULT_MOVE_ONLY(c_concurrent_queue);
 
 public:
     ~c_concurrent_queue() {

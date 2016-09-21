@@ -113,11 +113,12 @@ bool create_surface(core::c_window *window) {
 }
 
 bool init(const char* pipeline, core::c_window *window, bool validation) {
+    VERIFY(graphics::render3d::resources::load_pipeline(pipeline));
+
     VERIFY(create_instance("appname"));
     VERIFY(create_surface(window));
     VERIFY(create_device());
     VERIFY(create_device_queue());
-    VERIFY(graphics::render3d::resources::load_pipeline(pipeline));
     VERIFY(graphics::render3d::resources::create_pipeline());
 
     vk_globals::is_init = true;

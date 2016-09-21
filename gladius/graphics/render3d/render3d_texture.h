@@ -26,6 +26,8 @@ bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t d
 
 bool load_texture(const char *filename, handle_t *handle);
 
+void destroy_texture(const handle_t& handle);
+
 }
 }
 }

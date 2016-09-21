@@ -23,7 +23,7 @@ public:
     }
 
 public:
-    MOVE_ONLY(c_steal_queue);
+    DEFAULT_MOVE_ONLY(c_steal_queue);
 
 public:
     bool push(T const& value) {

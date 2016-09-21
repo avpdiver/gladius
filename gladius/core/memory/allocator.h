@@ -66,7 +66,7 @@ public:
         m_thread_guard.lock();
 
         char *original = static_cast<char *>(ptr) - BOUNDS_POLICY::SIZE_FRONT;
-        const size_t size = m_allocator.get_size(original);
+        const size_t size = m_allocator.size(original);
 
         m_bounds_checker.check_front(original);
         m_bounds_checker.check_back(original + size - BOUNDS_POLICY::SIZE_BACK);

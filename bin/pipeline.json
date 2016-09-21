@@ -9,48 +9,6 @@
     "height": 1.0,
     "format": "D32_SFLOAT"
   },
-  "framebuffers": [
-    {
-      "attachments": [
-        {
-          "width": 0.5,
-          "height": 0.5,
-          "format": "R16G16B16A16_UNORM",
-          "samples": 4,
-          "layer": 1
-        },
-        {
-          "swapchain": true
-        }
-      ]
-    }
-  ],
-  "render_passes": [
-    {
-      "attachments": [
-        {
-          "index": 0,
-          "loadOp": "",
-          "storeOp": "STORE",
-          "stencilLoadOp": "",
-          "stencilStoreOp": "",
-          "initialLayout": "",
-          "finalLayout": "SHADER_READ_ONLY_OPTIMAL"
-        }
-      ],
-      "subpasses": [
-        {
-          "bind_point": "GRAPHICS",
-          "attachments": [
-            {
-              "index": 0,
-              "layout": "COLOR_ATTACHMENT_OPTIMAL"
-            }
-          ]
-        }
-      ]
-    }
-  ],
   "viewport_state": {
     "viewports": [
       {
@@ -111,5 +69,57 @@
         "colorWriteMask": "RGBA"
       }
     ]
-  }
+  },
+  "renderpasses": [
+    {
+      "attachments": [
+        {
+          "format": "R16G16B16A16_UNORM",
+          "samples": 4,
+          "loadOp": "",
+          "storeOp": "STORE",
+          "stencilLoadOp": "",
+          "stencilStoreOp": "",
+          "initialLayout": "",
+          "finalLayout": "SHADER_READ_ONLY_OPTIMAL"
+        }
+      ],
+      "subpasses": [
+        {
+          "pipelineBindPoint": "GRAPHICS",
+          "inputAttachments": [],
+          "colorAttachments": [
+            {
+              "attachment": 0,
+              "layout": "COLOR_ATTACHMENT_OPTIMAL"
+            }
+          ],
+          "resolveAttachments": [],
+          "depthStencilAttachment": [],
+          "preserveAttachments": []
+        }
+      ]
+    }
+  ],
+  "framebuffers": [
+    {
+      "renderpass": 0,
+      "attachments": [
+        {
+          "width": 0.5,
+          "height": 0.5,
+          "format": "R16G16B16A16_UNORM",
+          "samples": 4,
+          "layer": 1
+        }
+      ]
+    },
+    {
+      "attachments": [
+        {
+          "swapchain": true
+        }
+      ]
+    }
+  ]
 }

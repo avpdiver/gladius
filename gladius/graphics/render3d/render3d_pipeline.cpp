@@ -29,6 +29,10 @@ OUT get_swapchain_height(const IN& v) {
 	return static_cast<OUT>(vk_globals::swapchain.height * v);
 }
 
+VkBool32 bool_to_uint32(const bool& v) {
+	return v == true ? 1 : 0;
+}
+
 struct s_swapchain_json {
 	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
 	size_t images = 1;
@@ -43,101 +47,6 @@ struct s_swapchain_json {
 			return false;
 		}
 		VERIFY(create_swap_chain(format, images));
-		return true;
-	}
-};
-
-struct s_framebuffer_attachment_json {
-	static constexpr auto width_func = get_swapchain_width<uint32_t, float>;
-	static constexpr auto height_func = get_swapchain_height<uint32_t, float>;
-
-	bool swapchain = false;
-	uint32_t width;
-	uint32_t height;
-	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
-	VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
-	uint32_t layer = 1;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_framebuffer_attachment_json, swapchain),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, width, width_func),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, height, height_func),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, format, utils::string_to_format),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, samples, utils::get_sample_count),
-		JSON_FIELD(s_framebuffer_attachment_json, layer)
-	);
-
-	bool create(s_texture_desc **desc) const {
-		if (swapchain) {
-			*desc = nullptr;
-		} else {
-			VERIFY(format != VK_FORMAT_UNDEFINED);
-			uint32_t w = (uint32_t) (vk_globals::swapchain.width * width);
-			uint32_t h = (uint32_t) (vk_globals::swapchain.height * height);
-
-			handle_t handle;
-			VERIFY(create_texture(format, w, h, 1, 1, 1, samples,
-								  VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-								  handle));
-			*desc = reinterpret_cast<s_texture_desc*>(handle);
-		}
-		return true;
-	}
-
-};
-
-struct s_framebuffer_json {
-	std::vector<s_framebuffer_attachment_json> attachments;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_framebuffer_json, attachments)
-	);
-
-	bool create(s_framebuffer_desc &desc) const {
-		VERIFY_LOG(!attachments.empty(), LOG_TYPE, "There is no framebuffers attachments", "");
-
-		bool sc = false;
-		for (const auto &a : attachments) {
-			if (a.swapchain && sc) {
-				VERIFY_LOG(false, LOG_TYPE, "Swapchain attachment appears more then once", "");
-			}
-		}
-
-		desc.m_attachments.resize(attachments.size());
-
-		VkFramebufferCreateInfo info;
-		info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		info.pNext = nullptr;
-		info.flags = 0;
-		info.width = 0;
-		info.height = 0;
-
-		std::vector<VkImageView> images(attachments.size());
-		size_t swapchain_index = -1;
-		for (size_t i = 0; i < attachments.size(); ++i) {
-			auto &a = desc.m_attachments[i];
-			VERIFY(attachments[i].create(&a));
-			if (a == nullptr) {
-				swapchain_index = i;
-				info.width = std::max(info.width, vk_globals::swapchain.width);
-				info.height = std::max(info.height, vk_globals::swapchain.height);
-			} else {
-				images[i] = a->view;
-				info.width = std::max(info.width, a->width);
-				info.height = std::max(info.height, a->height);
-			}
-		}
-
-		if (swapchain_index != -1) {
-			desc.m_framebuffers.resize(vk_globals::swapchain.images.size());
-			for (size_t i = 0; i < vk_globals::swapchain.images.size(); ++i) {
-				images[swapchain_index] = vk_globals::swapchain.views[i];
-				VK_VERIFY(vkCreateFramebuffer(vk_globals::device, &info, nullptr, &(desc.m_framebuffers[i])));
-			}
-		} else {
-			desc.m_framebuffers.resize(1);
-			VK_VERIFY(vkCreateFramebuffer(vk_globals::device, &info, nullptr, &(desc.m_framebuffers[0])));
-		}
 		return true;
 	}
 };
@@ -175,6 +84,7 @@ struct s_scissor_json {
 	int32_t yOffset = 0;
 	float width = 1.0f;
 	float height = 1.0f;
+
 	JSON_FIELDS(
 		JSON_FIELD(s_scissor_json, xOffset),
 		JSON_FIELD(s_scissor_json, yOffset),
@@ -221,24 +131,15 @@ struct s_viewport_state_json {
 	}
 };
 
-struct s_rasterization_state_json {
-	bool depthClampEnable = false;
-	bool rasterizerDiscardEnable = false;
-	VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
-	VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
-	VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	bool depthBiasEnable = false;
-	float depthBiasConstantFactor = 0.0f;
-	float depthBiasClamp = 0.0f;
-	float depthBiasSlopeFactor = 0.0f;
-	float lineWidth = 1.0f;
+struct s_rasterization_state_json : public VkPipelineRasterizationStateCreateInfo {
+
 	JSON_FIELDS(
-		JSON_FIELD(s_rasterization_state_json, depthClampEnable),
-		JSON_FIELD(s_rasterization_state_json, rasterizerDiscardEnable),
+		JSON_FIELD_CONV(s_rasterization_state_json, depthClampEnable, bool_to_uint32),
+		JSON_FIELD_CONV(s_rasterization_state_json, rasterizerDiscardEnable, bool_to_uint32),
 		JSON_FIELD_CONV(s_rasterization_state_json, polygonMode, utils::string_to_polygon_mode),
 		JSON_FIELD_CONV(s_rasterization_state_json, cullMode, utils::string_to_cull_mode),
 		JSON_FIELD_CONV(s_rasterization_state_json, frontFace, utils::string_to_front_face),
-		JSON_FIELD(s_rasterization_state_json, depthBiasEnable),
+		JSON_FIELD_CONV(s_rasterization_state_json, depthBiasEnable, bool_to_uint32),
 		JSON_FIELD(s_rasterization_state_json, depthBiasConstantFactor),
 		JSON_FIELD(s_rasterization_state_json, depthBiasClamp),
 		JSON_FIELD(s_rasterization_state_json, depthBiasSlopeFactor),
@@ -250,27 +151,16 @@ public:
 		info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		info.pNext = nullptr;
 		info.flags = 0;
-
-		info.depthClampEnable = depthClampEnable;
-		info.rasterizerDiscardEnable = rasterizerDiscardEnable;
-		info.polygonMode = polygonMode;
-		info.cullMode = cullMode;
-		info.frontFace = frontFace;
-		info.depthBiasEnable = depthBiasEnable;
-		info.depthBiasConstantFactor = depthBiasConstantFactor;
-		info.depthBiasClamp = depthBiasClamp;
-		info.depthBiasSlopeFactor = depthBiasSlopeFactor;
-		info.lineWidth = lineWidth;
 	}
 };
 
 struct s_multisample_state_json : public VkPipelineMultisampleStateCreateInfo {
 	JSON_FIELDS(
 		JSON_FIELD_CONV(s_multisample_state_json, rasterizationSamples, utils::get_sample_count),
-		JSON_FIELD(s_multisample_state_json, sampleShadingEnable),
+		JSON_FIELD_CONV(s_multisample_state_json, sampleShadingEnable, bool_to_uint32),
 		JSON_FIELD(s_multisample_state_json, minSampleShading),
-		JSON_FIELD(s_multisample_state_json, alphaToCoverageEnable),
-		JSON_FIELD(s_multisample_state_json, alphaToOneEnable)
+		JSON_FIELD_CONV(s_multisample_state_json, alphaToCoverageEnable, bool_to_uint32),
+		JSON_FIELD_CONV(s_multisample_state_json, alphaToOneEnable, bool_to_uint32)
 	);
 public:
 	s_multisample_state_json() {
@@ -282,7 +172,7 @@ public:
 
 struct s_color_blend_attachment_state_json : public VkPipelineColorBlendAttachmentState {
 	JSON_FIELDS(
-		JSON_FIELD(s_color_blend_attachment_state_json, blendEnable),
+		JSON_FIELD_CONV(s_color_blend_attachment_state_json, blendEnable, bool_to_uint32),
 		JSON_FIELD_CONV(s_color_blend_attachment_state_json, srcColorBlendFactor, utils::string_to_blend_color),
 		JSON_FIELD_CONV(s_color_blend_attachment_state_json, dstColorBlendFactor, utils::string_to_blend_color),
 		JSON_FIELD_CONV(s_color_blend_attachment_state_json, colorBlendOp, utils::string_to_blend_op),
@@ -340,22 +230,173 @@ public:
 	}
 };
 
+struct s_renderpass_attachment_json : public VkAttachmentDescription {
+	JSON_FIELDS(
+		JSON_FIELD(s_renderpass_attachment_json, flags),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, format, utils::string_to_format),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, samples, utils::get_sample_count),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, loadOp, utils::string_to_load_op),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, storeOp, utils::string_to_store_op),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, stencilLoadOp, utils::string_to_load_op),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, stencilStoreOp, utils::string_to_store_op),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, initialLayout, utils::string_to_image_layout),
+		JSON_FIELD_CONV(s_renderpass_attachment_json, finalLayout, utils::string_to_image_layout)
+	);
+};
+
+struct s_attachment_ref_json : public VkAttachmentReference {
+	JSON_FIELDS(
+		JSON_FIELD(s_attachment_ref_json, attachment),
+		JSON_FIELD_CONV(s_attachment_ref_json, layout, utils::string_to_image_layout)
+	);
+};
+
+struct s_subpass_json {
+	VkSubpassDescriptionFlags flags;
+	VkPipelineBindPoint pipelineBindPoint;
+	std::vector<s_attachment_ref_json> inputAttachments;
+	std::vector<s_attachment_ref_json> colorAttachments;
+	std::vector<s_attachment_ref_json> resolveAttachments;
+	std::vector<s_attachment_ref_json> depthStencilAttachment;
+	std::vector<uint32_t> preserveAttachments;
+
+	JSON_FIELDS(
+		JSON_FIELD(s_subpass_json, flags),
+		JSON_FIELD_CONV(s_subpass_json, pipelineBindPoint, utils::string_to_bind_point),
+		JSON_FIELD(s_subpass_json, inputAttachments),
+		JSON_FIELD(s_subpass_json, colorAttachments),
+		JSON_FIELD(s_subpass_json, resolveAttachments),
+		JSON_FIELD(s_subpass_json, depthStencilAttachment),
+		JSON_FIELD(s_subpass_json, preserveAttachments)
+	);
+};
+
+struct s_renderpass_json {
+	std::vector<s_renderpass_attachment_json> attachments;
+	std::vector<s_subpass_json> subpasses;
+
+	JSON_FIELDS(
+		JSON_FIELD(s_renderpass_json, attachments),
+		JSON_FIELD(s_renderpass_json, subpasses)
+	);
+};
+
+struct s_framebuffer_attachment_json {
+	static constexpr auto width_func = get_swapchain_width<uint32_t, float>;
+	static constexpr auto height_func = get_swapchain_height<uint32_t, float>;
+
+	bool swapchain = false;
+	uint32_t width;
+	uint32_t height;
+	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
+	VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+	uint32_t layer = 1;
+
+	JSON_FIELDS(
+		JSON_FIELD(s_framebuffer_attachment_json, swapchain),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, width, width_func),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, height, height_func),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, format, utils::string_to_format),
+		JSON_FIELD_CONV(s_framebuffer_attachment_json, samples, utils::get_sample_count),
+		JSON_FIELD(s_framebuffer_attachment_json, layer)
+	);
+
+	bool create(s_texture_desc **desc) const {
+		if (swapchain) {
+			*desc = nullptr;
+		} else {
+			VERIFY(format != VK_FORMAT_UNDEFINED);
+			uint32_t w = (uint32_t) (vk_globals::swapchain.width * width);
+			uint32_t h = (uint32_t) (vk_globals::swapchain.height * height);
+
+			handle_t handle;
+			VERIFY(create_texture(format, w, h, 1, 1, 1, samples,
+								  VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+								  handle));
+			*desc = reinterpret_cast<s_texture_desc*>(handle);
+		}
+		return true;
+	}
+
+};
+
+struct s_framebuffer_json {
+	size_t renderpass;
+	std::vector<s_framebuffer_attachment_json> attachments;
+
+	JSON_FIELDS(
+		JSON_FIELD(s_framebuffer_json, renderpass),
+		JSON_FIELD(s_framebuffer_json, attachments)
+	);
+
+	bool create(s_framebuffer_desc &desc) const {
+		VERIFY_LOG(!attachments.empty(), LOG_TYPE, "There is no framebuffers attachments", "");
+
+		bool sc = false;
+		for (const auto &a : attachments) {
+			if (a.swapchain && sc) {
+				VERIFY_LOG(false, LOG_TYPE, "Swapchain attachment appears more then once", "");
+			}
+		}
+
+		desc.m_attachments.resize(attachments.size());
+
+		VkFramebufferCreateInfo info;
+		info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		info.pNext = nullptr;
+		info.flags = 0;
+		info.width = 0;
+		info.height = 0;
+
+		std::vector<VkImageView> images(attachments.size());
+		size_t swapchain_index = -1;
+		for (size_t i = 0; i < attachments.size(); ++i) {
+			auto &a = desc.m_attachments[i];
+			VERIFY(attachments[i].create(&a));
+			if (a == nullptr) {
+				swapchain_index = i;
+				info.width = std::max(info.width, vk_globals::swapchain.width);
+				info.height = std::max(info.height, vk_globals::swapchain.height);
+			} else {
+				images[i] = a->view;
+				info.width = std::max(info.width, a->width);
+				info.height = std::max(info.height, a->height);
+			}
+		}
+
+		if (swapchain_index != -1) {
+			desc.m_framebuffers.resize(vk_globals::swapchain.images.size());
+			for (size_t i = 0; i < vk_globals::swapchain.images.size(); ++i) {
+				images[swapchain_index] = vk_globals::swapchain.views[i];
+				VK_VERIFY(vkCreateFramebuffer(vk_globals::device, &info, nullptr, &(desc.m_framebuffers[i])));
+			}
+		} else {
+			desc.m_framebuffers.resize(1);
+			VK_VERIFY(vkCreateFramebuffer(vk_globals::device, &info, nullptr, &(desc.m_framebuffers[0])));
+		}
+		return true;
+	}
+};
+
 struct s_pipeline_json {
 	std::string name;
 	s_swapchain_json swapchain;
-	std::vector<s_framebuffer_json> framebuffers;
 	s_viewport_state_json viewport_state;
 	s_rasterization_state_json rasterization_state;
 	s_multisample_state_json multisample_state;
 	s_color_blend_state_json color_blend_state;
+	std::vector<s_renderpass_json> renderpasses;
+	std::vector<s_framebuffer_json> framebuffers;
+
 	JSON_FIELDS(
 		JSON_FIELD(s_pipeline_json, name),
 		JSON_FIELD(s_pipeline_json, swapchain),
-		JSON_FIELD(s_pipeline_json, framebuffers),
 		JSON_FIELD(s_pipeline_json, viewport_state),
 		JSON_FIELD(s_pipeline_json, rasterization_state),
 		JSON_FIELD(s_pipeline_json, multisample_state),
-		JSON_FIELD(s_pipeline_json, color_blend_state)
+		JSON_FIELD(s_pipeline_json, color_blend_state),
+		JSON_FIELD(s_pipeline_json, renderpasses),
+		JSON_FIELD(s_pipeline_json, framebuffers)
 	);
 
 	bool create(s_pipeline_create_info &info) {

@@ -15,36 +15,46 @@ namespace render3d {
 namespace resources {
 
 struct s_buffer_desc {
-    VkBuffer handle;
-    VkDeviceMemory memory;
-    size_t size;
+    VkBuffer handle = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    size_t size = 0;
+
+	DEFAULT(s_buffer_desc);
+	MOVE_ONLY(s_buffer_desc);
+	DTOR(s_buffer_desc);
 };
 
 struct s_texture_desc {
-    uint32_t width, height, depth;
+    uint32_t width;
+	uint32_t height;
+	uint32_t depth;
     uint32_t mip_levels;
     uint32_t array_layers;
     VkFormat format;
+	VkImageLayout image_layout;
     VkSampleCountFlagBits samples;
-    VkImage image;
-    VkImageView view;
-    VkDeviceMemory memory;
-    VkImageLayout image_layout;
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView view = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+
+	DEFAULT(s_texture_desc);
+	MOVE_ONLY(s_texture_desc);
+	DTOR(s_texture_desc);
 };
 
 constexpr size_t RENDER_CONTEXT_NUMBER = 3;
 
 struct s_render_context {
-    VkCommandBuffer command_buffer = nullptr;
-    VkSemaphore image_available_semaphore = nullptr;
-    VkSemaphore rendering_finished_semaphore = nullptr;
-    VkFence fence = nullptr;
+    VkCommandBuffer command_buffer = VK_NULL_HANDLE;
+    VkSemaphore image_available_semaphore = VK_NULL_HANDLE;
+    VkSemaphore rendering_finished_semaphore = VK_NULL_HANDLE;
+    VkFence fence = VK_NULL_HANDLE;
     handle_t staging_buffer;
 };
 
 struct s_thread_context {
-    VkCommandPool command_pool = nullptr;
-    VkQueue queue = nullptr;
+    VkCommandPool command_pool = VK_NULL_HANDLE;
+    VkQueue queue = VK_NULL_HANDLE;
     s_render_context render_contexts[RENDER_CONTEXT_NUMBER];
 };
 
