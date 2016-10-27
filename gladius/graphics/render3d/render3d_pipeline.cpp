@@ -19,14 +19,14 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
-template<typename OUT, typename IN>
-OUT get_swapchain_width(const IN& v) {
-	return static_cast<OUT>(vk_globals::swapchain.width * v);
+template<typename OUT_TYPE, typename IN_TYPE>
+OUT_TYPE get_swapchain_width(const IN_TYPE& v) {
+	return static_cast<OUT_TYPE>(vk_globals::swapchain.width * v);
 }
 
-template<typename OUT, typename IN>
-OUT get_swapchain_height(const IN& v) {
-	return static_cast<OUT>(vk_globals::swapchain.height * v);
+template<typename OUT_TYPE, typename IN_TYPE>
+OUT_TYPE get_swapchain_height(const IN_TYPE& v) {
+	return static_cast<OUT_TYPE>(vk_globals::swapchain.height * v);
 }
 
 VkBool32 bool_to_uint32(const bool& v) {
