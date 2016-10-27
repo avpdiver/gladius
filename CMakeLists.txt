@@ -138,9 +138,6 @@ set(
         gladius/graphics/render3d/render3d_pipeline.h
 
 
-        gladius/network/network.cpp
-        gladius/network/network.h
-
         gladius/gladius.h
         gladius/gladius.cpp
 
