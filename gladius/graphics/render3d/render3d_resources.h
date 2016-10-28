@@ -19,9 +19,9 @@ struct s_buffer_desc {
     VkDeviceMemory memory = VK_NULL_HANDLE;
     size_t size = 0;
 
-	DEFAULT(s_buffer_desc);
-	MOVE_ONLY(s_buffer_desc);
-	DTOR(s_buffer_desc);
+    s_buffer_desc() = default;
+    ~s_buffer_desc();
+    MOVEABLE(s_buffer_desc);
 };
 
 struct s_texture_desc {
@@ -37,9 +37,9 @@ struct s_texture_desc {
     VkImageView view = VK_NULL_HANDLE;
     VkDeviceMemory memory = VK_NULL_HANDLE;
 
-	DEFAULT(s_texture_desc);
-	MOVE_ONLY(s_texture_desc);
-	DTOR(s_texture_desc);
+    s_texture_desc() = default;
+    ~s_texture_desc();
+    MOVEABLE(s_texture_desc);
 };
 
 constexpr size_t RENDER_CONTEXT_NUMBER = 3;

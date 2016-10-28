@@ -6,16 +6,19 @@
 #define GLADIUS_WORKER_H
 
 #include <thread>
+#include <cassert>
 
 #include "../meta/fixed_function.h"
+#include "../collections/concurrent_queue.h"
+
 #include "movable_atomic.h"
+#include "job.h"
 
 namespace gladius {
 namespace core {
 namespace threading {
 
-using task_t = core::fixed_function<void(), 128>;
-using task_queue_t = collections::c_concurrent_queue<task_t, 4096>;
+using task_queue_t = collections::c_concurrent_queue<c_job, 4096>;
 
 class c_worker {
 private:
@@ -36,10 +39,13 @@ private:
     void run() {
         assert(m_state == e_state::running);
 
-        task_t t;
+        c_job job;
         while (m_state == e_state::running) {
-            m_queue->pop(t);
-            t();
+            m_queue->pop(job);
+            if (!job.m_function) {
+                break;
+            }
+            job.m_function();
         }
         m_state = e_state::finished;
     }
@@ -49,7 +55,8 @@ public:
     }
 
 public:
-    DEFAULT_MOVE_ONLY(c_worker);
+    NOT_COPYABLE(c_worker);
+    MOVEABLE_DEFAULT(c_worker);
 
 public:
     template<typename COUNTER>

@@ -20,20 +20,27 @@ private:
 public:
     movable_atomic() = default;
 
-    movable_atomic(const movable_atomic &) = delete;
+    movable_atomic(const movable_atomic &o) {
+        this->store(o.load());
+    }
 
-    movable_atomic &operator=(const movable_atomic &) = delete;
+    movable_atomic(movable_atomic &&o) noexcept : base_type{o.load()} {
+    }
 
     constexpr movable_atomic(T x) noexcept : base_type (x) { }
 
-    movable_atomic(movable_atomic &&rhs) noexcept : base_type{rhs.load()} {
-    }
-
-    movable_atomic &operator=(movable_atomic &&rhs) noexcept {
-        this->store(rhs.load());
+public:
+    movable_atomic &operator=(const movable_atomic &o) {
+        this->store(o.load());
         return *this;
     }
 
+    movable_atomic &operator=(movable_atomic &&o) noexcept {
+        this->store(o.load());
+        return *this;
+    }
+
+public:
     T operator=(T x) noexcept {
         this->store(x);
         return x;

@@ -7,42 +7,25 @@
 
 #include <stddef.h>
 
-#define CTOR(T)							\
-	T();
+#define CTOR_COPY(T)            T(const T&)
+#define CTOR_COPY_DEFAULT(T)    T(const T&) = default
+#define NO_CTOR_COPY(T)         T(const T&) = delete
+#define COPY(T)                 T& operator=(const T&)
+#define COPY_DEFAULT(T)         T& operator=(const T&) = default
+#define NO_COPY(T)              T& operator=(const T&) = delete
+#define COPYABLE(T)				CTOR_COPY(T); COPY(T)
+#define COPYABLE_DEFAULT(T)		CTOR_COPY_DEFAULT(T); COPY_DEFAULT(T)
+#define NOT_COPYABLE(T)			NO_CTOR_COPY(T); NO_COPY(T)
 
-#define DEFAULT(T)						\
-	T() = default
-
-#define DEFAULT_COPY(T)                 \
-    T(const T&) = default;              \
-    T& operator=(const T&) = default
-
-#define COPY(T)                 		\
-    T(const T&);               			\
-    T& operator=(const T&)
-
-#define DEFAULT_MOVE(T)                 \
-    T(T&&) = default;                   \
-    T& operator=(T&&) = default
-
-#define MOVE(T)                 		\
-    T(T&&);                   			\
-    T& operator=(T&&)
-
-#define DEFAULT_MOVE_ONLY(T)            \
-    T(const T&) = delete;               \
-    T& operator=(const T&) = delete;    \
-    T(T&&) = default;                   \
-    T& operator=(T&&) = default
-
-#define MOVE_ONLY(T)                    \
-    T(const T&) = delete;               \
-    T& operator=(const T&) = delete;    \
-    T(T&&);                   			\
-    T& operator=(T&&)
-
-#define DTOR(T)							\
-	~T()
+#define CTOR_MOVE(T)            T(T&&)
+#define CTOR_MOVE_DEFAULT(T)    T(T&&) = default
+#define NO_CTOR_MOVE(T)         T(T&&) = delete
+#define MOVE(T)                 T& operator=(T&&)
+#define MOVE_DEFAULT(T)         T& operator=(T&&) = default
+#define NO_MOVE(T)              T& operator=(T&&) = delete
+#define MOVEABLE(T)				CTOR_MOVE(T); MOVE(T)
+#define MOVEABLE_DEFAULT(T)		CTOR_MOVE_DEFAULT(T); MOVE_DEFAULT(T)
+#define NOT_MOVEABLE(T)			NO_CTOR_MOVE(T); NO_MOVE(T)
 
 
 #define DEFAULT_MOVE_IMPL(T)							\

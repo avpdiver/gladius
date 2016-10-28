@@ -45,7 +45,7 @@ public:
 
         // Post dummy tasks until all workers have exited their loops.
         while (!all_workers_finished()) {
-            push([] {});
+            push({});
         }
 
         // Join the workers' threads.
@@ -55,9 +55,8 @@ public:
     }
 
 public:
-    template<typename TF>
-    void push(TF &&f) {
-        m_queue.push(std::move(f));
+    void push(c_job&& f) {
+        m_queue.push(f);
     }
     
 private:

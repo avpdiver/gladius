@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 #include <atomic>
-#include <vector>
+#include <array>
 
 namespace gladius {
 namespace core {
@@ -23,12 +23,13 @@ public:
     }
 
 public:
-    DEFAULT_MOVE_ONLY(c_steal_queue);
+    NOT_COPYABLE(c_steal_queue);
+    NOT_MOVEABLE(c_steal_queue);
 
 public:
     bool push(T const& value) {
         ssize_t b = m_bottom;
-        m_data[b & MASK] = value;
+        (*reinterpret_cast<T*>(m_data[b & MASK].__data)) = value;
 
         std::atomic_signal_fence(std::memory_order_seq_cst); // compiler barrier
 
@@ -38,10 +39,8 @@ public:
 
     bool push(T&& value) {
         ssize_t b = m_bottom;
-        m_data[b & MASK] = std::move(value);
-
+        *(reinterpret_cast<T*>(m_data[b & MASK].__data)) = std::move(value);
         std::atomic_signal_fence(std::memory_order_seq_cst); // compiler barrier
-
         m_bottom = b + 1;
         return true;
     }
@@ -55,7 +54,8 @@ public:
         ssize_t t = m_top.load(std::memory_order_seq_cst);
 
         if (t <= b) {
-            value = std::move(m_data[b & MASK]);
+            T* ptr = reinterpret_cast<T*>(m_data[b & MASK].__data);
+            value = std::move(*ptr);
             if (t != b) {
                 return true;
             }
@@ -78,7 +78,7 @@ public:
         ssize_t b = m_bottom;
 
         if (t < b) {
-            value = std::move(m_data[t & MASK]);
+            value = std::move(*reinterpret_cast<T*>(m_data[t & MASK].__data));
             if (!m_top.compare_exchange_strong(t, t + 1, std::memory_order_seq_cst)) {
                 return false;
             }
@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    std::array<T, CAPACITY> m_data;
+    typename std::aligned_storage<sizeof(T), alignof(T)>::type m_data[CAPACITY];
     ssize_t m_bottom;
     std::atomic<ssize_t> m_top;
 };

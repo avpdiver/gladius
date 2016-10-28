@@ -52,7 +52,7 @@ else()
 endif()
 
 if (LINUX)
-    set(_SYS pthread dl atomic xcb)
+    set(_SYS pthread dl atomic xcb supc++ c++ c++experimental)
     set(_VULKAN_LIB vulkan)
 elseif (WINDOWS)
     set(_SYS mingw32 version Imm32 Winmm Ws2_32 Mswsock AdvApi32)
@@ -141,7 +141,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp)
+        main.cpp gladius/core/threading/job.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
