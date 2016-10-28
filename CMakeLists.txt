@@ -141,7 +141,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/core/threading/job.h)
+        main.cpp gladius/core/threading/job.h gladius/ecs/system.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
