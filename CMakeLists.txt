@@ -52,7 +52,7 @@ else()
 endif()
 
 if (LINUX)
-    set(_SYS pthread dl atomic xcb supc++ c++ c++experimental)
+    set(_SYS pthread dl atomic xcb supc++)
     set(_VULKAN_LIB vulkan)
 elseif (WINDOWS)
     set(_SYS mingw32 version Imm32 Winmm Ws2_32 Mswsock AdvApi32)
@@ -85,6 +85,7 @@ set(
         gladius/core/collections/steal_queue.h
         gladius/core/collections/concurrent_queue.h
 
+        gladius/core/threading/job.h
         gladius/core/threading/worker_pool.h
         gladius/core/threading/worker.h
         gladius/core/threading/weak_semaphore.h
@@ -137,11 +138,12 @@ set(
         gladius/graphics/render3d/render3d_pipeline.cpp
         gladius/graphics/render3d/render3d_pipeline.h
 
+        gladius/ecs/system.h
 
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/core/threading/job.h gladius/ecs/system.h)
+        main.cpp)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
