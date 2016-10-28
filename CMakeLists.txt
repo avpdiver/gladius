@@ -143,7 +143,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp)
+        main.cpp gladius/ecs/mt/single_thread_executor.h gladius/ecs/mt/multithread_executor.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
