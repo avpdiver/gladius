@@ -14,14 +14,10 @@ int main (int argc, char *argv[])
 {
 	gladius::core::threading::c_worker_pool pool;
 	for (int i = 0; i < 50; i++) {
-		pool.push({
-						  [=] {
-							  std::this_thread::sleep_for(std::chrono::seconds(1));
-							  std::cout << std::this_thread::get_id() << "\t" << i << "\n";
-						  },
-						  nullptr,
-						  0
-				  });
+		pool.push([=] {
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			std::cout << std::this_thread::get_id() << "\t" << i << "\n";
+		});
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(10));

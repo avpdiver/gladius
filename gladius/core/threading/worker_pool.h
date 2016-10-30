@@ -55,7 +55,7 @@ public:
     }
 
 public:
-    void push(c_job&& f) {
+    void push(std::function<void(void)>&& f) {
         m_queue.push(f);
     }
     

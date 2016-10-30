@@ -85,7 +85,6 @@ set(
         gladius/core/collections/steal_queue.h
         gladius/core/collections/concurrent_queue.h
 
-        gladius/core/threading/job.h
         gladius/core/threading/worker_pool.h
         gladius/core/threading/worker.h
         gladius/core/threading/weak_semaphore.h
@@ -143,7 +142,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/ecs/mt/single_thread_executor.h gladius/ecs/mt/multithread_executor.h)
+        main.cpp gladius/ecs/mt/single_thread_executor.h gladius/ecs/mt/multithread_executor.h gladius/core/meta/static_if.h gladius/core/meta/list.h gladius/core/collections/details/tagged_ptr_dcas.h gladius/core/collections/details/tagged_ptr_packed.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

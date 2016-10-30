@@ -12,13 +12,12 @@
 #include "../collections/concurrent_queue.h"
 
 #include "movable_atomic.h"
-#include "job.h"
 
 namespace gladius {
 namespace core {
 namespace threading {
 
-using task_queue_t = collections::c_concurrent_queue<c_job, 4096>;
+using task_queue_t = collections::c_concurrent_queue<std::function<void(void)>, 4096>;
 
 class c_worker {
 private:
@@ -39,13 +38,13 @@ private:
     void run() {
         assert(m_state == e_state::running);
 
-        c_job job;
+        std::function<void(void)> job;
         while (m_state == e_state::running) {
             m_queue->pop(job);
-            if (!job.m_function) {
+            if (!job) {
                 break;
             }
-            job.m_function();
+            job();
         }
         m_state = e_state::finished;
     }
