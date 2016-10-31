@@ -68,6 +68,9 @@ endif ()
 set(
         SOURCE_FILES
 
+        gladius/core/meta/static_if.h
+        gladius/core/meta/list.h
+
         gladius/core/platform.h
         gladius/core/types.h
         gladius/core/json.h
@@ -80,6 +83,8 @@ set(
         gladius/core/memory/memory_utils.h
         gladius/core/memory/allocator.h
         gladius/core/memory/default_policies.h
+        gladius/core/memory/tagged_pointer/tagged_ptr_dcas.h
+        gladius/core/memory/tagged_pointer/tagged_ptr_packed.h
 
         gladius/core/collections/aligned_allocator.h
         gladius/core/collections/steal_queue.h
@@ -105,6 +110,7 @@ set(
 
         gladius/core/math/math_func.h
         gladius/core/math/aabb.h
+
 
         gladius/input/user_input.h
         gladius/input/user_input.cpp
@@ -138,11 +144,14 @@ set(
         gladius/graphics/render3d/render3d_pipeline.h
 
         gladius/ecs/system.h
+        gladius/ecs/mt/single_thread_executor.h
+        gladius/ecs/mt/multithread_executor.h
 
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/ecs/mt/single_thread_executor.h gladius/ecs/mt/multithread_executor.h gladius/core/meta/static_if.h gladius/core/meta/list.h gladius/core/memory/tagged_pointer/tagged_ptr_dcas.h gladius/core/memory/tagged_pointer/tagged_ptr_packed.h)
+        main.cpp
+        )
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"
