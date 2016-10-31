@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "../../core/memory/allocator.h"
-#include "../../core/memory/alloc_policies/lockfree_pool.h"
+#include "../../core/memory/alloc_policies/lockfree_alloc.h"
 
 #include "render3d_buffer.h"
 #include "render3d_globals.h"
@@ -20,7 +20,9 @@ namespace resources {
 constexpr size_t RESOURCES_NUMBER = 32;
 
 typedef typename std::aligned_storage<sizeof(s_buffer_desc), alignof(s_buffer_desc)>::type s_buffer_t;
-static core::memory::c_allocator<std::array<s_buffer_t, RESOURCES_NUMBER>, core::memory::c_lockfree_pool<s_buffer_t>> g_resource_pool;
+static core::memory::c_allocator<
+        std::array<s_buffer_t, RESOURCES_NUMBER>,
+        core::memory::c_lockfree_alloc<RESOURCES_NUMBER, sizeof(s_buffer_t), alignof(s_buffer_t)>> g_resource_pool;
 
 bool alloc_memory(VkBuffer buffer, VkMemoryPropertyFlagBits property, VkDeviceMemory *memory) {
     VkMemoryRequirements buffer_memory_requirements;

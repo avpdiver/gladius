@@ -5,7 +5,7 @@
 #include <gli/gli.hpp>
 
 #include "../../core/memory/allocator.h"
-#include "../../core/memory/alloc_policies/lockfree_pool.h"
+#include "../../core/memory/alloc_policies/lockfree_alloc.h"
 
 #include "render3d_globals.h"
 #include "render3d_resources.h"
@@ -18,7 +18,9 @@ namespace resources {
 constexpr size_t RESOURCES_NUMBER = 32;
 
 typedef typename std::aligned_storage<sizeof(s_texture_desc), alignof(s_texture_desc)>::type s_texture_t;
-static core::memory::c_allocator<std::array<s_texture_t, RESOURCES_NUMBER>, core::memory::c_lockfree_pool<s_texture_t>> g_resource_pool;
+static core::memory::c_allocator<
+        std::array<s_texture_t, RESOURCES_NUMBER>,
+        core::memory::c_lockfree_alloc<RESOURCES_NUMBER, sizeof(s_texture_t), alignof(s_texture_t)>> g_resource_pool;
 
 
 bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,

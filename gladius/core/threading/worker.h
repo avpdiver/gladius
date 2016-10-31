@@ -17,73 +17,74 @@ namespace gladius {
 namespace core {
 namespace threading {
 
-using task_queue_t = collections::c_concurrent_queue<std::function<void(void)>, 4096>;
+    using task_queue_t = collections::c_concurrent_queue<std::function<void(void)>, 4096>;
 
-class c_worker {
-private:
-    enum class e_state {
-        uninitialized,
-        running,
-        stopped,
-        finished
-    };
+    class c_worker {
+    private:
+        enum class e_state {
+            uninitialized,
+            running,
+            stopped,
+            finished
+        };
 
-private:
-    std::thread m_thread;
-    task_queue_t* m_queue;
-    movable_atomic<e_state> m_state{e_state::uninitialized};
+    private:
+        std::thread m_thread;
+        task_queue_t *m_queue;
+        movable_atomic<e_state> m_state{e_state::uninitialized};
 
-private:
+    private:
 
-    void run() {
-        assert(m_state == e_state::running);
+        void run() {
+            assert(m_state == e_state::running);
 
-        std::function<void(void)> job;
-        while (m_state == e_state::running) {
-            m_queue->pop(job);
-            if (!job) {
-                break;
+            std::function<void(void)> job;
+            while (m_state == e_state::running) {
+                if (!m_queue->pop(job)) {
+                    continue;
+                }
+                if (!job) {
+                    break;
+                }
+                job();
             }
-            job();
+            m_state = e_state::finished;
         }
-        m_state = e_state::finished;
-    }
 
-public:
-    c_worker(task_queue_t *queue) noexcept : m_queue{queue} {
-    }
+    public:
+        c_worker(task_queue_t *queue) noexcept : m_queue{queue} {}
 
-public:
-    NOT_COPYABLE(c_worker);
-    MOVEABLE_DEFAULT(c_worker);
+    public:
+        NOT_COPYABLE(c_worker);
+        MOVEABLE_DEFAULT(c_worker);
 
-public:
-    template<typename COUNTER>
-    void start(COUNTER &remaining_inits) {
-        assert(m_state == e_state::uninitialized);
+    public:
+        template<typename COUNTER>
+        void start(COUNTER &remaining_inits) {
+            assert(m_state == e_state::uninitialized);
 
-        m_thread = std::thread([this, &remaining_inits] {
-            m_state = e_state::running;
-            (--remaining_inits);
-            run();
-        });
-    }
+            m_thread = std::thread([this, &remaining_inits] {
+                m_state = e_state::running;
+                (--remaining_inits);
+                run();
+            });
+        }
 
-    void stop() noexcept {
-        assert(m_state == e_state::running);
-        m_state = e_state::stopped;
-    }
+        void stop() noexcept {
+            assert(m_state == e_state::running);
+            m_state = e_state::stopped;
+        }
 
-    void join() noexcept {
-        assert(m_thread.joinable());
-        assert(m_state == e_state::finished);
-        m_thread.join();
-    }
+        void join() noexcept {
+            assert(m_thread.joinable());
+            assert(m_state == e_state::finished);
+            m_thread.join();
+        }
 
-    auto finished() const noexcept {
-        return m_state == e_state::finished;
-    }
-};
+        auto finished() const noexcept {
+            return m_state == e_state::finished;
+        }
+    };
 
 }
 }

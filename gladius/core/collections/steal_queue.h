@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <atomic>
 #include <array>
+#include "../types.h"
 
 namespace gladius {
 namespace core {

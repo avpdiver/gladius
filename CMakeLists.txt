@@ -142,7 +142,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp gladius/ecs/mt/single_thread_executor.h gladius/ecs/mt/multithread_executor.h gladius/core/meta/static_if.h gladius/core/meta/list.h gladius/core/collections/details/tagged_ptr_dcas.h gladius/core/collections/details/tagged_ptr_packed.h)
+        main.cpp gladius/ecs/mt/single_thread_executor.h gladius/ecs/mt/multithread_executor.h gladius/core/meta/static_if.h gladius/core/meta/list.h gladius/core/memory/tagged_pointer/tagged_ptr_dcas.h gladius/core/memory/tagged_pointer/tagged_ptr_packed.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

@@ -110,13 +110,15 @@ void log(e_log_level level, const char *type, const char *filename, int line, co
 void write_log() {
 	std::shared_ptr<std::string> buffer;
 	do {
-		g_log_queue.pop(buffer);
+		if (!g_log_queue.pop(buffer)) {
+			continue;
+		}
 		if (buffer.get() == nullptr) {
 			break;
 		}
 		g_file << *buffer << '\n';
 		g_file.flush();
-		g_free_queue.push(buffer);
+		g_free_queue.push(std::move(buffer));
 	} while (true);
 }
 

@@ -24,7 +24,7 @@ template<
 class c_base_allocator {
 public:
     c_base_allocator() :
-        m_allocator(m_storage.data(), m_storage.size()) {
+        m_allocator(m_storage.data()) {
     }
 
 public:

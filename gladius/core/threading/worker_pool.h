@@ -33,6 +33,16 @@ public:
     }
 
     ~c_worker_pool() {
+        stop();
+    }
+
+public:
+    void push(std::function<void(void)>&& f) {
+        m_queue.push(std::move(f));
+    }
+
+private:
+    void stop() {
         // Busy wait for all workers to be initialized.
         while (m_remaining_inits > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -53,13 +63,6 @@ public:
             w.join();
         }
     }
-
-public:
-    void push(std::function<void(void)>&& f) {
-        m_queue.push(f);
-    }
-    
-private:
 
     void initialize_workers(size_t n) {
         // Create workers.
