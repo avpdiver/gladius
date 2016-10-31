@@ -51,7 +51,7 @@ private:
 private:
     struct pool_t {
     public:
-        pool_t() : m_allocator(m_storage) {}
+        pool_t() : m_allocator(m_storage, CAPACITY) {}
 
     public:
         node_t *alloc(T &&value) {
@@ -70,7 +70,7 @@ private:
     private:
         typedef typename std::aligned_storage<sizeof(node_t), alignof(node_t)>::type storage_t;
         storage_t m_storage[CAPACITY];
-        memory::c_lockfree_alloc<CAPACITY, sizeof(storage_t), alignof(storage_t)> m_allocator;
+        memory::c_lockfree_alloc<sizeof(storage_t), alignof(storage_t)> m_allocator;
     };
 
 private:

@@ -22,7 +22,7 @@ constexpr size_t RESOURCES_NUMBER = 32;
 typedef typename std::aligned_storage<sizeof(s_buffer_desc), alignof(s_buffer_desc)>::type s_buffer_t;
 static core::memory::c_allocator<
         std::array<s_buffer_t, RESOURCES_NUMBER>,
-        core::memory::c_lockfree_alloc<RESOURCES_NUMBER, sizeof(s_buffer_t), alignof(s_buffer_t)>> g_resource_pool;
+        core::memory::c_lockfree_alloc<sizeof(s_buffer_t), alignof(s_buffer_t)>> g_resource_pool;
 
 bool alloc_memory(VkBuffer buffer, VkMemoryPropertyFlagBits property, VkDeviceMemory *memory) {
     VkMemoryRequirements buffer_memory_requirements;

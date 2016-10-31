@@ -16,7 +16,7 @@ namespace gladius {
 namespace core {
 namespace memory {
 
-template<size_t CAPACITY, size_t MAX_BLOCK_SIZE, size_t MAX_ALIGNMENT>
+template<size_t MAX_BLOCK_SIZE, size_t MAX_ALIGNMENT>
 class c_lockfree_alloc {
 private:
     struct node_t {
@@ -28,7 +28,7 @@ private:
     std::atomic<tagget_ptr_t> m_head;
 
 public:
-    c_lockfree_alloc(void *start) {
+    c_lockfree_alloc(void *start, size_t size) {
         assert(start != nullptr);
 		assert(is_aligned(start, MAX_ALIGNMENT));
 
@@ -43,7 +43,6 @@ public:
         tagget_ptr_t tagget_ptr(as_node, 0);
         m_head.store(tagget_ptr);
 
-        size_t size = CAPACITY;
         node_t *runner = as_node;
         as_char += MAX_BLOCK_SIZE;
 
