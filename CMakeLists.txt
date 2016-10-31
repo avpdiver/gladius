@@ -85,6 +85,7 @@ set(
         gladius/core/memory/default_policies.h
         gladius/core/memory/tagged_pointer/tagged_ptr_dcas.h
         gladius/core/memory/tagged_pointer/tagged_ptr_packed.h
+        gladius/core/memory/alloc_policies/lockfree_alloc.h
 
         gladius/core/collections/aligned_allocator.h
         gladius/core/collections/steal_queue.h
@@ -110,7 +111,6 @@ set(
 
         gladius/core/math/math_func.h
         gladius/core/math/aabb.h
-
 
         gladius/input/user_input.h
         gladius/input/user_input.cpp
