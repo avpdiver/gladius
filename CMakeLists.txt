@@ -150,7 +150,7 @@ set(
         gladius/gladius.cpp
 
         main.cpp
-        gladius/ecs/storage/component_storage.h gladius/core/meta/type_id.h)
+        gladius/ecs/storage/component_storage.h gladius/core/meta/type_id.h gladius/core/meta/list.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

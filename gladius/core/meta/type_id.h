@@ -24,6 +24,7 @@ namespace gladius {
             constexpr size_t type_id() {
                 return (const size_t)(&(s_type_id<TYPE>::id));
             }
+
         }
     }
 }

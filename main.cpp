@@ -2,6 +2,7 @@
 
 #include "gladius/core/threading/worker_pool.h"
 #include "gladius/core/meta/type_id.h"
+#include "gladius/core/meta/list.h"
 
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>
@@ -13,10 +14,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 int main (int argc, char *argv[])
 #endif
 {
+	using ltype = typename gladius::core::meta::make_list<uint32_t, uint64_t>::type;
 
-    size_t id1 = gladius::core::meta::type_id<uint64_t>();
-    size_t id2 = gladius::core::meta::type_id<uint32_t>();
 
+    auto l = gladius::core::meta::type_list_length<ltype>::value;
+
+	/*
 	gladius::core::threading::c_worker_pool pool;
 	for (int i = 0; i < 50; i++) {
 		pool.push([=] {
@@ -26,7 +29,7 @@ int main (int argc, char *argv[])
 	}
 
 	std::this_thread::sleep_for(std::chrono::seconds(30));
-
+	*/
 	//gladius::start("gladius.json");
 	return 0;
 }
