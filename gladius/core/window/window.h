@@ -11,7 +11,6 @@
 #include <functional>
 
 #include "glm/vec2.hpp"
-#include "../json.h"
 
 #ifdef PLATFORM_LINUX
 #include <xcb/xcb.h>
@@ -58,13 +57,6 @@ struct s_window_desc {
     uint32_t height;
     bool fullscreen;
 	std::string caption;
-
-    JSON_FIELDS(
-        JSON_FIELD(s_window_desc, width),
-        JSON_FIELD(s_window_desc, height),
-        JSON_FIELD(s_window_desc, fullscreen),
-		JSON_FIELD(s_window_desc, caption)
-    );
 };
 
 class c_window;

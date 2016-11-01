@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../../core/filesystem/filesystem.h"
-#include "../../core/filesystem/json_file.h"
 
 #include "render3d_globals.h"
 #include "render3d_pipeline.h"
@@ -37,11 +36,6 @@ struct s_swapchain_json {
 	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
 	size_t images = 1;
 
-	JSON_FIELDS(
-		JSON_FIELD_CONV(s_swapchain_json, format, utils::string_to_format),
-		JSON_FIELD(s_swapchain_json, images)
-	);
-
 	bool create() {
 		if (format == VK_FORMAT_UNDEFINED) {
 			return false;
@@ -54,15 +48,6 @@ struct s_swapchain_json {
 struct s_viewport_json : public VkViewport {
 	static constexpr auto width_func = get_swapchain_width<float, float>;
 	static constexpr auto height_func = get_swapchain_height<float, float>;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_viewport_json, x),
-		JSON_FIELD(s_viewport_json, y),
-		JSON_FIELD_CONV(s_viewport_json, width, width_func),
-		JSON_FIELD_CONV(s_viewport_json, height, height_func),
-		JSON_FIELD(s_viewport_json, minDepth),
-		JSON_FIELD(s_viewport_json, maxDepth)
-	);
 
 	VkViewport &&get() const {
 		VkViewport info;
@@ -85,13 +70,6 @@ struct s_scissor_json {
 	float width = 1.0f;
 	float height = 1.0f;
 
-	JSON_FIELDS(
-		JSON_FIELD(s_scissor_json, xOffset),
-		JSON_FIELD(s_scissor_json, yOffset),
-		JSON_FIELD_CONV(s_scissor_json, width, width_func),
-		JSON_FIELD_CONV(s_scissor_json, height, height_func)
-	);
-
 	VkRect2D &&get() const {
 		VkRect2D info;
 		info.offset.x = xOffset;
@@ -105,11 +83,6 @@ struct s_scissor_json {
 struct s_viewport_state_json {
 	std::vector<s_viewport_json> viewports;
 	std::vector<s_scissor_json> scissors;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_viewport_state_json, viewports),
-		JSON_FIELD(s_viewport_state_json, scissors)
-	);
 
 	void get(s_pipeline_create_info &info) const {
 		info.m_viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -132,20 +105,6 @@ struct s_viewport_state_json {
 };
 
 struct s_rasterization_state_json : public VkPipelineRasterizationStateCreateInfo {
-
-	JSON_FIELDS(
-		JSON_FIELD_CONV(s_rasterization_state_json, depthClampEnable, bool_to_uint32),
-		JSON_FIELD_CONV(s_rasterization_state_json, rasterizerDiscardEnable, bool_to_uint32),
-		JSON_FIELD_CONV(s_rasterization_state_json, polygonMode, utils::string_to_polygon_mode),
-		JSON_FIELD_CONV(s_rasterization_state_json, cullMode, utils::string_to_cull_mode),
-		JSON_FIELD_CONV(s_rasterization_state_json, frontFace, utils::string_to_front_face),
-		JSON_FIELD_CONV(s_rasterization_state_json, depthBiasEnable, bool_to_uint32),
-		JSON_FIELD(s_rasterization_state_json, depthBiasConstantFactor),
-		JSON_FIELD(s_rasterization_state_json, depthBiasClamp),
-		JSON_FIELD(s_rasterization_state_json, depthBiasSlopeFactor),
-		JSON_FIELD(s_rasterization_state_json, lineWidth)
-	);
-
 public:
 	void get(VkPipelineRasterizationStateCreateInfo &info) const {
 		info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -155,13 +114,6 @@ public:
 };
 
 struct s_multisample_state_json : public VkPipelineMultisampleStateCreateInfo {
-	JSON_FIELDS(
-		JSON_FIELD_CONV(s_multisample_state_json, rasterizationSamples, utils::get_sample_count),
-		JSON_FIELD_CONV(s_multisample_state_json, sampleShadingEnable, bool_to_uint32),
-		JSON_FIELD(s_multisample_state_json, minSampleShading),
-		JSON_FIELD_CONV(s_multisample_state_json, alphaToCoverageEnable, bool_to_uint32),
-		JSON_FIELD_CONV(s_multisample_state_json, alphaToOneEnable, bool_to_uint32)
-	);
 public:
 	s_multisample_state_json() {
 		sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -171,16 +123,6 @@ public:
 };
 
 struct s_color_blend_attachment_state_json : public VkPipelineColorBlendAttachmentState {
-	JSON_FIELDS(
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, blendEnable, bool_to_uint32),
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, srcColorBlendFactor, utils::string_to_blend_color),
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, dstColorBlendFactor, utils::string_to_blend_color),
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, colorBlendOp, utils::string_to_blend_op),
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, srcAlphaBlendFactor, utils::string_to_blend_color),
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, dstAlphaBlendFactor, utils::string_to_blend_color),
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, alphaBlendOp, utils::string_to_blend_op),
-		JSON_FIELD_CONV(s_color_blend_attachment_state_json, colorWriteMask, utils::string_to_color_component_flag)
-	);
 };
 
 struct s_color_blend_state_json {
@@ -188,13 +130,6 @@ struct s_color_blend_state_json {
 	VkLogicOp logicOp = VK_LOGIC_OP_COPY;
 	std::vector<float> blendConstants {0.0, 0.0, 0.0, 0.0};
 	std::vector<s_color_blend_attachment_state_json> color_blend_attachment_states;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_color_blend_state_json, logicOpEnable),
-		JSON_FIELD_CONV(s_color_blend_state_json, logicOp, utils::string_to_logic_op),
-		JSON_FIELD(s_color_blend_state_json, blendConstants),
-		JSON_FIELD(s_color_blend_state_json, color_blend_attachment_states)
-	);
 
 public:
 	void get(s_pipeline_create_info &info) {
@@ -231,24 +166,9 @@ public:
 };
 
 struct s_renderpass_attachment_json : public VkAttachmentDescription {
-	JSON_FIELDS(
-		JSON_FIELD(s_renderpass_attachment_json, flags),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, format, utils::string_to_format),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, samples, utils::get_sample_count),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, loadOp, utils::string_to_load_op),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, storeOp, utils::string_to_store_op),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, stencilLoadOp, utils::string_to_load_op),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, stencilStoreOp, utils::string_to_store_op),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, initialLayout, utils::string_to_image_layout),
-		JSON_FIELD_CONV(s_renderpass_attachment_json, finalLayout, utils::string_to_image_layout)
-	);
 };
 
 struct s_attachment_ref_json : public VkAttachmentReference {
-	JSON_FIELDS(
-		JSON_FIELD(s_attachment_ref_json, attachment),
-		JSON_FIELD_CONV(s_attachment_ref_json, layout, utils::string_to_image_layout)
-	);
 };
 
 struct s_subpass_json {
@@ -259,26 +179,11 @@ struct s_subpass_json {
 	std::vector<s_attachment_ref_json> resolveAttachments;
 	std::vector<s_attachment_ref_json> depthStencilAttachment;
 	std::vector<uint32_t> preserveAttachments;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_subpass_json, flags),
-		JSON_FIELD_CONV(s_subpass_json, pipelineBindPoint, utils::string_to_bind_point),
-		JSON_FIELD(s_subpass_json, inputAttachments),
-		JSON_FIELD(s_subpass_json, colorAttachments),
-		JSON_FIELD(s_subpass_json, resolveAttachments),
-		JSON_FIELD(s_subpass_json, depthStencilAttachment),
-		JSON_FIELD(s_subpass_json, preserveAttachments)
-	);
 };
 
 struct s_renderpass_json {
 	std::vector<s_renderpass_attachment_json> attachments;
 	std::vector<s_subpass_json> subpasses;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_renderpass_json, attachments),
-		JSON_FIELD(s_renderpass_json, subpasses)
-	);
 };
 
 struct s_framebuffer_attachment_json {
@@ -291,15 +196,6 @@ struct s_framebuffer_attachment_json {
 	VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
 	VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
 	uint32_t layer = 1;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_framebuffer_attachment_json, swapchain),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, width, width_func),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, height, height_func),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, format, utils::string_to_format),
-		JSON_FIELD_CONV(s_framebuffer_attachment_json, samples, utils::get_sample_count),
-		JSON_FIELD(s_framebuffer_attachment_json, layer)
-	);
 
 	bool create(s_texture_desc **desc) const {
 		if (swapchain) {
@@ -323,11 +219,6 @@ struct s_framebuffer_attachment_json {
 struct s_framebuffer_json {
 	size_t renderpass;
 	std::vector<s_framebuffer_attachment_json> attachments;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_framebuffer_json, renderpass),
-		JSON_FIELD(s_framebuffer_json, attachments)
-	);
 
 	bool create(s_framebuffer_desc &desc) const {
 		VERIFY_LOG(!attachments.empty(), LOG_TYPE, "There is no framebuffers attachments", "");
@@ -388,17 +279,6 @@ struct s_pipeline_json {
 	std::vector<s_renderpass_json> renderpasses;
 	std::vector<s_framebuffer_json> framebuffers;
 
-	JSON_FIELDS(
-		JSON_FIELD(s_pipeline_json, name),
-		JSON_FIELD(s_pipeline_json, swapchain),
-		JSON_FIELD(s_pipeline_json, viewport_state),
-		JSON_FIELD(s_pipeline_json, rasterization_state),
-		JSON_FIELD(s_pipeline_json, multisample_state),
-		JSON_FIELD(s_pipeline_json, color_blend_state),
-		JSON_FIELD(s_pipeline_json, renderpasses),
-		JSON_FIELD(s_pipeline_json, framebuffers)
-	);
-
 	bool create(s_pipeline_create_info &info) {
 		VERIFY_LOG(!framebuffers.empty(), LOG_TYPE, "There is no framebuffers", "");
 		VERIFY(swapchain.create());
@@ -440,11 +320,6 @@ s_pipeline_create_info::s_pipeline_create_info() {
 s_pipeline_json g_pipeline_json;
 
 bool load_pipeline(const char *filename) {
-	core::filesystem::c_json_file *file = reinterpret_cast<core::filesystem::c_json_file *>(
-		core::filesystem::open("disk:json", filename, core::filesystem::e_file_mode::read));
-
-	file->read(g_pipeline_json);
-	core::filesystem::close(file);
 	return true;
 }
 

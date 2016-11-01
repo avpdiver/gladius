@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "core/json.h"
 #include "core/window/window.h"
 
 namespace gladius {
@@ -17,13 +16,6 @@ struct s_gladius_desc {
 	bool logging = true;
 	core::s_window_desc screen;
 	std::string pipeline;
-
-	JSON_FIELDS(
-		JSON_FIELD(s_gladius_desc, name),
-		JSON_FIELD(s_gladius_desc, logging),
-		JSON_FIELD(s_gladius_desc, screen),
-		JSON_FIELD(s_gladius_desc, pipeline)
-	);
 };
 
 extern s_gladius_desc g_gladius_desc;

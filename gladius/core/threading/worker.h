@@ -8,7 +8,6 @@
 #include <thread>
 #include <cassert>
 
-#include "../meta/fixed_function.h"
 #include "../collections/concurrent_queue.h"
 
 #include "movable_atomic.h"

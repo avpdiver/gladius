@@ -69,12 +69,11 @@ set(
         SOURCE_FILES
 
         gladius/core/meta/static_if.h
+        gladius/core/meta/type_id.h
+        gladius/core/meta/list.h
 
         gladius/core/platform.h
         gladius/core/types.h
-        gladius/core/json.h
-
-        gladius/core/meta/fixed_function.h
 
         gladius/core/logger/logger.h
         gladius/core/logger/logger.cpp
@@ -100,8 +99,6 @@ set(
         gladius/core/filesystem/file.h
         gladius/core/filesystem/disk_file.cpp
         gladius/core/filesystem/disk_file.h
-        gladius/core/filesystem/json_file.cpp
-        gladius/core/filesystem/json_file.h
 
         gladius/core/window/window.h
         gladius/core/window/window.cpp
@@ -150,7 +147,7 @@ set(
         gladius/gladius.cpp
 
         main.cpp
-        gladius/ecs/storage/component_storage.h gladius/core/meta/type_id.h gladius/core/meta/list.h)
+        gladius/ecs/storage/component_storage.h gladius/core/meta/minmax.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

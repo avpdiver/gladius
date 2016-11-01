@@ -6,7 +6,6 @@
 
 #include "core/logger/logger.h"
 #include "core/filesystem/filesystem.h"
-#include "core/filesystem/json_file.h"
 
 #include "graphics/render3d/render3d.h"
 
@@ -23,11 +22,6 @@ bool start(const char *config_filename) {
 		shutdown();
 		return false;
 	}
-
-	core::filesystem::c_json_file *file = reinterpret_cast<core::filesystem::c_json_file *>(
-		core::filesystem::open("disk:json", config_filename, core::filesystem::e_file_mode::read));
-	file->read(g_gladius_desc);
-	core::filesystem::close(file);
 
 	if (g_gladius_desc.logging && !core::logger::init(core::logger::e_log_level::debug)) {
 		shutdown();

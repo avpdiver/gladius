@@ -6,6 +6,7 @@
 #define GLADIUS_WORKER_POOL_H
 
 #include <atomic>
+#include <vector>
 
 #include "../collections/concurrent_queue.h"
 
