@@ -12,11 +12,9 @@ namespace gladius {
         namespace meta {
 
             struct nil_type {
-                using head = nil_type;
-                using tail = nil_type;
             };
 
-            template<typename HEAD, typename TAIL=nil_type>
+            template<typename HEAD, typename TAIL = nil_type>
             struct type_list {
                 using head = HEAD;
                 using tail = TAIL;
@@ -33,6 +31,7 @@ namespace gladius {
             };
 
 
+            //------------ list length -----------------------------------------------------------------
             template<typename LIST>
             struct type_list_length {
                 static const std::size_t value = 1 + type_list_length<typename LIST::tail>::value;
@@ -42,6 +41,7 @@ namespace gladius {
             struct type_list_length<nil_type> {
                 static const std::size_t value = 0;
             };
+
         }
     }
 }
