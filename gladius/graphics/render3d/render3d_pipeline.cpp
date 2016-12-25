@@ -12,6 +12,7 @@
 #include "render3d_swapchain.h"
 #include "render3d_utils.h"
 #include "render3d_texture.h"
+#include "render3d_macros.h"
 
 namespace gladius {
 namespace graphics {

@@ -113,6 +113,7 @@ set(
 
         gladius/geometry/visibility.h
 
+        gladius/graphics/render3d/render3d_macros.h
         gladius/graphics/render3d/render3d.h
         gladius/graphics/render3d/render3d_utils.h
         gladius/graphics/render3d/render3d_utils.cpp
@@ -139,15 +140,19 @@ set(
         gladius/graphics/render3d/render3d_pipeline.cpp
         gladius/graphics/render3d/render3d_pipeline.h
 
-        gladius/ecs/system.h
-        gladius/ecs/mt/single_thread_executor.h
-        gladius/ecs/mt/multithread_executor.h
+        gladius/graphics/render3d/memory/block.h
+        gladius/graphics/render3d/memory/block.cpp
+        gladius/graphics/render3d/memory/chunk.h
+        gladius/graphics/render3d/memory/chunk.cpp
+        gladius/graphics/render3d/memory/chunk_allocator.h
+        gladius/graphics/render3d/memory/chunk_allocator.cpp
+        gladius/graphics/render3d/memory/gpu_memory_allocator.h
+        gladius/graphics/render3d/memory/gpu_memory_allocator.cpp
 
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp
-        gladius/ecs/storage/component_storage.h gladius/core/meta/minmax.h)
+        main.cpp)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

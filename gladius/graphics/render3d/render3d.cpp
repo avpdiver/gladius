@@ -11,6 +11,7 @@
 #include "render3d_utils.h"
 #include "render3d_resources.h"
 #include "render3d_pipeline.h"
+#include "render3d_macros.h"
 
 namespace gladius {
 namespace graphics {
