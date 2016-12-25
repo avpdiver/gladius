@@ -24,28 +24,28 @@ enum class e_json_field_type {
     vector
 };
 
-template <typename CONV_OUT, typename CONV_IN>
-CONV_OUT default_converter(const CONV_IN& v) {
-    //CONV_OUT out(v);
-    return v;
-}
-
 template<typename CLASS, typename TYPE, typename CONV_OUT, typename CONV_IN>
 struct s_json_field {
 public:
+    using Type = TYPE;
+    using InitialType = CONV_IN;
+    using ConvertedType = CONV_OUT;
+
+public:
     constexpr s_json_field(TYPE CLASS::*member, const char *name, e_json_field_type type)
-            : m_member{member}, m_name{name}, m_type{type}, m_converter{default_converter<CONV_OUT, CONV_IN>} {
+            : m_member{member}, m_name{name}, m_type{type}, m_converter{nullptr}, m_converted{false} {
     }
 
     constexpr s_json_field(TYPE CLASS::*member, const char *name, e_json_field_type type,
                            CONV_OUT (*converter)(const CONV_IN &))
-            : m_member{member}, m_name{name}, m_type{type}, m_converter{converter} {
+            : m_member{member}, m_name{name}, m_type{type}, m_converter{converter}, m_converted{true} {
     }
 
     TYPE CLASS::*m_member;
     const char *m_name;
     e_json_field_type m_type;
     CONV_OUT (*m_converter)(const CONV_IN &);
+    bool m_converted;
 };
 
 namespace __impl {
@@ -105,7 +105,11 @@ constexpr auto make_json_field(TYPE CLASS::*member, const char *name, CONV_OUT (
     if (std::is_same<std::string, CONV_IN>::value) {
         type = e_json_field_type::primitive;
     } else if (__impl::is_vector<CONV_IN>::value) {
-        type = e_json_field_type::vector;
+        if (__impl::is_vector_type_class<CONV_IN>::value) {
+            type = e_json_field_type::vector;
+        } else {
+            type = e_json_field_type::primitive;
+        }
     } else if (std::is_class<CONV_IN>::value) {
         type = e_json_field_type::object;
     } else {
@@ -125,8 +129,17 @@ void from_json(CLASS &object, const nlohmann::json &data);
 namespace __impl {
 
 // ***********  READ PRIMITIVE VALUE *********************************************************************************************
-template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN>
-inline typename std::enable_if<(FIELD == e_json_field_type::primitive), void>::type
+template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN, bool CONVERTED>
+inline typename std::enable_if<(FIELD == e_json_field_type::primitive && !CONVERTED), void>::type
+read_json_value(const nlohmann::json &data,
+                const char* name,
+                TYPE& member,
+                CONV_OUT (*converter)(const CONV_IN &)) {
+    member = data[name].get<TYPE>();
+}
+
+template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN, bool CONVERTED>
+inline typename std::enable_if<(FIELD == e_json_field_type::primitive && CONVERTED), void>::type
 read_json_value(const nlohmann::json &data,
                 const char* name,
                 TYPE& member,
@@ -135,8 +148,19 @@ read_json_value(const nlohmann::json &data,
 }
 
 // ***********  READ OBJECT VALUE *********************************************************************************************
-template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN>
-inline typename std::enable_if<(FIELD == e_json_field_type::object), void>::type
+template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN, bool CONVERTED>
+inline typename std::enable_if<(FIELD == e_json_field_type::object && !CONVERTED), void>::type
+read_json_value(const nlohmann::json &data,
+                const char* name,
+                TYPE& member,
+                CONV_OUT (*converter)(const CONV_IN &)) {
+    CONV_IN value;
+    from_json(value, data[name]);
+    member = value;
+}
+
+template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN, bool CONVERTED>
+inline typename std::enable_if<(FIELD == e_json_field_type::object && CONVERTED), void>::type
 read_json_value(const nlohmann::json &data,
                 const char* name,
                 TYPE& member,
@@ -147,8 +171,22 @@ read_json_value(const nlohmann::json &data,
 }
 
 // ***********  READ VECTOR VALUE *********************************************************************************************
-template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN>
-inline typename std::enable_if<(FIELD == e_json_field_type::vector), void>::type
+template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN, bool CONVERTED>
+inline typename std::enable_if<(FIELD == e_json_field_type::vector && !CONVERTED), void>::type
+read_json_value(const nlohmann::json &data,
+                const char* name,
+                TYPE& member,
+                CONV_OUT (*converter)(const CONV_IN &)) {
+    auto vector = data[name];
+    for (auto &v : vector) {
+        CONV_IN value;
+        from_json(value, v);
+        member.push_back(std::move(value));
+    }
+}
+
+template<e_json_field_type FIELD, typename TYPE, typename CONV_OUT, typename CONV_IN, bool CONVERTED>
+inline typename std::enable_if<(FIELD == e_json_field_type::vector && CONVERTED), void>::type
 read_json_value(const nlohmann::json &data,
                 const char* name,
                 TYPE& member,
@@ -161,6 +199,8 @@ read_json_value(const nlohmann::json &data,
     }
 }
 
+// *****************************************************************************************************************************
+
 // deserialize functions
 template<std::size_t I, typename CLASS>
 void read_json_field(CLASS &object, const nlohmann::json &data) {
@@ -168,7 +208,12 @@ void read_json_field(CLASS &object, const nlohmann::json &data) {
     if (data.find(property.m_name) == data.end()) {
         return;
     }
-    read_json_value<property.m_type>(data, property.m_name, object.*(property.m_member), property.m_converter);
+    using TYPE = typename decltype(property)::Type;
+    using INITIAL_TYPE = typename decltype(property)::InitialType;
+    using CONVERTED_TYPE = typename decltype(property)::ConvertedType;
+
+    read_json_value<property.m_type, TYPE, CONVERTED_TYPE, INITIAL_TYPE, property.m_converted>
+            (data, property.m_name, object.*(property.m_member), property.m_converter);
 }
 
 template<std::size_t I, std::size_t S, typename CLASS>

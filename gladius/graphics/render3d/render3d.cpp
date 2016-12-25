@@ -113,12 +113,13 @@ bool create_surface(core::c_window *window) {
     return true;
 }
 
-bool init(core::c_window *window, bool validation) {
+bool init(core::c_window *window, const render3d_desc& desc) {
+    VERIFY(load_pipeline(desc.pipeline_file));
     VERIFY(create_instance("appname"));
     VERIFY(create_surface(window));
     VERIFY(create_device());
     VERIFY(create_device_queue());
-    VERIFY(graphics::render3d::resources::create_pipeline());
+    VERIFY(create_pipeline());
 
     vk_globals::is_init = true;
 
@@ -153,7 +154,7 @@ void shutdown() {
 bool check_events() {
     bool true_value = true;
     if (flag_needs_recreate_swapchain.compare_exchange_weak(true_value, false)) {
-        graphics::render3d::resources::create_pipeline();
+        create_pipeline();
     }
     return true;
 }
@@ -246,7 +247,7 @@ bool render() {
         break;
     case VK_SUBOPTIMAL_KHR:
     case VK_ERROR_OUT_OF_DATE_KHR:
-        graphics::render3d::resources::create_pipeline();
+        create_pipeline();
         return true;
     default:
         SET_ERROR (LOG_TYPE, "Problem occurred during swap chain image acquisition!", "");

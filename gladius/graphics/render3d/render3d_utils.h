@@ -44,6 +44,7 @@ VkAttachmentStoreOp string_to_store_op(const std::string &str);
 VkImageLayout string_to_image_layout(const std::string &str);
 
 VkPipelineBindPoint string_to_bind_point(const std::string &str);
+
 }
 }
 }

@@ -39,7 +39,7 @@ bool start() {
 		return false;
 	}
 
-	if (!graphics::render3d::init(&g_window, false)) {
+	if (!graphics::render3d::init(&g_window, g_gladius_desc.render3d)) {
 		shutdown();
 		return false;
 	}

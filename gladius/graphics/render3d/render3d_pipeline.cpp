@@ -18,8 +18,6 @@
 namespace gladius {
 namespace graphics {
 namespace render3d {
-namespace resources {
-
 
 template<typename OUT_TYPE, typename IN_TYPE>
 OUT_TYPE get_swapchain_width(const IN_TYPE& v) {
@@ -222,6 +220,7 @@ public:
         }
         info.pAttachments = &(pipeline.m_color_blend_attachment_states[0]);
 
+        return std::move(info);
     }
 };
 
@@ -293,16 +292,16 @@ struct s_framebuffer_attachment_json {
             JSON_FIELD(s_framebuffer_attachment_json, layer)
     );
 
-    bool create(s_texture_desc **desc) const {
+    bool create(resources::s_texture_desc **desc) const {
         if (swapchain) {
             *desc = nullptr;
         } else {
             VERIFY(format != VK_FORMAT_UNDEFINED);
             handle_t handle;
-            VERIFY(create_texture(format, width, height, 1, 1, 1, samples,
+            VERIFY(resources::create_texture(format, width, height, 1, 1, 1, samples,
                                   VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                                   handle));
-            *desc = reinterpret_cast<s_texture_desc*>(handle);
+            *desc = reinterpret_cast<resources::s_texture_desc*>(handle);
         }
         return true;
     }
@@ -442,7 +441,6 @@ bool create_pipeline() {
     return g_pipeline_json.create(pipeline_create_info);
 }
 
-}
 }
 }
 }
