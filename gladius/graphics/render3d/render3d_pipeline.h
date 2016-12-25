@@ -15,7 +15,7 @@ namespace resources {
 
 struct s_framebuffer_desc {
 	std::vector<VkFramebuffer> m_framebuffers; // for each swapchain image
-	std::vector<s_texture_desc*> m_attachments;
+	std::vector<s_texture_desc *> m_attachments;
 };
 
 struct s_pipeline_create_info {
@@ -39,7 +39,6 @@ struct s_pipeline_create_info {
 	std::vector<VkPipelineColorBlendAttachmentState> m_color_blend_attachment_states;
 };
 
-bool load_pipeline(const char *filename);
 bool create_pipeline();
 
 }

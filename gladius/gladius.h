@@ -15,12 +15,11 @@ struct s_gladius_desc {
 	std::string name ="gladius";
 	bool logging = true;
 	core::s_window_desc screen;
-	std::string pipeline;
 };
 
 extern s_gladius_desc g_gladius_desc;
 
-bool start(const char*);
+bool start();
 }
 
 #endif //GLADIUS_GLADIUS_H

@@ -113,9 +113,7 @@ bool create_surface(core::c_window *window) {
     return true;
 }
 
-bool init(const char* pipeline, core::c_window *window, bool validation) {
-    VERIFY(graphics::render3d::resources::load_pipeline(pipeline));
-
+bool init(core::c_window *window, bool validation) {
     VERIFY(create_instance("appname"));
     VERIFY(create_surface(window));
     VERIFY(create_device());

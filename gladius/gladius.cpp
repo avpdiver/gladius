@@ -14,9 +14,15 @@ namespace gladius {
 s_gladius_desc g_gladius_desc;
 core::c_window g_window;
 
-void shutdown();
 
-bool start(const char *config_filename) {
+void shutdown() {
+	graphics::render3d::shutdown();
+	g_window.close();
+	core::filesystem::shutdown();
+	core::logger::shutdown();
+}
+
+bool start() {
 
 	if (!core::filesystem::init()) {
 		shutdown();
@@ -33,7 +39,7 @@ bool start(const char *config_filename) {
 		return false;
 	}
 
-	if (!graphics::render3d::init(g_gladius_desc.pipeline.c_str(), &g_window, false)) {
+	if (!graphics::render3d::init(&g_window, false)) {
 		shutdown();
 		return false;
 	}
@@ -52,11 +58,5 @@ bool start(const char *config_filename) {
 	return true;
 }
 
-void shutdown() {
-	graphics::render3d::shutdown();
-	g_window.close();
-	core::filesystem::shutdown();
-	core::logger::shutdown();
-}
 
 }

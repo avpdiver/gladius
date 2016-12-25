@@ -12,7 +12,7 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
-bool init(const char* pipeline, core::c_window *window, bool enable_validation);
+bool init(core::c_window *window, bool enable_validation);
 void shutdown();
 bool render();
 

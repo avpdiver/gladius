@@ -3,10 +3,6 @@
 
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>
-#include <chrono>
-#include <thread>
-#include <iostream>
-
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 #endif
 
@@ -15,16 +11,13 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 int main (int argc, char *argv[])
 #endif
 {
-	gladius::core::threading::c_worker_pool pool;
-	for (int i = 0; i < 50; i++) {
-		pool.push([=] {
-			std::cout << std::this_thread::get_id() << "\t" << i << "\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-		});
-	}
+    gladius::g_gladius_desc.logging = true;
+    gladius::g_gladius_desc.name = "gladius";
+    gladius::g_gladius_desc.screen.caption = "GLADIUS";
+    gladius::g_gladius_desc.screen.fullscreen = false;
+    gladius::g_gladius_desc.screen.width = 1024;
+    gladius::g_gladius_desc.screen.height = 768;
 
-	std::this_thread::sleep_for(std::chrono::seconds(30));
-	gladius::start("gladius.json");
-
+	gladius::start();
     return 0;
 }

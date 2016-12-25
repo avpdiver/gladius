@@ -71,6 +71,7 @@ set(
         gladius/core/meta/static_if.h
         gladius/core/meta/type_id.h
         gladius/core/meta/list.h
+        gladius/core/meta/json.h
 
         gladius/core/platform.h
         gladius/core/types.h
@@ -99,6 +100,8 @@ set(
         gladius/core/filesystem/file.h
         gladius/core/filesystem/disk_file.cpp
         gladius/core/filesystem/disk_file.h
+        gladius/core/filesystem/json_file.h
+        gladius/core/filesystem/json_file.cpp
 
         gladius/core/window/window.h
         gladius/core/window/window.cpp

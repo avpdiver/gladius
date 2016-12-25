@@ -2,6 +2,8 @@
 // Created by alexa on 023 23 02 2016.
 //
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <gli/gli.hpp>
 
 #include "../../core/memory/allocator.h"

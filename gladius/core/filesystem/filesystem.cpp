@@ -9,6 +9,7 @@
 
 #include "filesystem.h"
 #include "disk_file.h"
+#include "json_file.h"
 
 namespace gladius {
 namespace core {
@@ -19,6 +20,7 @@ std::unordered_map<const char *, file_creator_t> g_devices;
 
 bool init() {
     add_device(c_disk_file::DEVICE, c_disk_file::create);
+    add_device(c_json_file::DEVICE, c_json_file::create);
     return true;
 }
 
