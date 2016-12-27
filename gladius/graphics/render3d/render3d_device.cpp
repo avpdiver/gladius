@@ -76,7 +76,7 @@ bool check_physical_device_properties(VkPhysicalDevice physical_device,
     uint32_t present_queue_family_index = UINT32_MAX;
 
     for (uint32_t i = 0; i < queue_families_count; ++i) {
-        vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, vk_globals::surface, &queue_present_support[i]);
+        vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, vk_globals::surface.surface, &queue_present_support[i]);
 
         if ((queue_family_properties[i].queueCount > 0)
             && (queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {

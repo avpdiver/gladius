@@ -1,75 +1,77 @@
 {
-  "name": "deferred",
-  "swapchain": {
-    "format": "B8G8R8A8_UNORM",
-    "images": 2
-  },
-  "depthbuffer": {
-    "width": 1.0,
-    "height": 1.0,
-    "format": "D32_SFLOAT"
-  },
-  "viewport_state": {
-    "viewports": [
-      {
-        "x": 0.0,
-        "y": 0.0,
-        "width": 1.0,
-        "height": 1.0,
-        "minDepth": 0.0,
-        "maxDepth": 1.0
-      }
-    ],
-    "scissors": [
-      {
-        "xOffset": 0,
-        "yOffset": 0,
-        "width": 1.0,
-        "height": 1.0
-      }
-    ]
-  },
-  "rasterization_state": {
-    "depthClampEnable": false,
-    "rasterizerDiscardEnable": false,
-    "polygonMode": "FILL",
-    "cullMode": "BACK",
-    "frontFace": "COUNTER_CLOCKWISE",
-    "depthBiasEnable": false,
-    "depthBiasConstantFactor": 0.0,
-    "depthBiasClamp": 0.0,
-    "depthBiasSlopeFactor": 0.0,
-    "lineWidth": 1.0
-  },
-  "multisample_state": {
-    "rasterizationSamples": 1,
-    "sampleShadingEnable": false,
-    "minSampleShading": 1.0,
-    "alphaToCoverageEnable": false,
-    "alphaToOneEnable": false
-  },
-  "color_blend_state": {
-    "logicOpEnable": false,
-    "logicOp": "COPY",
-    "blendConstants": [
-      0.0,
-      0.0,
-      0.0,
-      0.0
-    ],
-    "color_blend_attachment_states": [
-      {
-        "blendEnable": false,
-        "srcColorBlendFactor": "ONE",
-        "dstColorBlendFactor": "ZERO",
-        "colorBlendOp": "ADD",
-        "srcAlphaBlendFactor": "ONE",
-        "dstAlphaBlendFactor": "ZERO",
-        "alphaBlendOp": "ADD",
-        "colorWriteMask": "RGBA"
-      }
-    ]
-  },
+  "viewport_states": [
+    {
+      "viewports": [
+        {
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1.0,
+          "height": 1.0,
+          "minDepth": 0.0,
+          "maxDepth": 1.0
+        }
+      ],
+      "scissors": [
+        {
+          "xOffset": 0,
+          "yOffset": 0,
+          "width": 1.0,
+          "height": 1.0
+        }
+      ]
+    }
+  ],
+
+  "rasterization_states": [
+    {
+      "depthClampEnable": false,
+      "rasterizerDiscardEnable": false,
+      "polygonMode": "FILL",
+      "cullMode": "BACK",
+      "frontFace": "COUNTER_CLOCKWISE",
+      "depthBiasEnable": false,
+      "depthBiasConstantFactor": 0.0,
+      "depthBiasClamp": 0.0,
+      "depthBiasSlopeFactor": 0.0,
+      "lineWidth": 1.0
+    }
+  ],
+
+  "multisample_states": [
+    {
+      "rasterizationSamples": 1,
+      "sampleShadingEnable": false,
+      "minSampleShading": 1.0,
+      "alphaToCoverageEnable": false,
+      "alphaToOneEnable": false
+    }
+  ],
+
+  "color_blend_states": [
+    {
+      "logicOpEnable": false,
+      "logicOp": "COPY",
+      "blendConstants": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "color_blend_attachment_states": [
+        {
+          "blendEnable": false,
+          "srcColorBlendFactor": "ONE",
+          "dstColorBlendFactor": "ZERO",
+          "colorBlendOp": "ADD",
+          "srcAlphaBlendFactor": "ONE",
+          "dstAlphaBlendFactor": "ZERO",
+          "alphaBlendOp": "ADD",
+          "colorWriteMask": "RGBA"
+        }
+      ]
+    }
+  ],
+
   "renderpasses": [
     {
       "attachments": [
@@ -86,6 +88,7 @@
       ],
       "subpasses": [
         {
+          "flags" : 0,
           "pipelineBindPoint": "GRAPHICS",
           "inputAttachments": [],
           "colorAttachments": [
@@ -101,11 +104,39 @@
       ]
     }
   ],
+
+  "graphics_pipelines": [
+    {
+      "vertexInputState" : 0,
+      "inputAssemblyState" : 0,
+      "viewportState" : 0,
+      "rasterizationState" : 0,
+      "multisampleState" : 0,
+      "depthStencilState" : -1,
+      "colorBlendState" : 0,
+      "dynamicState" : -1,
+      "renderPass": 0,
+      "subpass": 0
+    }
+  ],
+
+  "swapchain": {
+    "format": "B8G8R8A8_UNORM",
+    "imageCount": 1
+  },
+
+  "depthbuffer": {
+    "width": 1.0,
+    "height": 1.0,
+    "format": "D32_SFLOAT"
+  },
+
   "framebuffers": [
     {
       "renderpass": 0,
       "attachments": [
         {
+          "swapchain": -1,
           "width": 0.5,
           "height": 0.5,
           "format": "R16G16B16A16_UNORM",
@@ -117,7 +148,7 @@
     {
       "attachments": [
         {
-          "swapchain": true
+          "swapchain": 0
         }
       ]
     }

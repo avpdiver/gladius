@@ -11,7 +11,12 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
-bool create_swap_chain(VkFormat format, size_t images);
+struct s_swapchain_desc {
+    VkFormat format;
+    size_t imageCount;
+};
+
+bool create_swap_chain(const s_swapchain_desc& desc);
 void shutdown_swap_chain();
 
 }

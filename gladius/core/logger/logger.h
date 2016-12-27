@@ -15,7 +15,23 @@ if (!(c)) {																										\
 	return false; 																								\
 }
 
+#define VERIFY_LOG_RETURN(c, type, r, format, ...) 																		\
+if (!(c)) {																										\
+	gladius::core::logger::log(gladius::core::logger::e_log_level::error, type, __FILENAME__, __LINE__, 		\
+								format, __VA_ARGS__); 															\
+	return (r); 																								\
+}
+
+
+#define VERIFY_ASSERT(c, type, format, ...) 																		\
+if (!(c)) {																										\
+	gladius::core::logger::log(gladius::core::logger::e_log_level::error, type, __FILENAME__, __LINE__, 		\
+								format, __VA_ARGS__); 															\
+	assert(c); 																								\
+}
+
 #define VERIFY(c) if (!(c)) return false;
+#define VERIFY_RETURN(c, r) if (!(c)) return (r);
 
 namespace gladius {
 namespace core {

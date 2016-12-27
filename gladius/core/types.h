@@ -37,8 +37,8 @@
 
 namespace gladius {
 
-typedef size_t handle_t;
-static const handle_t INVALID_HANDLE = -1;
+#define DEFINE_HANDLE(object) typedef struct object##_t *object
+#define INVALID_HANDLE nullptr
 
 }
 

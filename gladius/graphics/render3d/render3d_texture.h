@@ -14,19 +14,22 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
+DEFINE_HANDLE(texture_handle);
+
 bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
                   uint32_t mip_levels, uint32_t array_layers, VkSampleCountFlagBits samples,
                   VkImageUsageFlags usage, VkImage *image);
 
 bool create_image_view(VkImage image, VkFormat format, uint32_t mip_levels, uint32_t array_layers, VkImageView *view);
 
+
 bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
                     uint32_t mip_levels, uint32_t array_layers, VkSampleCountFlagBits samples, VkImageUsageFlags usage,
-                    handle_t &handle);
+                    texture_handle *handle);
 
-bool load_texture(const char *filename, handle_t *handle);
+bool load_texture(const char *filename, texture_handle *handle);
 
-void destroy_texture(const handle_t& handle);
+void destroy_texture(const texture_handle handle);
 
 }
 }

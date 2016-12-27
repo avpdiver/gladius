@@ -14,8 +14,10 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
-bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBits memory_property, handle_t* handle);
-void destroy_buffer(const handle_t& handle);
+DEFINE_HANDLE(buffer_handle);
+
+bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBits memory_property, buffer_handle* handle);
+void destroy_buffer(const buffer_handle handle);
 
 }
 }

@@ -102,50 +102,24 @@ VkPresentModeKHR get_swapchain_present_mode(std::vector<VkPresentModeKHR> &prese
     return static_cast<VkPresentModeKHR>(-1);
 }
 
-bool create_swap_chain(VkFormat format, size_t images) {
+bool create_swap_chain(const s_swapchain_desc& desc) {
     if (vk_globals::device != nullptr) {
         vkDeviceWaitIdle(vk_globals::device);
     }
 
     shutdown_swap_chain();
 
-    // Acquiring Surface Capabilities
-    VkSurfaceCapabilitiesKHR surface_capabilities;
-    VK_VERIFY (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk_globals::gpu, vk_globals::surface,
-                                                         &surface_capabilities));
+    uint32_t desired_number_of_images = get_swapchain_num_images(desc.imageCount, vk_globals::surface.capabilities);
+    VERIFY_LOG(desired_number_of_images == desc.imageCount, LOG_TYPE, "Requested %i swapchain images, but get %i",
+               desc.imageCount, desired_number_of_images);
 
-    // Acquiring Supported Surface Formats
-    uint32_t formats_count;
-    VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR(vk_globals::gpu, vk_globals::surface, &formats_count,
-                                                   nullptr));
-    VERIFY_LOG(formats_count > 0, LOG_TYPE, "Error occurred during presentation surface formats enumeration!", "");
+    VkSurfaceFormatKHR desired_format = get_swapchain_format(desc.format, vk_globals::surface.formats);
+    VERIFY_LOG(desired_number_of_images == desc.imageCount, LOG_TYPE, "Requested %i swapchain format not supported", desc.format);
 
-    std::vector<VkSurfaceFormatKHR> surface_formats(formats_count);
-    VK_VERIFY(vkGetPhysicalDeviceSurfaceFormatsKHR(vk_globals::gpu, vk_globals::surface, &formats_count,
-                                                   &surface_formats[0]));
-
-    // Acquiring Supported Present Modes
-    uint32_t present_modes_count;
-    VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR(vk_globals::gpu, vk_globals::surface,
-                                                        &present_modes_count, nullptr));
-    VERIFY_LOG(present_modes_count > 0, LOG_TYPE,
-               "Error occurred during presentation surface present modes enumeration!", "");
-
-    std::vector<VkPresentModeKHR> present_modes(present_modes_count);
-    VK_VERIFY(vkGetPhysicalDeviceSurfacePresentModesKHR(vk_globals::gpu, vk_globals::surface,
-                                                        &present_modes_count, &present_modes[0]));
-
-    uint32_t desired_number_of_images = get_swapchain_num_images(images, surface_capabilities);
-    VERIFY_LOG(desired_number_of_images == images, LOG_TYPE, "Requested %i swapchain images, but get %i",
-               images, desired_number_of_images);
-
-    VkSurfaceFormatKHR desired_format = get_swapchain_format(format, surface_formats);
-    VERIFY_LOG(desired_number_of_images == images, LOG_TYPE, "Requested %i swapchain format not supported", format);
-
-    VkExtent2D desired_extent = get_swapchain_extent(surface_capabilities);
-    VkImageUsageFlags desired_usage = get_swapchain_usage_flags(surface_capabilities);
-    VkSurfaceTransformFlagBitsKHR desired_transform = get_swapchain_transform(surface_capabilities);
-    VkPresentModeKHR desired_present_mode = get_swapchain_present_mode(present_modes);
+    VkExtent2D desired_extent = get_swapchain_extent(vk_globals::surface.capabilities);
+    VkImageUsageFlags desired_usage = get_swapchain_usage_flags(vk_globals::surface.capabilities);
+    VkSurfaceTransformFlagBitsKHR desired_transform = get_swapchain_transform(vk_globals::surface.capabilities);
+    VkPresentModeKHR desired_present_mode = get_swapchain_present_mode(vk_globals::surface.present_modes);
     VkSwapchainKHR old_swap_chain = vk_globals::swapchain.handle;
 
     VERIFY (static_cast<int>(desired_usage) != -1);
@@ -155,7 +129,7 @@ bool create_swap_chain(VkFormat format, size_t images) {
             VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,  // VkStructureType                sType
             nullptr,                                      // const void                    *pNext
             0,                                            // VkSwapchainCreateFlagsKHR      flags
-            vk_globals::surface,                          // VkSurfaceKHR                   surface
+            vk_globals::surface.surface,                  // VkSurfaceKHR                   surface
             desired_number_of_images,                     // uint32_t                       minImageCount
             desired_format.format,                        // VkFormat                       imageFormat
             desired_format.colorSpace,                    // VkColorSpaceKHR                imageColorSpace

@@ -59,7 +59,6 @@ namespace vk_globals {
 extern bool is_init;
 
 extern VkInstance instance;
-extern VkSurfaceKHR surface;
 extern VkPhysicalDevice gpu;
 extern VkDevice device;
 extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
@@ -72,11 +71,15 @@ struct s_device_queue {
 extern s_device_queue graphics_queue;
 extern s_device_queue present_queue;
 
-extern VkSurfaceFormatKHR surface_format;
+struct s_surface {
+	VkSurfaceKHR surface;
+	VkSurfaceCapabilitiesKHR capabilities;
+	std::vector<VkSurfaceFormatKHR> formats;
+	std::vector<VkPresentModeKHR> present_modes;
+};
+extern s_surface surface;
 
 struct s_swapchain {
-	uint32_t width;
-	uint32_t height;
 	VkFormat format;
 	VkSwapchainKHR handle;
 	std::vector<VkImage> images;

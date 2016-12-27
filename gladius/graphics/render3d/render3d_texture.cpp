@@ -12,6 +12,9 @@
 #include "render3d_globals.h"
 #include "render3d_resources.h"
 #include "render3d_macros.h"
+#include "resources/texture_resource.h"
+#include "render3d_texture.h"
+#include "resources/buffer_resource.h"
 
 namespace gladius {
 namespace graphics {
@@ -135,7 +138,7 @@ bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
     resources::s_render_context const *render_context;
     VERIFY(resources::get_current_render_context(&render_context));
 
-    auto staging_buffer = reinterpret_cast<s_buffer_desc *>(render_context->staging_buffer);
+    auto staging_buffer = reinterpret_cast<s_buffer_desc*>(render_context->staging_buffer);
 
     // Copy texture data into staging buffer
     uint8_t *data;
@@ -256,7 +259,7 @@ bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
     return true;
 }
 
-bool load_texture(const char *filename, handle_t &handle) {
+bool load_texture(const char *filename, texture_handle *handle) {
     gli::texture2d tex2d(gli::load(filename));
     VERIFY_LOG(!tex2d.empty(), LOG_TYPE, "Failed to load texture %s", filename);
 
@@ -275,33 +278,37 @@ bool load_texture(const char *filename, handle_t &handle) {
 
     s_texture_desc *texture = (s_texture_desc *) g_resource_pool.alloc(1);
     (*texture) = std::move(tex);
-    handle = reinterpret_cast<handle_t>(texture);
+    (*handle) = reinterpret_cast<texture_handle>(texture);
 
     return true;
 }
 
 bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
                     uint32_t mip_levels, uint32_t array_layers, VkSampleCountFlagBits samples, VkImageUsageFlags usage,
-                    handle_t &handle) {
+                    texture_handle *handle) {
 
-    s_texture_desc tex;
-    tex.width = width;
-    tex.height = height;
-    tex.depth = depth;
-    tex.mip_levels = mip_levels;
-    tex.array_layers = array_layers;
-    tex.format = format;
-    tex.samples = samples;
+    VkImage image;
+    VkImageView view;
+    VkDeviceMemory  memory;
 
-    VERIFY(create_image(tex.format, tex.width, tex.height, 1, tex.mip_levels, tex.array_layers, tex.samples, usage,
-                        &tex.image));
-    VERIFY(allocate_memory(tex.image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &tex.memory));
-    VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory, 0));
-    VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
+    VERIFY(create_image(format, width, height, 1, mip_levels, array_layers, samples, usage, &image));
+    VERIFY(allocate_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &memory));
+    VK_VERIFY(vkBindImageMemory(vk_globals::device, image, memory, 0));
+    VERIFY(create_image_view(image, format, mip_levels, array_layers, &view));
 
-    s_texture_desc *texture = (s_texture_desc *) g_resource_pool.alloc(1);
-    (*texture) = std::move(tex);
-    handle = reinterpret_cast<handle_t>(texture);
+    s_texture_desc *resource = (s_texture_desc *) g_resource_pool.alloc(1);
+    resource->width = width;
+    resource->height = height;
+    resource->depth = depth;
+    resource->mip_levels = mip_levels;
+    resource->array_layers = array_layers;
+    resource->format = format;
+    resource->samples = samples;
+    resource->image = image;
+    resource->view = view;
+    resource->memory = memory;
+
+    (*handle) = reinterpret_cast<texture_handle>(resource);
 
     return true;
 }
@@ -312,7 +319,7 @@ void destroy(s_texture_desc* desc) {
     vkDestroyImage(vk_globals::device, desc->image, nullptr);
 }
 
-void destroy_texture(const handle_t& handle) {
+void destroy_texture(const texture_handle handle) {
     if (handle == INVALID_HANDLE) {
         return;
     }

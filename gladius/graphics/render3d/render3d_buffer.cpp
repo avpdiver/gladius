@@ -10,8 +10,8 @@
 
 #include "render3d_buffer.h"
 #include "render3d_globals.h"
-#include "render3d_resources.h"
 #include "render3d_macros.h"
+#include "resources/buffer_resource.h"
 
 namespace gladius {
 namespace graphics {
@@ -47,7 +47,7 @@ bool alloc_memory(VkBuffer buffer, VkMemoryPropertyFlagBits property, VkDeviceMe
     VERIFY_LOG(false, LOG_TYPE, "Failed allocate memory for buffer", "");
 }
 
-bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBits memory_property, handle_t* handle) {
+bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBits memory_property, buffer_handle* handle) {
     VkBufferCreateInfo buffer_create_info = {
             VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,             // VkStructureType        sType
             nullptr,                                          // const void            *pNext
@@ -68,7 +68,7 @@ bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBi
 
     s_buffer_desc* buffer = (s_buffer_desc*)g_resource_pool.alloc(1);
     (*buffer) = std::move(buf);
-    (*handle) = reinterpret_cast<handle_t>(buffer);
+    (*handle) = reinterpret_cast<buffer_handle>(buffer);
 
     return true;
 }
@@ -78,7 +78,7 @@ void destroy(s_buffer_desc* desc) {
 	vkDestroyBuffer(vk_globals::device, desc->handle, nullptr);
 }
 
-void destroy_buffer(const handle_t& handle) {
+void destroy_buffer(const buffer_handle handle) {
 	if (handle == INVALID_HANDLE) {
 		return;
 	}

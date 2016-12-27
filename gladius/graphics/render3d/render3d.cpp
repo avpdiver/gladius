@@ -12,6 +12,7 @@
 #include "render3d_resources.h"
 #include "render3d_pipeline.h"
 #include "render3d_macros.h"
+#include "render3d_surface.h"
 
 namespace gladius {
 namespace graphics {
@@ -22,13 +23,9 @@ size_t on_window_resize_listener = static_cast<size_t >(-1);
 std::atomic_bool flag_needs_shutdown;
 std::atomic_bool flag_needs_recreate_swapchain;
 
-DEFINE_VK_PROC(GetPhysicalDeviceSurfaceSupportKHR);
-DEFINE_VK_PROC(GetPhysicalDeviceSurfaceFormatsKHR);
-
 namespace vk_globals {
 bool is_init = false;
 VkInstance instance = nullptr;
-VkSurfaceKHR surface = nullptr;
 VkSurfaceFormatKHR surface_format = {};
 }
 
@@ -81,44 +78,16 @@ bool create_instance(const char *app_name) {
 
     VK_VERIFY(vkCreateInstance(&instance_create_info, nullptr, &(vk_globals::instance)));
 
-    GET_INSTANCE_PROC_ADDR(vk_globals::instance, GetPhysicalDeviceSurfaceSupportKHR);
-    GET_INSTANCE_PROC_ADDR(vk_globals::instance, GetPhysicalDeviceSurfaceFormatsKHR);
-
-    return true;
-}
-
-bool create_surface(core::c_window *window) {
-    const core::s_window_info *window_sys_info = window->get_window_info();
-
-#ifdef PLATFORM_WINDOWS
-	VkWin32SurfaceCreateInfoKHR surface_create_info = {
-			VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,  // VkStructureType                  sType
-			nullptr,                                          // const void                      *pNext
-			0,                                                // VkWin32SurfaceCreateFlagsKHR     flags
-			window_sys_info->instance,                        // HINSTANCE                        hinstance
-			window_sys_info->handle                           // HWND                             hwnd
-	};
-	VK_VERIFY (vkCreateWin32SurfaceKHR(vk_globals::instance, &surface_create_info, nullptr, &(vk_globals::surface)));
-
-#elif PLATFORM_LINUX
-    VkXcbSurfaceCreateInfoKHR surface_create_info = {
-        VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,    // VkStructureType                  sType
-        nullptr,                                          // const void                      *pNext
-        0,                                                // VkXcbSurfaceCreateFlagsKHR       flags
-        window_sys_info->connection,                      // xcb_connection_t*                connection
-        window_sys_info->handle                           // xcb_window_t                     window
-    };
-    VK_VERIFY (vkCreateXcbSurfaceKHR(vk_globals::instance, &surface_create_info, nullptr, &(vk_globals::surface)));
-#endif
     return true;
 }
 
 bool init(core::c_window *window, const render3d_desc& desc) {
-    VERIFY(load_pipeline(desc.pipeline_file));
     VERIFY(create_instance("appname"));
     VERIFY(create_surface(window));
     VERIFY(create_device());
     VERIFY(create_device_queue());
+    VERIFY(get_surface_capabilites());
+    VERIFY(load_pipeline(desc.pipeline_file));
     VERIFY(create_pipeline());
 
     vk_globals::is_init = true;
@@ -142,8 +111,8 @@ void shutdown() {
         vk_globals::device = nullptr;
     }
 
-    if (vk_globals::surface != nullptr) {
-        vkDestroySurfaceKHR(vk_globals::instance, vk_globals::surface, nullptr);
+    if (vk_globals::surface.surface != nullptr) {
+        vkDestroySurfaceKHR(vk_globals::instance, vk_globals::surface.surface, nullptr);
     }
 
     if (vk_globals::instance != nullptr) {
