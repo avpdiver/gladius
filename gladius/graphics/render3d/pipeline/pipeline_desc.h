@@ -28,9 +28,8 @@ public:
     std::vector <VkPipelineMultisampleStateCreateInfo> m_multisample_states;
 
     std::vector<VkRenderPass> m_render_passes;
+    std::vector<VkPipeline> m_pipelines;
     std::vector<resources::framebuffer_handle> m_framebuffers;
-
-    s_swapchain_desc m_swapchain_desc;
 
     std::vector <VkPipelineShaderStageCreateInfo> m_stages;
     std::vector <VkPipelineVertexInputStateCreateInfo> m_vertex_input_states;
@@ -40,13 +39,12 @@ public:
     std::vector <VkPipelineTessellationStateCreateInfo> m_tessellation_states;
     std::vector <VkPipelineDynamicStateCreateInfo> m_dynamic_states;
 
-    std::vector <VkGraphicsPipelineCreateInfo> m_pipeline_create_infos;
-
 public:
     bool create() const;
 };
 
 struct s_graphics_pipeline_json {
+public:
     ssize_t vertexInputState;
     ssize_t inputAssemblyState;
     ssize_t viewportState;
@@ -70,6 +68,9 @@ struct s_graphics_pipeline_json {
             JSON_FIELD(s_graphics_pipeline_json, renderPass),
             JSON_FIELD(s_graphics_pipeline_json, subpass)
     );
+
+public:
+    bool create(s_pipelines_desc& desc, VkPipeline* pipeline) const;
 };
 
 struct s_pipelines_json {
@@ -84,12 +85,13 @@ public:
     std::vector<s_framebuffer_json> framebuffers;
 
     JSON_FIELDS(
-            JSON_FIELD(s_pipelines_json, swapchain),
             JSON_FIELD(s_pipelines_json, viewport_states),
             JSON_FIELD(s_pipelines_json, rasterization_states),
             JSON_FIELD(s_pipelines_json, multisample_states),
             JSON_FIELD(s_pipelines_json, color_blend_states),
             JSON_FIELD(s_pipelines_json, renderpasses),
+            JSON_FIELD(s_pipelines_json, graphics_pipelines),
+            JSON_FIELD(s_pipelines_json, swapchain),
             JSON_FIELD(s_pipelines_json, framebuffers)
     );
 
