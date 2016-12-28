@@ -187,7 +187,7 @@ bool create_device() {
     vk_globals::graphics_queue.index = selected_graphics_queue_family_index;
     vk_globals::present_queue.index = selected_present_queue_family_index;
 
-    vk_globals::gpu_memory_allocator = new memory::c_gpu_memory_allocator(vk_globals::device, 256000000);
+    vk_globals::gpu_memory_allocator = new memory::c_gpu_memory_allocator(vk_globals::device, 268435456);
 
     return true;
 }
