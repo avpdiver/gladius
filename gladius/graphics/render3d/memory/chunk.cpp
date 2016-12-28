@@ -14,6 +14,8 @@ namespace graphics {
 namespace render3d {
 namespace memory {
 
+DEFAULT_MOVE_IMPL(c_chunk)
+
 c_chunk::c_chunk(const VkDevice &device, VkDeviceSize size, uint32_t memory_type_index) :
         m_device(device),
         m_size(size),

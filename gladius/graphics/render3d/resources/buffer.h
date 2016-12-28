@@ -13,17 +13,10 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
-struct s_buffer_desc {
-    VkBuffer handle = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
-    size_t size = 0;
+DEFINE_HANDLE(buffer_handle);
 
-    s_buffer_desc() = default;
-
-    ~s_buffer_desc();
-
-    MOVEABLE(s_buffer_desc);
-};
+bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBits memory_property, buffer_handle* handle);
+void destroy_buffer(const buffer_handle handle);
 
 }
 }

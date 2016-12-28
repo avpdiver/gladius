@@ -5,7 +5,6 @@
 #include "render3d_globals.h"
 #include "render3d_resources.h"
 #include "render3d_command_buffer.h"
-#include "render3d_buffer.h"
 #include "render3d_macros.h"
 
 namespace gladius {
@@ -48,7 +47,7 @@ bool get_current_render_context(s_render_context const** context) {
         VERIFY(init());
     }
 
-    g_current_render_context_index = (++g_current_render_context_index) % RENDER_CONTEXT_NUMBER;
+    g_current_render_context_index = 1;//(++g_current_render_context_index) % RENDER_CONTEXT_NUMBER;
     const auto &current = g_thread_context.render_contexts[g_current_render_context_index];
 
     VK_VERIFY(vkWaitForFences(vk_globals::device, 1, &current.fence, VK_FALSE, 1000000000));

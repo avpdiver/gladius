@@ -107,6 +107,7 @@ void shutdown() {
     if (vk_globals::device != nullptr) {
         vkDeviceWaitIdle(vk_globals::device);
         shutdown_swap_chain();
+        delete vk_globals::gpu_memory_allocator;
         vkDestroyDevice(vk_globals::device, nullptr);
         vk_globals::device = nullptr;
     }

@@ -16,8 +16,7 @@ namespace utils {
 bool check_extension(const char *extension_name,
 					 const std::vector<VkExtensionProperties> &available_extensions);
 
-int find_memory_type(uint32_t memory_type_bits, VkPhysicalDeviceMemoryProperties const &properties,
-					 bool should_be_device_local);
+int find_memory_type(uint32_t memory_type_bits, VkMemoryPropertyFlagBits property_flags);
 
 VkSampleCountFlagBits get_sample_count(const size_t &samples);
 

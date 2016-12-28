@@ -48,6 +48,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <glm/vec2.hpp>
+#include "memory/gpu_memory_allocator.h"
 
 namespace gladius {
 namespace graphics {
@@ -62,6 +63,7 @@ extern VkInstance instance;
 extern VkPhysicalDevice gpu;
 extern VkDevice device;
 extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
+extern memory::c_gpu_memory_allocator* gpu_memory_allocator;
 
 struct s_device_queue {
 	uint32_t index = UINT32_MAX;

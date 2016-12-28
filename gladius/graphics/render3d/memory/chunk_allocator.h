@@ -19,6 +19,7 @@ class c_chunk_allocator
 {
 public:
     NOT_COPYABLE(c_chunk_allocator);
+    NOT_MOVEABLE(c_chunk_allocator);
 
 public:
     c_chunk_allocator(VkDevice const &device, VkDeviceSize size);

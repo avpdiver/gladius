@@ -6,28 +6,52 @@
 
 #include <gli/gli.hpp>
 
-#include "../../core/memory/allocator.h"
-#include "../../core/memory/alloc_policies/lockfree_alloc.h"
+#include "../../../core/types.h"
+#include "../../../core/memory/alloc_policies/lockfree_alloc.h"
+#include "../../../core/memory/allocator.h"
 
-#include "render3d_globals.h"
-#include "render3d_resources.h"
-#include "render3d_macros.h"
-#include "resources/texture_resource.h"
-#include "render3d_texture.h"
-#include "resources/buffer_resource.h"
+#include "../render3d_macros.h"
+#include "../render3d_debug.h"
+#include "../render3d_globals.h"
+#include "../render3d_resources.h"
+
+#include "texture.h"
+#include "buffer.h"
 
 namespace gladius {
 namespace graphics {
 namespace render3d {
 namespace resources {
 
+
+struct s_texture_desc {
+public:
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    uint32_t mip_levels;
+    uint32_t array_layers;
+    VkFormat format;
+    VkImageLayout image_layout;
+    VkSampleCountFlagBits samples;
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView view = VK_NULL_HANDLE;
+    memory::c_block memory_block;
+
+public:
+    s_texture_desc() = default;
+    ~s_texture_desc();
+
+public:
+    MOVEABLE(s_texture_desc);
+    NOT_COPYABLE(s_texture_desc);
+};
+
+DEFAULT_MOVE_IMPL(s_texture_desc)
+
 constexpr size_t RESOURCES_NUMBER = 32;
 
-typedef typename std::aligned_storage<sizeof(s_texture_desc), alignof(s_texture_desc)>::type s_texture_t;
-static core::memory::c_allocator<
-        std::array<s_texture_t, RESOURCES_NUMBER>,
-        core::memory::c_lockfree_alloc<sizeof(s_texture_t), alignof(s_texture_t)>> g_resource_pool;
-
+RESOURCE_POOL(s_texture_desc, RESOURCES_NUMBER);
 
 bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t depth,
                   uint32_t mip_levels, uint32_t array_layers, VkSampleCountFlagBits samples,
@@ -112,28 +136,8 @@ bool create_sampler(VkSampler *sampler) {
     return true;
 }
 
-bool allocate_memory(VkImage image, VkMemoryPropertyFlagBits property, VkDeviceMemory *memory) {
-    VkMemoryRequirements requirements;
-    vkGetImageMemoryRequirements(vk_globals::device, image, &requirements);
-
-    for (uint32_t i = 0; i < vk_globals::gpu_memory_properties.memoryTypeCount; ++i) {
-        if ((requirements.memoryTypeBits & (1 << i))
-            && (vk_globals::gpu_memory_properties.memoryTypes[i].propertyFlags & property)) {
-
-            VkMemoryAllocateInfo memory_allocate_info = {
-                    VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,     // VkStructureType                        sType
-                    nullptr,                                    // const void                            *pNext
-                    requirements.size,                          // VkDeviceSize                           allocationSize
-                    i                                           // uint32_t                               memoryTypeIndex
-            };
-            VK_VERIFY(vkAllocateMemory(vk_globals::device, &memory_allocate_info, nullptr, memory));
-            return true;
-        }
-    }
-    VERIFY_LOG(false, LOG_TYPE, "Failed allocate image memory", "");
-}
-
 bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
+    /*
     // Prepare data in staging buffer
     resources::s_render_context const *render_context;
     VERIFY(resources::get_current_render_context(&render_context));
@@ -255,7 +259,7 @@ bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
 
     VK_VERIFY (vkQueueSubmit(vk_globals::graphics_queue.handle, 1, &submit_info, VK_NULL_HANDLE));
     vkDeviceWaitIdle(vk_globals::device);
-
+*/
     return true;
 }
 
@@ -271,8 +275,10 @@ bool load_texture(const char *filename, texture_handle *handle) {
 
     VERIFY(create_image(tex.format, tex.width, tex.height, 1, tex.mip_levels, 1, VK_SAMPLE_COUNT_1_BIT,
                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &tex.image));
-    VERIFY(allocate_memory(tex.image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &tex.memory));
-    VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory, 0));
+
+    tex.memory_block = vk_globals::gpu_memory_allocator->alloc(tex.image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory_block.m_memory, tex.memory_block.m_offset));
     VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
     VERIFY(copy_texture_data(tex2d, tex));
 
@@ -289,11 +295,12 @@ bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t d
 
     VkImage image;
     VkImageView view;
-    VkDeviceMemory  memory;
 
     VERIFY(create_image(format, width, height, 1, mip_levels, array_layers, samples, usage, &image));
-    VERIFY(allocate_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &memory));
-    VK_VERIFY(vkBindImageMemory(vk_globals::device, image, memory, 0));
+
+    auto memory_block = vk_globals::gpu_memory_allocator->alloc(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    VK_VERIFY(vkBindImageMemory(vk_globals::device, image, memory_block.m_memory, memory_block.m_offset));
     VERIFY(create_image_view(image, format, mip_levels, array_layers, &view));
 
     s_texture_desc *resource = (s_texture_desc *) g_resource_pool.alloc(1);
@@ -306,20 +313,27 @@ bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t d
     resource->samples = samples;
     resource->image = image;
     resource->view = view;
-    resource->memory = memory;
+    resource->memory_block = std::move(memory_block);
 
     (*handle) = reinterpret_cast<texture_handle>(resource);
 
     return true;
 }
 
+VkImageView get_texture_image_view(texture_handle handle) {
+    if (handle == INVALID_HANDLE) {
+        return VK_NULL_HANDLE;
+    }
+    return reinterpret_cast<s_texture_desc*>(handle)->view;
+}
+
 void destroy(s_texture_desc* desc) {
-    vkFreeMemory(vk_globals::device, desc->memory, nullptr);
+    vk_globals::gpu_memory_allocator->free(desc->memory_block);
     vkDestroyImageView(vk_globals::device, desc->view, nullptr);
     vkDestroyImage(vk_globals::device, desc->image, nullptr);
 }
 
-void destroy_texture(const texture_handle handle) {
+void destroy_texture(texture_handle handle) {
     if (handle == INVALID_HANDLE) {
         return;
     }
@@ -331,10 +345,6 @@ void destroy_texture(const texture_handle handle) {
 s_texture_desc::~s_texture_desc() {
     destroy(this);
 }
-
-
-DEFAULT_MOVE_IMPL(s_texture_desc)
-
 
 }
 }

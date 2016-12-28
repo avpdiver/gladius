@@ -7,13 +7,14 @@
 
 #include <vulkan/vulkan.h>
 #include "../../../core/meta/json.h"
-#include "pipeline_utils.h"
 #include "../render3d_utils.h"
-#include "../render3d_resources.h"
-#include "../render3d_texture.h"
 #include "../render3d_macros.h"
 #include "../render3d_swapchain.h"
-#include "../render3d_framebuffer.h"
+#include "../resources/texture.h"
+#include "../resources/framebuffer.h"
+
+#include "pipeline_utils.h"
+
 
 namespace gladius {
 namespace graphics {

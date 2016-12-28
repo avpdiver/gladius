@@ -6,6 +6,8 @@
 #define GLADIUS_TYPES_H
 
 #include <stddef.h>
+#include <utility>
+#include <cstring>
 
 #define CTOR_COPY(T)            T(const T&)
 #define CTOR_COPY_DEFAULT(T)    T(const T&) = default
@@ -31,8 +33,8 @@
 #define DEFAULT_MOVE_IMPL(T)							\
 	T::T(T &&o) { *this = std::move(o); }				\
 	T& T::operator=(T &&o) {							\
-		memcpy(this, &o, sizeof(T));					\
-		memset(&o, 0, sizeof(T));						\
+		std::memcpy(this, &o, sizeof(T));				\
+		std::memset(&o, 0, sizeof(T));					\
 		return *this; }
 
 namespace gladius {

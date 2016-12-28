@@ -130,20 +130,12 @@ set(
         gladius/graphics/render3d/render3d_swapchain.h
         gladius/graphics/render3d/render3d_resources.cpp
         gladius/graphics/render3d/render3d_resources.h
-        gladius/graphics/render3d/render3d_buffer.cpp
-        gladius/graphics/render3d/render3d_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.cpp
-        gladius/graphics/render3d/render3d_shader.cpp
-        gladius/graphics/render3d/render3d_shader.h
-        gladius/graphics/render3d/render3d_texture.cpp
-        gladius/graphics/render3d/render3d_texture.h
         gladius/graphics/render3d/render3d_pipeline.cpp
         gladius/graphics/render3d/render3d_pipeline.h
         gladius/graphics/render3d/render3d_surface.cpp
         gladius/graphics/render3d/render3d_surface.h
-        gladius/graphics/render3d/render3d_framebuffer.cpp
-        gladius/graphics/render3d/render3d_framebuffer.h
 
         gladius/graphics/render3d/pipeline/viewport_state_desc.cpp
         gladius/graphics/render3d/pipeline/viewport_state_desc.h
@@ -166,9 +158,14 @@ set(
         gladius/graphics/render3d/pipeline/framebuffer_desc.h
         gladius/graphics/render3d/pipeline/pipeline_desc.cpp
 
-        gladius/graphics/render3d/resources/texture_resource.h
-        gladius/graphics/render3d/resources/buffer_resource.h
-        gladius/graphics/render3d/resources/framebuffer_resource.h
+        gladius/graphics/render3d/resources/texture.h
+        gladius/graphics/render3d/resources/buffer.h
+        gladius/graphics/render3d/resources/framebuffer.h
+        gladius/graphics/render3d/resources/buffer.cpp
+        gladius/graphics/render3d/resources/framebuffer.cpp
+        gladius/graphics/render3d/resources/texture.cpp
+        gladius/graphics/render3d/resources/shander.cpp
+        gladius/graphics/render3d/resources/shander.h
 
         gladius/graphics/render3d/memory/block.h
         gladius/graphics/render3d/memory/block.cpp

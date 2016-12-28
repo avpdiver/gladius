@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+
 #include "../../core/types.h"
-#include "render3d_buffer.h"
+#include "resources/buffer.h"
 
 namespace gladius {
 namespace graphics {

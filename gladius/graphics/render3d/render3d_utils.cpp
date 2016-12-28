@@ -213,36 +213,14 @@ bool check_extension(const char *extension_name, const std::vector<VkExtensionPr
     return false;
 }
 
-int find_memory_type(uint32_t memory_type_bits, VkPhysicalDeviceMemoryProperties const &properties,
-                     bool should_be_device_local) {
-
-    auto lambda_get_memory_type = [&](VkMemoryPropertyFlags propertyFlags) -> int {
-        for (uint32_t i = 0; i < properties.memoryTypeCount; ++i)
-            if ((memory_type_bits & (1 << i)) &&
-                ((properties.memoryTypes[i].propertyFlags & propertyFlags) == propertyFlags))
-                return i;
-        return -1;
-    };
-
-    if (!should_be_device_local) {
-        VkMemoryPropertyFlags optimal = VK_MEMORY_PROPERTY_HOST_CACHED_BIT |
-                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-                                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-
-        VkMemoryPropertyFlags required = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-
-        int type = lambda_get_memory_type(optimal);
-        if (type == -1) {
-            int result = lambda_get_memory_type(required);
-            if (result == -1)
-                assert(!"Memory type does not find");
-            return result;
+int find_memory_type(uint32_t memory_type_bits, VkMemoryPropertyFlagBits property_flags) {
+    for (uint32_t i = 0; i < vk_globals::gpu_memory_properties.memoryTypeCount; ++i) {
+        if ((memory_type_bits & (1 << i))
+            && (vk_globals::gpu_memory_properties.memoryTypes[i].propertyFlags & property_flags)) {
+            return i;
         }
-        return type;
-    } else {
-        return lambda_get_memory_type(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
+    return -1;
 }
 
 VkSampleCountFlagBits get_sample_count(const size_t &samples) {

@@ -2,6 +2,7 @@
 #define GLADIUS_RENDERER3D_MEMORY_BLOCK_H
 
 #include <vulkan/vulkan.h>
+#include "../../../core/types.h"
 
 namespace gladius {
 namespace graphics {
@@ -10,9 +11,9 @@ namespace memory {
 
     class c_block {
     public:
-        VkDeviceMemory m_memory;
-        VkDeviceSize m_offset;
-        VkDeviceSize m_size;
+        VkDeviceMemory m_memory = VK_NULL_HANDLE;
+        VkDeviceSize m_offset = 0;
+        VkDeviceSize m_size = 0;
         bool m_free = false;
         void *m_ptr = nullptr;
 

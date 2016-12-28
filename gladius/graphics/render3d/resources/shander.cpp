@@ -3,10 +3,13 @@
 //
 
 #include <vector>
-#include "../../core/filesystem/filesystem.h"
-#include "render3d_globals.h"
-#include "render3d_shader.h"
-#include "render3d_macros.h"
+
+#include "../../../core/filesystem/filesystem.h"
+
+#include "../render3d_globals.h"
+#include "../render3d_macros.h"
+
+#include "shander.h"
 
 namespace gladius {
 namespace graphics {

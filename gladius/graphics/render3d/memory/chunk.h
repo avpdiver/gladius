@@ -17,6 +17,10 @@ namespace memory {
 
 class c_chunk {
 public:
+    MOVEABLE(c_chunk);
+    NOT_COPYABLE(c_chunk);
+
+public:
     c_chunk(VkDevice const &device, VkDeviceSize size, uint32_t memory_type_index);
     ~c_chunk();
 

@@ -3,7 +3,7 @@
 //
 
 #include "framebuffer_desc.h"
-#include "../render3d_framebuffer.h"
+#include "../resources/framebuffer.h"
 
 namespace gladius {
 namespace graphics {
@@ -19,7 +19,7 @@ s_swapchain_desc s_swapchain_json::create() const {
 bool s_framebuffer_json::create(std::vector<VkRenderPass>& renderpasses, resources::framebuffer_handle* handle) const {
     VERIFY_LOG_RETURN(!attachments.empty(), LOG_TYPE, VK_NULL_HANDLE, "There is no framebuffers attachments", "");
 
-    std::vector<resources::s_framebuffer_desc::s_attachment> textures;
+    std::vector<resources::s_framebuffer_attachment> textures;
 
     for (const auto &attachment : attachments) {
         if (attachment.swapchain < 0) {

@@ -17,10 +17,18 @@ namespace memory {
 
 class c_gpu_memory_allocator {
 public:
+    NOT_COPYABLE(c_gpu_memory_allocator);
+    NOT_MOVEABLE(c_gpu_memory_allocator);
+
+public:
     c_gpu_memory_allocator(VkDevice const &device, VkDeviceSize size);
 
 public:
     c_block alloc(VkDeviceSize size, VkDeviceSize alignment, uint32_t memory_type_index);
+    c_block alloc(const VkMemoryRequirements& requirements, VkMemoryPropertyFlagBits property_flags);
+
+    template <typename VULKAN_RESOURCE>
+    c_block alloc(VULKAN_RESOURCE resource, VkMemoryPropertyFlagBits property);
 
     void free(c_block &block);
 
