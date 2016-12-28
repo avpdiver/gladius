@@ -35,9 +35,7 @@ c_block c_gpu_memory_allocator::alloc(VkDeviceSize size, VkDeviceSize alignment,
 c_block c_gpu_memory_allocator::alloc(const VkMemoryRequirements& requirements, VkMemoryPropertyFlagBits property_flags) {
     int type = utils::find_memory_type(requirements.memoryTypeBits, property_flags);
     assert(type >= 0);
-    alloc(requirements.size, requirements.alignment, (uint32_t) type);
-
-    return {};
+    return alloc(requirements.size, requirements.alignment, (uint32_t) type);
 }
 
 template<>

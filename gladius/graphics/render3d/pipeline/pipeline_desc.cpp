@@ -68,11 +68,11 @@ bool s_pipelines_json::create(s_pipelines_desc& desc) const {
         desc.m_render_passes.push_back(r);
     }
 
-    for (const auto& p : graphics_pipelines) {
+    /*for (const auto& p : graphics_pipelines) {
         VkPipeline  pipeline;
         VERIFY(p.create(desc, &pipeline));
         desc.m_pipelines.push_back(pipeline);
-    }
+    }*/
 
     auto swapchain_desc = swapchain.create();
     create_swap_chain(swapchain_desc);
