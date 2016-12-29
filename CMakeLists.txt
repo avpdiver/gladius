@@ -132,31 +132,17 @@ set(
         gladius/graphics/render3d/render3d_resources.h
         gladius/graphics/render3d/render3d_command_buffer.h
         gladius/graphics/render3d/render3d_command_buffer.cpp
-        gladius/graphics/render3d/render3d_pipeline.cpp
-        gladius/graphics/render3d/render3d_pipeline.h
         gladius/graphics/render3d/render3d_surface.cpp
         gladius/graphics/render3d/render3d_surface.h
 
-        gladius/graphics/render3d/pipeline/viewport_state_desc.cpp
-        gladius/graphics/render3d/pipeline/viewport_state_desc.h
-        gladius/graphics/render3d/pipeline/pipeline_utils.cpp
-        gladius/graphics/render3d/pipeline/pipeline_utils.h
-        gladius/graphics/render3d/pipeline/pipeline_desc.h
-        gladius/graphics/render3d/pipeline/rasterization_state_desc.cpp
-        gladius/graphics/render3d/pipeline/rasterization_state_desc.h
-        gladius/graphics/render3d/pipeline/multisample_state_desc.cpp
-        gladius/graphics/render3d/pipeline/multisample_state_desc.h
-        gladius/graphics/render3d/pipeline/color_blend_attachment_state_desc.cpp
-        gladius/graphics/render3d/pipeline/color_blend_attachment_state_desc.h
-        gladius/graphics/render3d/pipeline/color_blend_state_desc.cpp
-        gladius/graphics/render3d/pipeline/color_blend_state_desc.h
+        gladius/graphics/render3d/pipeline/vertex_type.cpp
+        gladius/graphics/render3d/pipeline/vertex_type.h
+        gladius/graphics/render3d/pipeline/pipeline_factory.cpp
+        gladius/graphics/render3d/pipeline/pipeline_factory.h
         gladius/graphics/render3d/pipeline/subpass_desc.cpp
         gladius/graphics/render3d/pipeline/subpass_desc.h
         gladius/graphics/render3d/pipeline/renderpass_desc.cpp
         gladius/graphics/render3d/pipeline/renderpass_desc.h
-        gladius/graphics/render3d/pipeline/framebuffer_desc.cpp
-        gladius/graphics/render3d/pipeline/framebuffer_desc.h
-        gladius/graphics/render3d/pipeline/pipeline_desc.cpp
 
         gladius/graphics/render3d/resources/texture.h
         gladius/graphics/render3d/resources/buffer.h

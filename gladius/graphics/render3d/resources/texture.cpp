@@ -43,11 +43,9 @@ public:
     ~s_texture_desc();
 
 public:
-    MOVEABLE(s_texture_desc);
+    NOT_MOVEABLE(s_texture_desc);
     NOT_COPYABLE(s_texture_desc);
 };
-
-DEFAULT_MOVE_IMPL(s_texture_desc)
 
 constexpr size_t RESOURCES_NUMBER = 32;
 
@@ -267,23 +265,33 @@ bool load_texture(const char *filename, texture_handle *handle) {
     gli::texture2d tex2d(gli::load(filename));
     VERIFY_LOG(!tex2d.empty(), LOG_TYPE, "Failed to load texture %s", filename);
 
-    s_texture_desc tex;
-    tex.width = tex2d[0].extent().x;
-    tex.height = tex2d[0].extent().y;
-    tex.mip_levels = tex2d.levels();
-    tex.format = (VkFormat) tex2d.format();
+    uint32_t width = tex2d[0].extent().x;
+    uint32_t height = tex2d[0].extent().y;
+    uint32_t mip_levels = tex2d.levels();
+    uint32_t array_layers = 1;
+    VkFormat format = (VkFormat) tex2d.format();
+    VkImage image;
+    VkImageView view;
 
-    VERIFY(create_image(tex.format, tex.width, tex.height, 1, tex.mip_levels, 1, VK_SAMPLE_COUNT_1_BIT,
-                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &tex.image));
+    VERIFY(create_image(format, width, height, 1, mip_levels, 1, VK_SAMPLE_COUNT_1_BIT,
+                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &image));
 
-    tex.memory_block = vk_globals::gpu_memory_allocator->alloc(tex.image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    auto memory_block = vk_globals::gpu_memory_allocator->alloc(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VK_VERIFY(vkBindImageMemory(vk_globals::device, tex.image, tex.memory_block.m_memory, tex.memory_block.m_offset));
-    VERIFY(create_image_view(tex.image, tex.format, tex.mip_levels, tex.array_layers, &tex.view));
-    VERIFY(copy_texture_data(tex2d, tex));
+    VK_VERIFY(vkBindImageMemory(vk_globals::device, image, memory_block.m_memory, memory_block.m_offset));
+    VERIFY(create_image_view(image, format, mip_levels, array_layers, &view));
+    //VERIFY(copy_texture_data(tex2d, tex));
 
     s_texture_desc *texture = (s_texture_desc *) g_resource_pool.alloc(1);
-    (*texture) = std::move(tex);
+    texture->width = width;
+    texture->height = height;
+    texture->mip_levels = mip_levels;
+    texture->array_layers = array_layers;
+    texture->format = format;
+    texture->image = image;
+    texture->view = view;
+    texture->memory_block = memory_block;
+
     (*handle) = reinterpret_cast<texture_handle>(texture);
 
     return true;

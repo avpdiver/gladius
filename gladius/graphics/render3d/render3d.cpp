@@ -6,27 +6,27 @@
 #include "render3d.h"
 #include "render3d_globals.h"
 #include "render3d_device.h"
-#include "render3d_swapchain.h"
 #include "render3d_command_buffer.h"
 #include "render3d_utils.h"
 #include "render3d_resources.h"
-#include "render3d_pipeline.h"
 #include "render3d_macros.h"
 #include "render3d_surface.h"
+#include "render3d_swapchain.h"
 
 namespace gladius {
 namespace graphics {
 namespace render3d {
 
-size_t on_window_resize_listener = static_cast<size_t >(-1);
-
-std::atomic_bool flag_needs_shutdown;
-std::atomic_bool flag_needs_recreate_swapchain;
+size_t              on_window_resize_listener = static_cast<size_t >(-1);
+std::atomic_bool    flag_needs_shutdown;
+std::atomic_bool    flag_needs_recreate_swapchain;
+s_swapchain_desc    swapchain_desc;
 
 namespace vk_globals {
 bool is_init = false;
 VkInstance instance = nullptr;
 VkSurfaceFormatKHR surface_format = {};
+c_pipeline_factory pipeline_factory;
 }
 
 void on_window_resize(void *value) {
@@ -81,20 +81,20 @@ bool create_instance(const char *app_name) {
     return true;
 }
 
-bool init(core::c_window *window, const render3d_desc& desc) {
+bool init(core::c_window *window, const s_render3d_desc& desc) {
     VERIFY(create_instance("appname"));
     VERIFY(create_surface(window));
     VERIFY(create_device());
     VERIFY(create_device_queue());
     VERIFY(get_surface_capabilites());
-    VERIFY(load_pipeline(desc.pipeline_file));
-    VERIFY(create_pipeline());
+
+    swapchain_desc.format = VK_FORMAT_B8G8R8A8_UNORM;
+    swapchain_desc.imageCount = 2;
+    VERIFY(create_swap_chain(swapchain_desc));
 
     vk_globals::is_init = true;
-
     flag_needs_recreate_swapchain.store(false);
     flag_needs_shutdown.store(false);
-
     on_window_resize_listener = window->add_event_listener(core::e_window_event::ON_RESIZE, on_window_resize);
 
     return true;
@@ -124,7 +124,7 @@ void shutdown() {
 bool check_events() {
     bool true_value = true;
     if (flag_needs_recreate_swapchain.compare_exchange_weak(true_value, false)) {
-        create_pipeline();
+        create_swap_chain(swapchain_desc);
     }
     return true;
 }
@@ -217,7 +217,7 @@ bool render() {
         break;
     case VK_SUBOPTIMAL_KHR:
     case VK_ERROR_OUT_OF_DATE_KHR:
-        create_pipeline();
+        create_swap_chain(swapchain_desc);
         return true;
     default:
         SET_ERROR (LOG_TYPE, "Problem occurred during swap chain image acquisition!", "");

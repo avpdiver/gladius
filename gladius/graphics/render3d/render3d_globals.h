@@ -49,6 +49,7 @@
 #include <vector>
 #include <glm/vec2.hpp>
 #include "memory/gpu_memory_allocator.h"
+#include "pipeline/pipeline_factory.h"
 
 namespace gladius {
 namespace graphics {
@@ -95,6 +96,8 @@ struct s_depth_buffer_info {
 	VkFormat format;
 };
 extern s_depth_buffer_info depth_buffer_info;
+
+extern c_pipeline_factory pipeline_factory;
 }
 }
 

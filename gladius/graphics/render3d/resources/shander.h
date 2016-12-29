@@ -20,10 +20,9 @@ enum class e_shader_type {
     fragment
 };
 
-
-VkShaderModule load_shader(const char *filename, e_shader_type shader_type = e_shader_type::vertex,
-                           const char *entry = nullptr, VkPipelineShaderStageCreateInfo *create_info = nullptr);
-void destroy(VkShaderModule shader);
+bool load_shader(const char *filename, e_shader_type shader_type, const char *entry,
+                 shander_handle* handle);
+void destroy_shader(shander_handle handle);
 
 }
 }

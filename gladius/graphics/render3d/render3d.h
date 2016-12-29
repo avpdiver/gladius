@@ -12,12 +12,11 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
-struct render3d_desc {
-    const char* pipeline_file = "pipeline.json";
+struct s_render3d_desc {
     bool enable_validation = false;
 };
 
-bool init(core::c_window *window, const render3d_desc& desc);
+bool init(core::c_window *window, const s_render3d_desc& desc);
 void shutdown();
 bool render();
 
