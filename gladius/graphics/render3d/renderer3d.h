@@ -48,6 +48,8 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <glm/vec2.hpp>
+
+#include "../../core/window/window.h"
 #include "memory/gpu_memory_allocator.h"
 #include "pipeline/pipeline_factory.h"
 
@@ -56,54 +58,83 @@ namespace graphics {
 namespace render3d {
 
 constexpr char const *LOG_TYPE = "RENDER3D";
-namespace vk_globals {
 
-extern bool is_init;
+class c_renderer3d {
+public:
+    struct s_device_queue {
+        uint32_t index = UINT32_MAX;
+        VkQueue handle = nullptr;
+    };
 
-extern VkInstance instance;
-extern VkPhysicalDevice gpu;
-extern VkDevice device;
-extern VkPhysicalDeviceMemoryProperties gpu_memory_properties;
-extern memory::c_gpu_memory_allocator* gpu_memory_allocator;
+    struct s_surface {
+        VkSurfaceKHR surface;
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> present_modes;
+    };
 
-struct s_device_queue {
-	uint32_t index = UINT32_MAX;
-	VkQueue handle = nullptr;
+    struct s_swapchain {
+        uint32_t image_count;
+        VkFormat format;
+        VkSwapchainKHR handle;
+        uint32_t width;
+        uint32_t height;
+        std::vector<VkImage> images;
+        std::vector<VkImageView> views;
+        std::vector<VkCommandBuffer> command_buffers;
+        std::vector<VkFence> fences;
+    };
+
+    struct s_semaphores {
+        VkSemaphore present_complete;
+        VkSemaphore render_complete;
+        VkSubmitInfo submit_info;
+    };
+
+public:
+    VkInstance m_instance;
+    VkPhysicalDevice m_gpu;
+    VkDevice m_device;
+
+public:
+    memory::c_gpu_memory_allocator *m_gpu_memory_allocator;
+
+public:
+    s_surface m_surface;
+    s_swapchain m_swapchain;
+    s_semaphores m_semaphores;
+
+public:
+    s_device_queue m_graphics_queue;
+
+public:
+    VkCommandPool m_command_pool;
+
+public:
+    VkPhysicalDeviceProperties m_device_properties;
+    VkPhysicalDeviceFeatures m_device_features;
+    VkPhysicalDeviceMemoryProperties m_gpu_memory_properties;
+    std::vector<VkExtensionProperties> m_extensions;
+    std::vector<VkQueueFamilyProperties> m_queue_families_properties;
+
+private:
+    s_pipeline m_forward_pipeline;
+
+public:
+    bool init(core::c_window *window);
+    void shutdown();
+    bool render();
+
+private:
+    bool build_command_buffer();
 };
 
-extern s_device_queue graphics_queue;
-extern s_device_queue present_queue;
-
-struct s_surface {
-	VkSurfaceKHR surface;
-	VkSurfaceCapabilitiesKHR capabilities;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> present_modes;
-};
-extern s_surface surface;
-
-struct s_swapchain {
-	VkFormat format;
-	VkSwapchainKHR handle;
-	std::vector<VkImage> images;
-	std::vector<VkImageView> views;
-};
-extern s_swapchain swapchain;
-
-struct s_depth_buffer_info {
-	VkImage image;
-	VkImageView image_view;
-	VkFormat format;
-};
-extern s_depth_buffer_info depth_buffer_info;
-
-extern c_pipeline_factory pipeline_factory;
-}
-}
+extern c_renderer3d renderer3d;
 
 }
 }
+}
 
-#include "render3d_debug.h"
+#include "vulkan/vulkan_debug.h"
 
 #endif //GLADIUS_RENDERER3D_COMMON_H

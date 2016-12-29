@@ -7,7 +7,7 @@
 
 #include <vulkan/vulkan.h>
 #include "../../../core/types.h"
-#include "../render3d_resources.h"
+#include "../vulkan/render3d_resources.h"
 
 
 namespace gladius {

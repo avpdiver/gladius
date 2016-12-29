@@ -116,34 +116,29 @@ set(
 
         gladius/geometry/visibility.h
 
-        gladius/graphics/render3d/render3d_macros.h
+        gladius/graphics/render3d/vulkan/vulkan_macros.h
         gladius/graphics/render3d/render3d.h
-        gladius/graphics/render3d/render3d_utils.h
-        gladius/graphics/render3d/render3d_utils.cpp
-        gladius/graphics/render3d/render3d_globals.h
-        gladius/graphics/render3d/render3d.cpp
-        gladius/graphics/render3d/render3d_debug.h
-        gladius/graphics/render3d/render3d_debug.cpp
-        gladius/graphics/render3d/render3d_device.cpp
-        gladius/graphics/render3d/render3d_device.h
-        gladius/graphics/render3d/render3d_swapchain.cpp
-        gladius/graphics/render3d/render3d_swapchain.h
-        gladius/graphics/render3d/render3d_resources.cpp
-        gladius/graphics/render3d/render3d_resources.h
-        gladius/graphics/render3d/render3d_command_buffer.h
-        gladius/graphics/render3d/render3d_command_buffer.cpp
-        gladius/graphics/render3d/render3d_surface.cpp
-        gladius/graphics/render3d/render3d_surface.h
+        gladius/graphics/render3d/vulkan/vulkan_utils.h
+        gladius/graphics/render3d/vulkan/vulkan_utils.cpp
+        gladius/graphics/render3d/renderer3d.h
+        gladius/graphics/render3d/renderer3d.cpp
+        gladius/graphics/render3d/vulkan/vulkan_debug.h
+        gladius/graphics/render3d/vulkan/vulkan_debug.cpp
+        gladius/graphics/render3d/vulkan/vulkan_device.cpp
+        gladius/graphics/render3d/vulkan/vulkan_device.h
+        gladius/graphics/render3d/vulkan/vulkan_swapchain.cpp
+        gladius/graphics/render3d/vulkan/vulkan_swapchain.h
+        gladius/graphics/render3d/vulkan/vulkan_command_buffer.h
+        gladius/graphics/render3d/vulkan/vulkan_command_buffer.cpp
+        gladius/graphics/render3d/vulkan/vulkan_surface.cpp
+        gladius/graphics/render3d/vulkan/vulkan_surface.h
 
         gladius/graphics/render3d/pipeline/vertex_type.cpp
         gladius/graphics/render3d/pipeline/vertex_type.h
         gladius/graphics/render3d/pipeline/pipeline_factory.cpp
         gladius/graphics/render3d/pipeline/pipeline_factory.h
-        gladius/graphics/render3d/pipeline/subpass_desc.cpp
-        gladius/graphics/render3d/pipeline/subpass_desc.h
-        gladius/graphics/render3d/pipeline/renderpass_desc.cpp
-        gladius/graphics/render3d/pipeline/renderpass_desc.h
 
+        gladius/graphics/render3d/resources/resource_macros.h
         gladius/graphics/render3d/resources/texture.h
         gladius/graphics/render3d/resources/buffer.h
         gladius/graphics/render3d/resources/framebuffer.h
@@ -165,7 +160,7 @@ set(
         gladius/gladius.h
         gladius/gladius.cpp
 
-        main.cpp)
+        main.cpp gladius/graphics/render3d/vulkan/vulkan_instance.cpp gladius/graphics/render3d/vulkan/vulkan_instance.h)
 
 include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm"

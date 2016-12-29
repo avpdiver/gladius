@@ -5,12 +5,14 @@
 #ifndef GLADIUS_RENDER3D_DEVICE_H
 #define GLADIUS_RENDER3D_DEVICE_H
 
+#include "../renderer3d.h"
+
 namespace gladius {
 namespace graphics {
 namespace render3d {
 
-bool create_device();
-bool create_device_queue();
+bool create_device(c_renderer3d* renderer);
+bool create_device_queue(c_renderer3d* renderer);
 
 }
 }

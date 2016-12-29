@@ -3,8 +3,8 @@
 //
 
 #include <iostream>
-#include "render3d_globals.h"
-#include "render3d_macros.h"
+#include "../renderer3d.h"
+#include "vulkan_macros.h"
 
 namespace gladius {
 namespace graphics {
@@ -63,7 +63,7 @@ bool init(VkInstance instance) {
 
 void shutdown() {
     if (debug_report_callback != nullptr) {
-        DestroyDebugReportCallbackEXT(vk_globals::instance, debug_report_callback, nullptr);
+        //DestroyDebugReportCallbackEXT(vk_globals::instance, debug_report_callback, nullptr);
     }
 }
 

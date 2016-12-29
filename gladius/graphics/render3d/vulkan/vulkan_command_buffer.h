@@ -12,10 +12,10 @@ namespace graphics {
 namespace render3d {
 namespace resources {
 
-bool create_command_pool(uint32_t queue_index, VkCommandPool* pool);
+bool create_command_pool(VkDevice device, uint32_t queue_index, VkCommandPool* pool);
 
-bool create_command_buffer(bool primary, VkCommandPool pool, VkCommandBuffer* buffer);
-void destroy(VkCommandBuffer handle, VkCommandPool pool);
+bool create_command_buffer(VkDevice device, bool primary, VkCommandPool pool, uint32_t buffers_count, VkCommandBuffer* buffers);
+void destroy_command_buffer(VkDevice device, VkCommandBuffer handle, VkCommandPool pool);
 bool begin_command_buffer(VkCommandBuffer command_buffer);
 bool flush_command_buffer(VkQueue queue, VkCommandBuffer command_buffer);
 

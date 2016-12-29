@@ -6,8 +6,8 @@
 #include "../../../core/memory/alloc_policies/lockfree_alloc.h"
 #include "../../../core/memory/allocator.h"
 
-#include "../render3d_globals.h"
-#include "../render3d_macros.h"
+#include "../renderer3d.h"
+#include "../vulkan/vulkan_macros.h"
 
 #include "texture.h"
 #include "framebuffer.h"

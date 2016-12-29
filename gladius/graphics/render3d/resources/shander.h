@@ -22,6 +22,7 @@ enum class e_shader_type {
 
 bool load_shader(const char *filename, e_shader_type shader_type, const char *entry,
                  shander_handle* handle);
+void get_shader_stage_info(shander_handle handle, VkPipelineShaderStageCreateInfo& info);
 void destroy_shader(shander_handle handle);
 
 }

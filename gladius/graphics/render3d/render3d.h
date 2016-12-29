@@ -12,11 +12,7 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
-struct s_render3d_desc {
-    bool enable_validation = false;
-};
-
-bool init(core::c_window *window, const s_render3d_desc& desc);
+bool init(core::c_window *window);
 void shutdown();
 bool render();
 

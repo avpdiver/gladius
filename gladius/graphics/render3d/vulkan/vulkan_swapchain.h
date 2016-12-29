@@ -16,8 +16,9 @@ struct s_swapchain_desc {
     size_t imageCount;
 };
 
-bool create_swap_chain(const s_swapchain_desc& desc);
+bool create_swap_chain(c_renderer3d* renderer);
 void shutdown_swap_chain();
+bool swap_chain_acquire_next_image(c_renderer3d* renderer, VkSemaphore semaphore, uint32_t *image_index);
 
 }
 }

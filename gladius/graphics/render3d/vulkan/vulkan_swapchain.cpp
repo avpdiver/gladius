@@ -2,18 +2,14 @@
 // Created by alexa on 028 28 08 2016.
 //
 
-#include "render3d_globals.h"
-#include "render3d_swapchain.h"
-#include "render3d_utils.h"
-#include "render3d_macros.h"
+#include "../renderer3d.h"
+#include "vulkan_swapchain.h"
+#include "vulkan_utils.h"
+#include "vulkan_macros.h"
 
 namespace gladius {
 namespace graphics {
 namespace render3d {
-
-namespace vk_globals {
-s_swapchain swapchain = {};
-}
 
 uint32_t get_swapchain_num_images(size_t images, VkSurfaceCapabilitiesKHR &surface_capabilities) {
     if ((surface_capabilities.maxImageCount > 0) && (images > surface_capabilities.maxImageCount)) {
@@ -102,25 +98,26 @@ VkPresentModeKHR get_swapchain_present_mode(std::vector<VkPresentModeKHR> &prese
     return static_cast<VkPresentModeKHR>(-1);
 }
 
-bool create_swap_chain(const s_swapchain_desc& desc) {
-    if (vk_globals::device != nullptr) {
-        vkDeviceWaitIdle(vk_globals::device);
+bool create_swap_chain(c_renderer3d* renderer) {
+    if (renderer->m_device != nullptr) {
+        vkDeviceWaitIdle(renderer->m_device);
     }
 
     shutdown_swap_chain();
 
-    uint32_t desired_number_of_images = get_swapchain_num_images(desc.imageCount, vk_globals::surface.capabilities);
-    VERIFY_LOG(desired_number_of_images == desc.imageCount, LOG_TYPE, "Requested %i swapchain images, but get %i",
-               desc.imageCount, desired_number_of_images);
+    uint32_t desired_number_of_images = get_swapchain_num_images(renderer->m_swapchain.image_count, renderer->m_surface.capabilities);
+    VERIFY_LOG(desired_number_of_images == renderer->m_swapchain.image_count,
+               LOG_TYPE, "Requested %i swapchain images, but get %i", renderer->m_swapchain.image_count, desired_number_of_images);
 
-    VkSurfaceFormatKHR desired_format = get_swapchain_format(desc.format, vk_globals::surface.formats);
-    VERIFY_LOG(desired_number_of_images == desc.imageCount, LOG_TYPE, "Requested %i swapchain format not supported", desc.format);
+    VkSurfaceFormatKHR desired_format = get_swapchain_format(renderer->m_swapchain.format, renderer->m_surface.formats);
+    VERIFY_LOG(desired_number_of_images == renderer->m_swapchain.image_count,
+               LOG_TYPE, "Requested %i swapchain format not supported", renderer->m_swapchain.format);
 
-    VkExtent2D desired_extent = get_swapchain_extent(vk_globals::surface.capabilities);
-    VkImageUsageFlags desired_usage = get_swapchain_usage_flags(vk_globals::surface.capabilities);
-    VkSurfaceTransformFlagBitsKHR desired_transform = get_swapchain_transform(vk_globals::surface.capabilities);
-    VkPresentModeKHR desired_present_mode = get_swapchain_present_mode(vk_globals::surface.present_modes);
-    VkSwapchainKHR old_swap_chain = vk_globals::swapchain.handle;
+    VkExtent2D desired_extent = get_swapchain_extent(renderer->m_surface.capabilities);
+    VkImageUsageFlags desired_usage = get_swapchain_usage_flags(renderer->m_surface.capabilities);
+    VkSurfaceTransformFlagBitsKHR desired_transform = get_swapchain_transform(renderer->m_surface.capabilities);
+    VkPresentModeKHR desired_present_mode = get_swapchain_present_mode(renderer->m_surface.present_modes);
+    VkSwapchainKHR old_swap_chain = renderer->m_swapchain.handle;
 
     VERIFY (static_cast<int>(desired_usage) != -1);
     VERIFY (static_cast<int>(desired_present_mode) != -1);
@@ -129,7 +126,7 @@ bool create_swap_chain(const s_swapchain_desc& desc) {
             VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,  // VkStructureType                sType
             nullptr,                                      // const void                    *pNext
             0,                                            // VkSwapchainCreateFlagsKHR      flags
-            vk_globals::surface.surface,                  // VkSurfaceKHR                   surface
+            renderer->m_surface.surface,                  // VkSurfaceKHR                   surface
             desired_number_of_images,                     // uint32_t                       minImageCount
             desired_format.format,                        // VkFormat                       imageFormat
             desired_format.colorSpace,                    // VkColorSpaceKHR                imageColorSpace
@@ -146,33 +143,35 @@ bool create_swap_chain(const s_swapchain_desc& desc) {
             old_swap_chain                                // VkSwapchainKHR                 oldSwapchain
     };
 
-    VK_VERIFY (vkCreateSwapchainKHR(vk_globals::device, &swap_chain_create_info, nullptr,
-                                    &(vk_globals::swapchain.handle)));
+    VK_VERIFY (vkCreateSwapchainKHR(renderer->m_device, &swap_chain_create_info, nullptr, &(renderer->m_swapchain.handle)));
+
     if (old_swap_chain != nullptr) {
-        vkDestroySwapchainKHR(vk_globals::device, old_swap_chain, nullptr);
+        vkDestroySwapchainKHR(renderer->m_device, old_swap_chain, nullptr);
     }
 
-    vk_globals::swapchain.format = desired_format.format;
+    renderer->m_swapchain.format = desired_format.format;
+    renderer->m_swapchain.width = desired_extent.width;
+    renderer->m_swapchain.height = desired_extent.height;
 
     uint32_t image_count = 0;
-    VK_VERIFY(vkGetSwapchainImagesKHR(vk_globals::device, vk_globals::swapchain.handle, &image_count, nullptr));
+    VK_VERIFY(vkGetSwapchainImagesKHR(renderer->m_device, renderer->m_swapchain.handle, &image_count, nullptr));
     VERIFY_LOG(image_count > 0, LOG_TYPE, "Could not get swap chain images!", "");
 
-    vk_globals::swapchain.images.resize(image_count);
-    VK_VERIFY (vkGetSwapchainImagesKHR(vk_globals::device, vk_globals::swapchain.handle, &image_count,
-                                       &(vk_globals::swapchain.images[0])));
+    renderer->m_swapchain.images.resize(image_count);
+    VK_VERIFY (vkGetSwapchainImagesKHR(renderer->m_device, renderer->m_swapchain.handle, &image_count,
+                                       &(renderer->m_swapchain.images[0])));
 
 
-    vk_globals::swapchain.views.resize(vk_globals::swapchain.images.size());
-    for (size_t i = 0; i < vk_globals::swapchain.images.size(); ++i) {
+    renderer->m_swapchain.views.resize(renderer->m_swapchain.images.size());
+    for (size_t i = 0; i < renderer->m_swapchain.images.size(); ++i) {
         VkImageViewCreateInfo image_view_create_info =
                 {
                         VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,   // VkStructureType                sType
                         nullptr,                                    // const void                    *pNext
                         0,                                          // VkImageViewCreateFlags         flags
-                        vk_globals::swapchain.images[i],            // VkImage                        image
+                        renderer->m_swapchain.images[i],            // VkImage                        image
                         VK_IMAGE_VIEW_TYPE_2D,                      // VkImageViewType                viewType
-                        vk_globals::swapchain.format,               // VkFormat                       format
+                        renderer->m_swapchain.format,               // VkFormat                       format
                         {                                           // VkComponentMapping             components
                                 VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             r
                                 VK_COMPONENT_SWIZZLE_IDENTITY,      // VkComponentSwizzle             g
@@ -188,19 +187,36 @@ bool create_swap_chain(const s_swapchain_desc& desc) {
                         }
                 };
 
-        VK_VERIFY (vkCreateImageView(vk_globals::device, &image_view_create_info, nullptr,
-                                     &vk_globals::swapchain.views[i]));
+        VK_VERIFY (vkCreateImageView(renderer->m_device, &image_view_create_info, nullptr,
+                                     &renderer->m_swapchain.views[i]));
     }
 
     return true;
 }
 
-void shutdown_swap_chain() {
-    if (vk_globals::swapchain.handle != nullptr) {
-        vkDestroySwapchainKHR(vk_globals::device, vk_globals::swapchain.handle, nullptr);
-        vk_globals::swapchain.handle = nullptr;
+void shutdown_swap_chain(c_renderer3d* renderer) {
+    if (renderer->m_swapchain.handle != nullptr) {
+        vkDestroySwapchainKHR(renderer->m_device, renderer->m_swapchain.handle, nullptr);
+        renderer->m_swapchain.handle = nullptr;
     }
 }
+
+bool swap_chain_acquire_next_image(c_renderer3d* renderer, VkSemaphore semaphore, uint32_t *image_index) {
+    VkResult result = vkAcquireNextImageKHR(renderer->m_device, renderer->m_swapchain.handle, UINT64_MAX, semaphore, (VkFence)nullptr, image_index);
+    switch (result) {
+        case VK_SUCCESS:
+            break;
+        case VK_SUBOPTIMAL_KHR:
+        case VK_ERROR_OUT_OF_DATE_KHR:
+            create_swap_chain(renderer);
+            return true;
+        default:
+            SET_ERROR (LOG_TYPE, "Problem occurred during swap chain image acquisition!", "");
+            return false;
+    }
+    return true;
+}
+
 
 }
 }

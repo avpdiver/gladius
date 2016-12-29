@@ -4,8 +4,8 @@
 
 #include <cassert>
 #include "gpu_memory_allocator.h"
-#include "../render3d_globals.h"
-#include "../render3d_utils.h"
+#include "../renderer3d.h"
+#include "../vulkan/vulkan_utils.h"
 
 namespace gladius {
 namespace graphics {

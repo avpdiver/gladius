@@ -8,8 +8,8 @@
 #include "../../../core/memory/alloc_policies/lockfree_alloc.h"
 #include "../../../core/memory/allocator.h"
 
-#include "../render3d_globals.h"
-#include "../render3d_macros.h"
+#include "../renderer3d.h"
+#include "../vulkan/vulkan_macros.h"
 
 #include "shander.h"
 
@@ -69,6 +69,17 @@ bool load_shader(const char *filename, e_shader_type shader_type, const char *en
 
     (*handle) = reinterpret_cast<shander_handle>(shader);
     return true;
+}
+
+void get_shader_stage_info(shander_handle handle, VkPipelineShaderStageCreateInfo& info) {
+    if (handle == INVALID_HANDLE) {
+        return;
+    }
+    s_shader_desc* desc = reinterpret_cast<s_shader_desc*>(handle);
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    info.stage = desc->stage_flag;
+    info.module = desc->module;
+    info.pName = desc->entry;
 }
 
 void destroy(s_shader_desc* desc) {

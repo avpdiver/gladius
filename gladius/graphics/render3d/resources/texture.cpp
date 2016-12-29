@@ -10,10 +10,10 @@
 #include "../../../core/memory/alloc_policies/lockfree_alloc.h"
 #include "../../../core/memory/allocator.h"
 
-#include "../render3d_macros.h"
-#include "../render3d_debug.h"
-#include "../render3d_globals.h"
-#include "../render3d_resources.h"
+#include "../vulkan/vulkan_macros.h"
+#include "../vulkan/vulkan_debug.h"
+#include "../renderer3d.h"
+#include "../vulkan/render3d_resources.h"
 
 #include "texture.h"
 #include "buffer.h"
@@ -326,6 +326,13 @@ bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t d
     (*handle) = reinterpret_cast<texture_handle>(resource);
 
     return true;
+}
+
+VkFormat get_texture_format(texture_handle handle) {
+    if (handle == INVALID_HANDLE) {
+        return VK_FORMAT_UNDEFINED;
+    }
+    return reinterpret_cast<s_texture_desc*>(handle)->format;
 }
 
 VkImageView get_texture_image_view(texture_handle handle) {

@@ -6,8 +6,8 @@
 #include <algorithm>
 
 #include "chunk.h"
-#include "../render3d_macros.h"
-#include "../render3d_globals.h"
+#include "../vulkan/vulkan_macros.h"
+#include "../renderer3d.h"
 
 namespace gladius {
 namespace graphics {
@@ -20,7 +20,12 @@ c_chunk::c_chunk(const VkDevice &device, VkDeviceSize size, uint32_t memory_type
         m_device(device),
         m_size(size),
         m_memory_type_index(memory_type_index) {
-    VkMemoryAllocateInfo memory_allocate_info = MEMORY_ALLOCATE_INFO(size, memory_type_index);
+    VkMemoryAllocateInfo memory_allocate_info = {
+            VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+            nullptr,
+            size,
+            memory_type_index
+    };
 
     VK_ASSERT (vkAllocateMemory(vk_globals::device, &memory_allocate_info, nullptr, &m_memory));
 
@@ -31,10 +36,11 @@ c_chunk::c_chunk(const VkDevice &device, VkDeviceSize size, uint32_t memory_type
             true
     };
 
-    if((vk_globals::gpu_memory_properties.memoryTypes[memory_type_index].propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+    if ((vk_globals::gpu_memory_properties.memoryTypes[memory_type_index].propertyFlags &
+         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
         VK_ASSERT(vkMapMemory(device, m_memory, 0, VK_WHOLE_SIZE, 0, &m_ptr));
     }
-    
+
     m_blocks.emplace_back(block);
 }
 

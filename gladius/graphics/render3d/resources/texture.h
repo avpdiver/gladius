@@ -27,6 +27,7 @@ bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t d
 bool load_texture(const char *filename, texture_handle *handle);
 void destroy_texture(texture_handle handle);
 
+VkFormat get_texture_format(texture_handle handle);
 VkImageView get_texture_image_view(texture_handle handle);
 
 }

@@ -6,7 +6,7 @@
 #define GLADIUS_RENDER3D_DEBUG_H
 
 #include <vector>
-#include "../../core/logger/logger.h"
+#include "../../../core/logger/logger.h"
 
 namespace gladius {
 namespace graphics {
