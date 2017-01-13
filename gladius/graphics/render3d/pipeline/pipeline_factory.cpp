@@ -15,19 +15,35 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
-bool create_forward_depth_stencil(c_renderer3d* renderer, s_pipeline& pipeline) {
+c_pipeline::c_pipeline(c_renderer3d *m_renderer) : m_renderer(m_renderer){
+}
+
+c_pipeline::~c_pipeline() {
+
+}
+
+bool c_pipeline::create() {
+    VERIFY(create_depth_stencil());
+    VERIFY(create_render_pass());
+    VERIFY(create_descriptor_set());
+    VERIFY(create_pipeline());
+    VERIFY(create_framebuffer());
+    return true;
+}
+
+bool c_pipeline::create_depth_stencil() {
     VkFormat format;
-    VERIFY(utils::get_supported_depth_format(renderer->m_gpu, &format));
+    VERIFY(utils::get_supported_depth_format(m_renderer->m_gpu, &format));
     return resources::create_texture(format,
-                                     renderer->m_surface.capabilities.currentExtent.width,
-                                     renderer->m_surface.capabilities.currentExtent.height,
+                                     m_renderer->m_surface.capabilities.currentExtent.width,
+                                     m_renderer->m_surface.capabilities.currentExtent.height,
                                      1,
                                      1, 1, VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT,
                                      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                                     &pipeline.m_depth_stencil);
+                                     &m_depth_stencil);
 }
 
-bool create_forward_render_pass(c_renderer3d* renderer, s_pipeline& pipeline) {
+bool c_pipeline::create_render_pass() {
     std::array<VkAttachmentDescription, 2> attachments = {};
 
     // Color attachment
@@ -42,7 +58,7 @@ bool create_forward_render_pass(c_renderer3d* renderer, s_pipeline& pipeline) {
 
     // As we want to present the color buffer to the swapchain, we transition to PRESENT_KHR
     // Depth attachment
-    attachments[1].format = resources::get_texture_format(pipeline.m_depth_stencil);
+    attachments[1].format = resources::get_texture_format(m_depth_stencil);
     attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;							// Clear depth at start of first subpass
     attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;						// We don't need depth after render pass has finished (DONT_CARE may result in better performance)
@@ -110,11 +126,11 @@ bool create_forward_render_pass(c_renderer3d* renderer, s_pipeline& pipeline) {
     render_pass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());	// Number of subpass dependencies
     render_pass_info.pDependencies = dependencies.data();							// Subpass dependencies used by the render pass
 
-    VK_VERIFY(vkCreateRenderPass(renderer->m_device, &render_pass_info, nullptr, &pipeline.m_render_pass));
+    VK_VERIFY(vkCreateRenderPass(m_renderer->m_device, &render_pass_info, nullptr, &m_render_pass));
     return true;
 }
 
-bool create_forward_descriptor_set(c_renderer3d* renderer, s_pipeline& pipeline) {
+bool c_pipeline::create_descriptor_set() {
     VkDescriptorSetLayoutBinding layout_binding = {};
     layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     layout_binding.descriptorCount = 1;
@@ -127,19 +143,19 @@ bool create_forward_descriptor_set(c_renderer3d* renderer, s_pipeline& pipeline)
     descriptor_layout.bindingCount = 1;
     descriptor_layout.pBindings = &layout_binding;
 
-    VK_VERIFY (vkCreateDescriptorSetLayout(renderer->m_device, &descriptor_layout, nullptr, &pipeline.m_descriptor_set_layout));
+    VK_VERIFY (vkCreateDescriptorSetLayout(m_renderer->m_device, &descriptor_layout, nullptr, &m_descriptor_set_layout));
 
     VkPipelineLayoutCreateInfo pipeline_layout_create_info = {};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_create_info.pNext = nullptr;
     pipeline_layout_create_info.setLayoutCount = 1;
-    pipeline_layout_create_info.pSetLayouts = &pipeline.m_descriptor_set_layout;
+    pipeline_layout_create_info.pSetLayouts = &m_descriptor_set_layout;
 
-    VK_VERIFY (vkCreatePipelineLayout(renderer->m_device, &pipeline_layout_create_info, nullptr, &pipeline.m_pipeline_layout));
+    VK_VERIFY (vkCreatePipelineLayout(m_renderer->m_device, &pipeline_layout_create_info, nullptr, &m_pipeline_layout));
     return true;
 }
 
-bool create_forward_pipeline(c_renderer3d* renderer, s_pipeline& pipeline) {
+bool c_pipeline::create_pipeline() {
 
     VkPipelineInputAssemblyStateCreateInfo input_assembly_state = {};
     input_assembly_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -272,44 +288,35 @@ bool create_forward_pipeline(c_renderer3d* renderer, s_pipeline& pipeline) {
             &depth_stencil_state,
             &color_blend_state,
             &dynamic_state,
-            pipeline.m_pipeline_layout,
-            pipeline.m_render_pass, 0,
+            m_pipeline_layout,
+            m_render_pass, 0,
             VK_NULL_HANDLE, -1
     };
 
-    VK_VERIFY(vkCreateGraphicsPipelines(renderer->m_device, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline.m_pipeline));
+    VK_VERIFY(vkCreateGraphicsPipelines(m_renderer->m_device, VK_NULL_HANDLE, 1, &create_info, nullptr, &m_pipeline));
     return true;
 }
 
-bool create_forward_framebuffer(c_renderer3d* renderer, s_pipeline& pipeline) {
-    pipeline.m_framebuffers.resize(renderer->m_swapchain.images.size());
+bool c_pipeline::create_framebuffer() {
+    m_framebuffers.resize(m_renderer->m_swapchain.images.size());
     
-    for (size_t i = 0; i < pipeline.m_framebuffers.size(); i++) {
+    for (size_t i = 0; i < m_framebuffers.size(); i++) {
         std::array<VkImageView, 2> attachments;
-        attachments[0] = renderer->m_swapchain.views[i];                               // Color attachment is the view of the swapchain image			
-        attachments[1] = resources::get_texture_image_view(pipeline.m_depth_stencil);  // Depth/Stencil attachment is the same for all frame buffers
+        attachments[0] = m_renderer->m_swapchain.views[i];                    // Color attachment is the view of the swapchain image
+        attachments[1] = resources::get_texture_image_view(m_depth_stencil);  // Depth/Stencil attachment is the same for all frame buffers
 
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass = pipeline.m_render_pass;
+        framebuffer_create_info.renderPass = m_render_pass;
         framebuffer_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebuffer_create_info.pAttachments = attachments.data();
-        framebuffer_create_info.width = renderer->m_surface.capabilities.currentExtent.width;
-        framebuffer_create_info.height = renderer->m_surface.capabilities.currentExtent.height;
+        framebuffer_create_info.width = m_renderer->m_surface.capabilities.currentExtent.width;
+        framebuffer_create_info.height = m_renderer->m_surface.capabilities.currentExtent.height;
         framebuffer_create_info.layers = 1;
 
-        VK_VERIFY(vkCreateFramebuffer(renderer->m_device, &framebuffer_create_info, nullptr, &pipeline.m_framebuffers[i]));
+        VK_VERIFY(vkCreateFramebuffer(m_renderer->m_device, &framebuffer_create_info, nullptr, &m_framebuffers[i]));
     }
 
-    return true;
-}
-
-bool create_forward_rendering_pipeline(c_renderer3d* renderer, s_pipeline& pipeline) {
-    VERIFY(create_forward_depth_stencil(renderer, pipeline));
-    VERIFY(create_forward_render_pass(renderer, pipeline));
-    VERIFY(create_forward_descriptor_set(renderer, pipeline));
-    VERIFY(create_forward_pipeline(renderer, pipeline));
-    VERIFY(create_forward_framebuffer(renderer, pipeline));
     return true;
 }
 
