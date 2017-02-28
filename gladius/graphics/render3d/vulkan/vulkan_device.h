@@ -12,7 +12,6 @@ namespace graphics {
 namespace render3d {
 
 bool create_device(c_renderer3d* renderer);
-bool create_device_queue(c_renderer3d* renderer);
 
 }
 }

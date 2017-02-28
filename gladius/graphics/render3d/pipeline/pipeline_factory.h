@@ -15,6 +15,8 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
+class c_renderer3d;
+
 class c_pipeline {
 public:
     c_pipeline(c_renderer3d* renderer);

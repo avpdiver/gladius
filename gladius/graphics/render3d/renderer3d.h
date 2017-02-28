@@ -117,9 +117,6 @@ public:
     std::vector<VkExtensionProperties> m_extensions;
     std::vector<VkQueueFamilyProperties> m_queue_families_properties;
 
-private:
-    s_pipeline m_forward_pipeline;
-
 public:
     bool init(core::c_window *window);
     void shutdown();

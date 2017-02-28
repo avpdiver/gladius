@@ -103,7 +103,7 @@ bool create_swap_chain(c_renderer3d* renderer) {
         vkDeviceWaitIdle(renderer->m_device);
     }
 
-    shutdown_swap_chain();
+    shutdown_swap_chain(renderer);
 
     uint32_t desired_number_of_images = get_swapchain_num_images(renderer->m_swapchain.image_count, renderer->m_surface.capabilities);
     VERIFY_LOG(desired_number_of_images == renderer->m_swapchain.image_count,

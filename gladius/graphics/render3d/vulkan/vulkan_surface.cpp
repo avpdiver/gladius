@@ -67,7 +67,7 @@ bool create_surface(c_renderer3d* renderer, core::c_window *window) {
         window_sys_info->connection,                      // xcb_connection_t*                connection
         window_sys_info->handle                           // xcb_window_t                     window
     };
-    VK_VERIFY (vkCreateXcbSurfaceKHR(renderer->m_instance, &surface_create_info, nullptr, &(renderer->m_surface)));
+    VK_VERIFY (vkCreateXcbSurfaceKHR(renderer->m_instance, &surface_create_info, nullptr, &(renderer->m_surface.surface)));
 #endif
 
     return get_surface_capabilites(renderer);

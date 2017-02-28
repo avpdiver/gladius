@@ -21,13 +21,11 @@ namespace gladius {
 namespace graphics {
 namespace render3d {
 
-c_renderer3d render3d;
-
+c_renderer3d renderer3d;
 
 bool c_renderer3d::init(core::c_window *window) {
     VERIFY(create_instance(this, "appname"));
     VERIFY(create_device(this));
-    VERIFY(create_device_queue(this));
     VERIFY(create_surface(this, window));
     VERIFY(create_swap_chain(this));
 
@@ -56,8 +54,6 @@ bool c_renderer3d::init(core::c_window *window) {
             1, &m_semaphores.render_complete
     };
 
-    VERIFY(create_forward_rendering_pipeline(this, m_forward_pipeline));
-
     return true;
 }
 
@@ -65,7 +61,7 @@ void c_renderer3d::shutdown() {
 
     if (m_device != nullptr) {
         vkDeviceWaitIdle(m_device);
-        shutdown_swap_chain();
+        shutdown_swap_chain(this);
         delete m_gpu_memory_allocator;
         vkDestroyDevice(m_device, nullptr);
         m_device = nullptr;
@@ -95,7 +91,7 @@ bool c_renderer3d::build_command_buffer() {
     VkRenderPassBeginInfo render_pass_begin_info = {};
     render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     render_pass_begin_info.pNext = nullptr;
-    render_pass_begin_info.renderPass = m_forward_pipeline.m_render_pass;
+    //render_pass_begin_info.renderPass = m_forward_pipeline.m_render_pass;
     render_pass_begin_info.renderArea.offset.x = 0;
     render_pass_begin_info.renderArea.offset.y = 0;
     render_pass_begin_info.renderArea.extent.width = m_swapchain.width;
@@ -103,10 +99,10 @@ bool c_renderer3d::build_command_buffer() {
     render_pass_begin_info.clearValueCount = 2;
     render_pass_begin_info.pClearValues = clearValues;
 
-    uint32_t i = 0;
+    //uint32_t i = 0;
     for (auto &command_buffer : m_swapchain.command_buffers) {
 
-        render_pass_begin_info.framebuffer = m_forward_pipeline.m_framebuffers[i++];
+        //render_pass_begin_info.framebuffer = m_forward_pipeline.m_framebuffers[i++];
 
         VK_VERIFY(vkBeginCommandBuffer(command_buffer, &cmd_buffer_begin_info));
 
@@ -114,15 +110,15 @@ bool c_renderer3d::build_command_buffer() {
 
         VkViewport viewport = {
                 0, 0,
-                m_swapchain.width, m_swapchain.height,
+                (float) m_swapchain.width, (float) m_swapchain.height,
                 0.0f, 1.0f
         };
         vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
         VkRect2D scissor = {
                 {
-                        m_swapchain.width,
-                        m_swapchain.height
+                        (int32_t) m_swapchain.width,
+                        (int32_t) m_swapchain.height
                 },
                 {
                         0,
@@ -131,6 +127,7 @@ bool c_renderer3d::build_command_buffer() {
         };
         vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
+        /*
         vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_forward_pipeline.m_pipeline_layout,
                                 0, 1, &m_forward_pipeline.descriptorSet,
                                 0, nullptr);
@@ -140,7 +137,7 @@ bool c_renderer3d::build_command_buffer() {
         vkCmdBindIndexBuffer(command_buffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(command_buffer, indices.count, 1, 0, 0, 1);
         vkCmdEndRenderPass(command_buffer);
-
+*/
         VK_VERIFY(vkEndCommandBuffer(command_buffer));
     }
 

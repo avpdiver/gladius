@@ -16,7 +16,7 @@ struct s_gladius_desc {
 	std::string name ="gladius";
 	bool logging = true;
 	core::s_window_desc screen;
-	graphics::render3d::s_render3d_desc render3d;
+	//graphics::render3d::s_render3d_desc render3d;
 };
 
 extern s_gladius_desc g_gladius_desc;

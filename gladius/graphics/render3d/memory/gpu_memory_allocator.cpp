@@ -33,7 +33,7 @@ c_block c_gpu_memory_allocator::alloc(VkDeviceSize size, VkDeviceSize alignment,
 }
 
 c_block c_gpu_memory_allocator::alloc(const VkMemoryRequirements& requirements, VkMemoryPropertyFlagBits property_flags) {
-    int type = utils::find_memory_type(requirements.memoryTypeBits, property_flags);
+    int type = utils::find_memory_type(renderer3d.m_gpu_memory_properties, requirements.memoryTypeBits, property_flags);
     assert(type >= 0);
     return alloc(requirements.size, requirements.alignment, (uint32_t) type);
 }
@@ -41,14 +41,14 @@ c_block c_gpu_memory_allocator::alloc(const VkMemoryRequirements& requirements, 
 template<>
 c_block c_gpu_memory_allocator::alloc<VkImage>(VkImage resource, VkMemoryPropertyFlagBits property) {
     VkMemoryRequirements requirements;
-    vkGetImageMemoryRequirements(vk_globals::device, resource, &requirements);
+    vkGetImageMemoryRequirements(renderer3d.m_device, resource, &requirements);
     return alloc(requirements, property);
 }
 
 template<>
 c_block c_gpu_memory_allocator::alloc<VkBuffer>(VkBuffer resource, VkMemoryPropertyFlagBits property) {
     VkMemoryRequirements requirements;
-    vkGetBufferMemoryRequirements(vk_globals::device, resource, &requirements);
+    vkGetBufferMemoryRequirements(renderer3d.m_device, resource, &requirements);
     return alloc(requirements, property);
 }
 

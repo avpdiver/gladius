@@ -11,6 +11,7 @@
 
 #include "texture.h"
 #include "framebuffer.h"
+#include "resource_macros.h"
 
 namespace gladius {
 namespace graphics {
@@ -66,7 +67,7 @@ bool create_framebuffer(uint32_t width, uint32_t height,
     };
 
     VkFramebuffer framebuffer;
-    VK_VERIFY(vkCreateFramebuffer(vk_globals::device, &create_info, nullptr, &framebuffer));
+    VK_VERIFY(vkCreateFramebuffer(renderer3d.m_device, &create_info, nullptr, &framebuffer));
 
     auto resource = (s_framebuffer_desc *) g_resource_pool.alloc(1);
     resource->handle = framebuffer;
@@ -78,7 +79,7 @@ bool create_framebuffer(uint32_t width, uint32_t height,
 }
 
 void destroy(s_framebuffer_desc* desc) {
-    vkDestroyFramebuffer(vk_globals::device, desc->handle, nullptr);
+    vkDestroyFramebuffer(renderer3d.m_device, desc->handle, nullptr);
     for (size_t i = 0; i < desc->attachmentCount; i++) {
         auto& attachment = desc->attachments[i];
         if (attachment.texture != INVALID_HANDLE && attachment.is_texture_owner) {

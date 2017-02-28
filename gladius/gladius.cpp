@@ -8,6 +8,7 @@
 #include "core/filesystem/filesystem.h"
 
 #include "graphics/render3d/render3d.h"
+#include "graphics/render3d/renderer3d.h"
 
 namespace gladius {
 
@@ -16,7 +17,7 @@ core::c_window g_window;
 
 
 void shutdown() {
-	graphics::render3d::shutdown();
+	graphics::render3d::renderer3d.shutdown();
 	g_window.close();
 	core::filesystem::shutdown();
 	core::logger::shutdown();
@@ -39,7 +40,7 @@ bool start() {
 		return false;
 	}
 
-	if (!graphics::render3d::init(&g_window, g_gladius_desc.render3d)) {
+	if (!graphics::render3d::renderer3d.init(&g_window)) {
 		shutdown();
 		return false;
 	}
@@ -49,7 +50,7 @@ bool start() {
 		if (g_window.is_closed()) {
 			break;
 		}
-		if (!graphics::render3d::render()) {
+		if (!graphics::render3d::renderer3d.render()) {
 			break;
 		}
 	}

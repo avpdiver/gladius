@@ -27,7 +27,7 @@ c_chunk::c_chunk(const VkDevice &device, VkDeviceSize size, uint32_t memory_type
             memory_type_index
     };
 
-    VK_ASSERT (vkAllocateMemory(vk_globals::device, &memory_allocate_info, nullptr, &m_memory));
+    VK_ASSERT (vkAllocateMemory(renderer3d.m_device, &memory_allocate_info, nullptr, &m_memory));
 
     c_block block = {
             m_memory,
@@ -36,7 +36,7 @@ c_chunk::c_chunk(const VkDevice &device, VkDeviceSize size, uint32_t memory_type
             true
     };
 
-    if ((vk_globals::gpu_memory_properties.memoryTypes[memory_type_index].propertyFlags &
+    if ((renderer3d.m_gpu_memory_properties.memoryTypes[memory_type_index].propertyFlags &
          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
         VK_ASSERT(vkMapMemory(device, m_memory, 0, VK_WHOLE_SIZE, 0, &m_ptr));
     }

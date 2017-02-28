@@ -17,7 +17,7 @@ struct s_swapchain_desc {
 };
 
 bool create_swap_chain(c_renderer3d* renderer);
-void shutdown_swap_chain();
+void shutdown_swap_chain(c_renderer3d* renderer);
 bool swap_chain_acquire_next_image(c_renderer3d* renderer, VkSemaphore semaphore, uint32_t *image_index);
 
 }

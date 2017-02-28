@@ -13,10 +13,10 @@
 #include "../vulkan/vulkan_macros.h"
 #include "../vulkan/vulkan_debug.h"
 #include "../renderer3d.h"
-#include "../vulkan/render3d_resources.h"
 
 #include "texture.h"
 #include "buffer.h"
+#include "resource_macros.h"
 
 namespace gladius {
 namespace graphics {
@@ -76,7 +76,7 @@ bool create_image(VkFormat format, uint32_t width, uint32_t height, uint32_t dep
             VK_IMAGE_LAYOUT_UNDEFINED                             // VkImageLayout              initialLayout
     };
 
-    VK_VERIFY(vkCreateImage(vk_globals::device, &image_create_info, nullptr, image));
+    VK_VERIFY(vkCreateImage(renderer3d.m_device, &image_create_info, nullptr, image));
     return true;
 }
 
@@ -104,7 +104,7 @@ bool create_image_view(VkImage image, VkFormat format, uint32_t mip_levels, uint
                     }
             };
 
-    VK_VERIFY (vkCreateImageView(vk_globals::device, &image_view_create_info, nullptr, view));
+    VK_VERIFY (vkCreateImageView(renderer3d.m_device, &image_view_create_info, nullptr, view));
     return true;
 }
 
@@ -130,7 +130,7 @@ bool create_sampler(VkSampler *sampler) {
             VK_FALSE                                              // VkBool32                   unnormalizedCoordinates
     };
 
-    VK_VERIFY (vkCreateSampler(vk_globals::device, &sampler_create_info, nullptr, sampler));
+    VK_VERIFY (vkCreateSampler(renderer3d.m_device, &sampler_create_info, nullptr, sampler));
     return true;
 }
 
@@ -144,7 +144,7 @@ bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
 
     // Copy texture data into staging buffer
     uint8_t *data;
-    VK_VERIFY(vkMapMemory(vk_globals::device, staging_buffer->memory, 0, tex2d.size(), 0,
+    VK_VERIFY(vkMapMemory(renderer3d.m_device, staging_buffer->memory, 0, tex2d.size(), 0,
                           (void **) &data));
     memcpy(data, tex2d.data(), tex2d.size());
     VkMappedMemoryRange flush_range = {
@@ -154,8 +154,8 @@ bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
             0,                                                  // VkDeviceSize                           offset
             tex2d.size()                                        // VkDeviceSize                           size
     };
-    vkFlushMappedMemoryRanges(vk_globals::device, 1, &flush_range);
-    vkUnmapMemory(vk_globals::device, staging_buffer->memory);
+    vkFlushMappedMemoryRanges(renderer3d.m_device, 1, &flush_range);
+    vkUnmapMemory(renderer3d.m_device, staging_buffer->memory);
 
 
     // Prepare command buffer to copy data from staging buffer to a image
@@ -255,8 +255,8 @@ bool copy_texture_data(const gli::texture2d &tex2d, s_texture_desc &desc) {
             nullptr                                             // const VkSemaphore                     *pSignalSemaphores
     };
 
-    VK_VERIFY (vkQueueSubmit(vk_globals::graphics_queue.handle, 1, &submit_info, VK_NULL_HANDLE));
-    vkDeviceWaitIdle(vk_globals::device);
+    VK_VERIFY (vkQueueSubmit(renderer3d.m_graphics_queue.handle, 1, &submit_info, VK_NULL_HANDLE));
+    vkDeviceWaitIdle(renderer3d.m_device);
 */
     return true;
 }
@@ -276,9 +276,9 @@ bool load_texture(const char *filename, texture_handle *handle) {
     VERIFY(create_image(format, width, height, 1, mip_levels, 1, VK_SAMPLE_COUNT_1_BIT,
                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &image));
 
-    auto memory_block = vk_globals::gpu_memory_allocator->alloc(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    auto memory_block = renderer3d.m_gpu_memory_allocator->alloc(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VK_VERIFY(vkBindImageMemory(vk_globals::device, image, memory_block.m_memory, memory_block.m_offset));
+    VK_VERIFY(vkBindImageMemory(renderer3d.m_device, image, memory_block.m_memory, memory_block.m_offset));
     VERIFY(create_image_view(image, format, mip_levels, array_layers, &view));
     //VERIFY(copy_texture_data(tex2d, tex));
 
@@ -306,9 +306,9 @@ bool create_texture(VkFormat format, uint32_t width, uint32_t height, uint32_t d
 
     VERIFY(create_image(format, width, height, 1, mip_levels, array_layers, samples, usage, &image));
 
-    auto memory_block = vk_globals::gpu_memory_allocator->alloc(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    auto memory_block = renderer3d.m_gpu_memory_allocator->alloc(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VK_VERIFY(vkBindImageMemory(vk_globals::device, image, memory_block.m_memory, memory_block.m_offset));
+    VK_VERIFY(vkBindImageMemory(renderer3d.m_device, image, memory_block.m_memory, memory_block.m_offset));
     VERIFY(create_image_view(image, format, mip_levels, array_layers, &view));
 
     s_texture_desc *resource = (s_texture_desc *) g_resource_pool.alloc(1);
@@ -343,9 +343,9 @@ VkImageView get_texture_image_view(texture_handle handle) {
 }
 
 void destroy(s_texture_desc* desc) {
-    vk_globals::gpu_memory_allocator->free(desc->memory_block);
-    vkDestroyImageView(vk_globals::device, desc->view, nullptr);
-    vkDestroyImage(vk_globals::device, desc->image, nullptr);
+    renderer3d.m_gpu_memory_allocator->free(desc->memory_block);
+    vkDestroyImageView(renderer3d.m_device, desc->view, nullptr);
+    vkDestroyImage(renderer3d.m_device, desc->image, nullptr);
 }
 
 void destroy_texture(texture_handle handle) {

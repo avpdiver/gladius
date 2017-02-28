@@ -12,6 +12,7 @@
 #include "../vulkan/vulkan_macros.h"
 
 #include "shander.h"
+#include "resource_macros.h"
 
 namespace gladius {
 namespace graphics {
@@ -53,7 +54,7 @@ bool load_shader(const char *filename, e_shader_type shader_type, const char *en
     };
 
     VkShaderModule module;
-    VK_VERIFY(vkCreateShaderModule(vk_globals::device, &shader_module_create_info, nullptr, &module));
+    VK_VERIFY(vkCreateShaderModule(renderer3d.m_device, &shader_module_create_info, nullptr, &module));
 
     s_shader_desc *shader = (s_shader_desc*) g_resource_pool.alloc(1);
     shader->module = module;
@@ -83,7 +84,7 @@ void get_shader_stage_info(shander_handle handle, VkPipelineShaderStageCreateInf
 }
 
 void destroy(s_shader_desc* desc) {
-    vkDestroyShaderModule(vk_globals::device, desc->module, nullptr);
+    vkDestroyShaderModule(renderer3d.m_device, desc->module, nullptr);
 }
 
 

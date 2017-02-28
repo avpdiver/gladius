@@ -53,11 +53,11 @@ bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBi
     s_buffer_desc buf;
     buf.size = size;
     VkBuffer buffer;
-    VK_VERIFY (vkCreateBuffer(vk_globals::device, &buffer_create_info, nullptr, &buffer));
+    VK_VERIFY (vkCreateBuffer(renderer3d.m_device, &buffer_create_info, nullptr, &buffer));
 
-    auto memory_block = vk_globals::gpu_memory_allocator->alloc(buf.handle, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    auto memory_block = renderer3d.m_gpu_memory_allocator->alloc(buf.handle, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VK_VERIFY (vkBindBufferMemory(vk_globals::device, buf.handle, buf.memory_block.m_memory, buf.memory_block.m_offset));
+    VK_VERIFY (vkBindBufferMemory(renderer3d.m_device, buf.handle, buf.memory_block.m_memory, buf.memory_block.m_offset));
 
     s_buffer_desc* desc = (s_buffer_desc*)g_resource_pool.alloc(1);
     desc->size = size;
@@ -70,8 +70,8 @@ bool create_buffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBi
 }
 
 void destroy(s_buffer_desc* desc) {
-    vk_globals::gpu_memory_allocator->free(desc->memory_block);
-    vkDestroyBuffer(vk_globals::device, desc->handle, nullptr);
+    renderer3d.m_gpu_memory_allocator->free(desc->memory_block);
+    vkDestroyBuffer(renderer3d.m_device, desc->handle, nullptr);
 }
 
 void destroy_buffer(const buffer_handle handle) {
