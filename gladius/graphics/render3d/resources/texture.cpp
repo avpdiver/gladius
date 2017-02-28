@@ -47,7 +47,7 @@ public:
     NOT_COPYABLE(s_texture_desc);
 };
 
-constexpr size_t RESOURCES_NUMBER = 32;
+static constexpr size_t RESOURCES_NUMBER = 32;
 
 RESOURCE_POOL(s_texture_desc, RESOURCES_NUMBER);
 

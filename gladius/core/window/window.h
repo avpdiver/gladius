@@ -53,10 +53,32 @@ struct s_window_info {
 };
 
 struct s_window_desc {
-    uint32_t width;
-    uint32_t height;
-    bool fullscreen;
-	std::string caption;
+public:
+    s_window_desc& set_caption(const char* caption_) {
+        caption = caption_;
+        return *this;
+    }
+
+    s_window_desc& set_width(uint32_t width_) {
+        width = width_;
+        return *this;
+    }
+
+    s_window_desc& set_height(uint32_t height_) {
+        height = height_;
+        return *this;
+    }
+
+    s_window_desc& is_fullscreen(bool fullscreen_) {
+        fullscreen = fullscreen_;
+        return *this;
+    }
+
+public:
+    uint32_t width = 640;
+    uint32_t height = 480;
+    bool fullscreen = false;
+	std::string caption = "gladius";
 };
 
 class c_window;

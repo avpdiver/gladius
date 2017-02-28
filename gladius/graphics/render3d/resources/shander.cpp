@@ -34,7 +34,7 @@ public:
     NOT_COPYABLE(s_shader_desc);
 };
 
-constexpr size_t RESOURCES_NUMBER = 32;
+static constexpr size_t RESOURCES_NUMBER = 32;
 
 RESOURCE_POOL(s_shader_desc, RESOURCES_NUMBER);
 

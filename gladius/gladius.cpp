@@ -4,50 +4,43 @@
 
 #include "gladius.h"
 
-#include "core/logger/logger.h"
 #include "core/filesystem/filesystem.h"
-
-#include "graphics/render3d/render3d.h"
 #include "graphics/render3d/renderer3d.h"
 
 namespace gladius {
 
-s_gladius_desc g_gladius_desc;
-core::c_window g_window;
-
-
-void shutdown() {
+void c_gladius::shutdown() {
 	graphics::render3d::renderer3d.shutdown();
-	g_window.close();
+	m_window.close();
 	core::filesystem::shutdown();
 	core::logger::shutdown();
 }
 
-bool start() {
+bool c_gladius::start(const s_gladius_desc& desc) {
 
 	if (!core::filesystem::init()) {
 		shutdown();
 		return false;
 	}
 
-	if (g_gladius_desc.logging && !core::logger::init(core::logger::e_log_level::debug)) {
+	if (desc.logging && !core::logger::init(core::logger::e_log_level::debug)) {
 		shutdown();
 		return false;
 	}
 
-	if (!g_window.create(g_gladius_desc.screen)) {
+	if (!m_window.create(desc.window_desc)) {
 		shutdown();
 		return false;
 	}
 
-	if (!graphics::render3d::renderer3d.init(&g_window)) {
+	if (!graphics::render3d::renderer3d.init(&m_window)) {
 		shutdown();
 		return false;
 	}
 
 	while (true) {
-		g_window.process_events();
-		if (g_window.is_closed()) {
+		m_window.process_events();
+		if (m_window.is_closed()) {
 			break;
 		}
 		if (!graphics::render3d::renderer3d.render()) {

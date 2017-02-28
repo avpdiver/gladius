@@ -35,7 +35,7 @@ public:
     NOT_COPYABLE(s_framebuffer_desc);
 };
 
-constexpr size_t RESOURCES_NUMBER = 32;
+static constexpr size_t RESOURCES_NUMBER = 32;
 
 RESOURCE_POOL(s_framebuffer_desc, RESOURCES_NUMBER);
 
